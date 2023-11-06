@@ -1,0 +1,42 @@
+---
+title: "Clean up meta-analysis data"
+author: "James Grimsdale"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+rm(list = ls()) # clear memory and start afresh
+library(pacman)
+p_load(readxl, tidyverse, stringr)
+```
+
+# Split the length of trial column
+
+Changing the length of trial column into a number and unit to make things easier later on.
+
+```{r}
+df <- read_excel("Lit review data.xlsx", sheet = "Treatments")
+df
+summary(df)
+```
+```{r}
+df$Time <- as.numeric(gsub("[^0-9.]", "", df$Length_of_trial))
+df$Time_unit <- gsub("[^a-zA-Z]", "", df$Length_of_trial)
+head(df, 20)
+```
+```{r}
+df$Time_unit <- str_replace(df$Time_unit, "s$", "")
+head(df, 20) #remove the plurals so its standardised across the sheet
+```
+
+
+```{r}
+write_excel_csv2(df, "Clean up")
+```
+
+
