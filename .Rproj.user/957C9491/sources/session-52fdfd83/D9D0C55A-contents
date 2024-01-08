@@ -1,0 +1,311 @@
+---
+title: "Mammal browsing control meta-analysis data processing"
+author: "Jamie"
+format: html
+editor: visual
+---
+
+# Non-lethal mammal control Meta analysis - Data clean up and processing
+
+## Initial processing
+
+Packages
+
+```{r}
+library(pacman)
+p_load(tidyverse, readxl, writexl, meta, metafor)
+```
+
+Read in
+
+```{r}
+df <- read_excel("Lit review data.xlsx", sheet = "Effects (post responses)")
+```
+
+### Assign papers ID codes
+
+I need to assign each paper an ID code that can be tied to the effects that were extracted from that paper. This will make downstream processing and modelling easier.
+
+```{r}
+df <- df %>% mutate(ref = paste(Authors,`Article Title`, `Source Title`))
+
+df1 <- df %>% group_by(ref) %>% mutate(Paper_ID = cur_group_id()) %>% ungroup()
+```
+
+### Standardise time
+
+Length of trial was measured in various units from years to hours. I need to standardise the units so that they can be easily compared later. I'll take a look at the breakdown of the different units and make a call as to which unit to use as standard - a priori I think months will probably be optimal.
+
+```{r}
+df1 <- df1 %>% mutate(Time_unit = as.factor(Time_unit))
+
+summary(df1)
+```
+
+Opting for months as the best option. Need to standardise so that all the times are in months. Write a function that will convert all the different units into months and then execute that function using the Time and Time_unit data in the dataframe.
+
+Write the function
+
+```{r}
+to_months <- function(Time_unit, Time) {
+  case_when(Time_unit == is.na(Time_unit) ~ NA,
+            Time_unit == "day" ~ Time / 30.417,
+            Time_unit == "week" ~ Time / (30.417/7),
+            Time_unit == "month" ~ Time,
+            Time_unit == "year" ~ Time * 12,
+            Time_unit == "hour" ~ Time / (30.417*24))
+}
+```
+
+Execute
+
+```{r}
+df2 <- df1 %>% rowwise() %>% 
+  mutate(Months = to_months(Time_unit, Time))
+
+#take a look at the spread of the months data
+summary(df2)
+```
+
+## SMD effects
+
+Separate data into SMD and log odds effects.
+
+```{r}
+df_SMD <- df2 %>% filter(`Effect type` == "SMD")
+df_lo <- df2 %>% filter (`Effect type` == "Log odds")
+```
+
+### Imputing errors and Convert errors to SD
+
+The SMD effect size formula uses standard deviation to generate effect sizes. The errors in my data are in various formats and therefore need to be standardised. Possible to do something like with the time where I have 2 columns, one with the numeric value and one with the error type for treatment and control. Then I can write a function that will do the different conversions based on the type of error.
+
+Need to impute some errors before conversions so there are no NAs in the data set.
+
+```{r}
+#Error imputation code will go here
+```
+
+(Don't worry about losing effects at this stage - data set is incomplete in some areas which is causing NAs to be dropped)
+
+```{r}
+df_SMD1 <- df_SMD %>% 
+  rownames_to_column() %>% 
+  pivot_longer(cols = c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`),
+               names_to = "Control_Error_type",
+               values_to = "Control_Error") %>% 
+  drop_na(Control_Error)
+
+df_SMD2 <- df_SMD1 %>% select(-rowname) %>% 
+  rownames_to_column() %>% 
+  pivot_longer(cols = c(`Treatment SD`, `Treatment SE`, `Treatment CV`, `Treatment 95CI`),
+               names_to = "Treatment_Error_type",
+               values_to = "Treatment_Error") %>% 
+  drop_na(Treatment_Error)
+```
+
+Tidy up the strings so they don't have control/treatment at the start of the cell entry in the dataframe.
+
+```{r}
+df_SMD3<- df_SMD2 %>%
+  mutate(Control_Error_type = case_when(
+    Control_Error_type == "Control SE" ~ "SE",
+    Control_Error_type == "Control SD" ~ "SD",
+    Control_Error_type == "Control CV" ~ "CV",
+    Control_Error_type == "Control 95CI(lower:upper)" ~ "95CI",
+    TRUE ~ Control_Error_type),
+    Treatment_Error_type = case_when(
+      Treatment_Error_type == "Treatment SE" ~ "SE",
+      Treatment_Error_type == "Treatment SD" ~ "SD",
+      Treatment_Error_type == "Treatment CV" ~ "CV",
+      Treatment_Error_type == "Treatment 95CI" ~ "95CI",
+      TRUE ~ Treatment_Error_type))
+```
+
+Write a function for the conversion to SD.
+
+Might need to account for the LS means here before the error conversion.
+
+```{r}
+to_SD <- function(Error_type, Value, Sample_size, Mean) {
+  case_when(
+    Error_type == "SE" ~ Value * sqrt(Sample_size),
+    Error_type == "SD" ~ Value,
+    Error_type == "CV" ~ Value * Mean,
+    Error_type == "95CI" ~ Value #issue here as the only paper that I have errors as 95CI also used LS means - ask Dan how to clear this up
+  )
+}
+```
+
+Execute
+
+```{r}
+df_SMD4 <- df_SMD3 %>% 
+  mutate(Con_SD = to_SD(Control_Error_type, Control_Error, `Control sample size`, `Control mean`),
+         Trt_SD = to_SD(Treatment_Error_type, Treatment_Error, `Treatment sample`, `Treatment mean`))
+```
+
+### Trim up
+
+The output dataframes that I will use for analysis do not need to contain columns that were relevant for data extraction and identification.
+
+I'll rename some column headings for greater clarity and then trim down the dataframe to the necessary columns.
+
+```{r}
+df_SMD5 <- df_SMD4 %>% 
+  rename(Method = `Control method`, Type = `Method sub-type`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,           Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
+```
+
+```{r}
+df_SMD6 <- df_SMD5 %>% 
+  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`, Con_N,
+         Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)
+```
+
+### Generate effect sizes
+
+Use metafor package escalc() to generate the effect sizes. Will then need to review the variables that were measured in order to make sure that instances where a negative impact on the variable is a positive browsing outcome are accounted for. Also need to investigate how to convert the F statistic data from Andelt et al into an SMD effect.
+
+Conventional SMD effects
+
+```{r}
+df_SMD7 <- df_SMD6 %>% 
+  mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N))
+```
+
+F stat SMD effects
+
+```{r}
+# write relevant f stat code here
+```
+
+Check on the variables that are in play and then write a function to swap relevant effects.
+
+```{r}
+df_SMD_var <- df_SMD7 %>% 
+  distinct(Variable)
+```
+
+Write the function
+
+```{r}
+sign_switch_SMD <- function(Variable, Value) {
+  case_when(Variable ==  ~ Value * -1, # insert list of variables to be switched here
+            TRUE  ~ Value)
+}
+```
+
+Execute
+
+```{r}
+df_SMD8 <- df_SMD7 %>% 
+  mutate(Effect_size = sign_switch_SMD(Variable, Effect_size))
+```
+
+Write out excel file with SMD effects ready for analysis
+
+```{r}
+write_xlsx(df_SMD8, "Meta_SMD_es.xlsx") # add metadata sheet to this file
+```
+
+## Log odds effects
+
+### Trim up
+
+Clean up the dataframe and rename some columns for easier downstream processing.
+
+```{r}
+df_lo1 <- df_lo %>% 
+  rename(Method = `Control method`, Type = `Method sub-type`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,
+         Con_N = `Control sample size`, Con_ = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
+```
+
+```{r}
+df_lo2 <- df_lo1 %>% 
+  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`, Con_N,
+         Con_mean, Trt_N, Trt_mean)
+```
+
+### Count data
+
+The binomial data I have eg survival or browsed/not browsed has been measured with various units: percent, proportion, probability, count etc. I need to get all of the log odds effects back to count data so that I can generate effect sizes. I need to write a function to convert the values based on the units. Then I can generate the effect sizes.
+
+What units need to be accounted for? Make any edits for entry errors
+
+```{r}
+df_lo_units <- df_lo2 %>% 
+  distinct(Units)
+
+df_lo2 <-  df_lo2 %>% 
+  mutate(Units = ifelse(Units == "count", "Count", Units))
+```
+
+Write the function
+
+```{r}
+to_count <- function(Unit, Value, Sample_size) {
+  counts <- case_when(
+    Unit == "Count" ~ Value,
+    Unit == "Percent" ~ (Sample_size/100) * Value,
+    Unit ==  "Proportion" ~ Sample_size * Value,
+    Unit ==  "Probability" ~ Sample_size * Value)
+  
+  output <- round(counts, 0) #count data has to be whole number - survival etc can't be half a plant survived
+  
+  return(output)
+} 
+```
+
+Execute
+
+```{r}
+df_lo3 <- df_lo2 %>% 
+  mutate(Con_count = to_count(Units, Con_mean, Con_N),
+         Trt_count = to_count(Units, Trt_mean, Trt_N)) %>% 
+  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`, Con_N,
+         Con_count, Trt_N, Trt_count)
+```
+
+### Generate effect sizes
+
+Using the count data I can generate the log odds effect sizes ready for analysis. I will need to account for the fact that some of the variables measured act in opposite directions when there has been a positive outcome eg survival vs mortality. I should be able to account for this by looking at the variables measured and switching the signs of the relevant data points.
+
+Use metafor escalc() to calculate the log odds ratio effect sizes.
+
+```{r}
+df_lo4 <- df_lo3 %>% 
+  mutate(Effect_size = escalc(measure = "OR", ai = Trt_count, n1i = Trt_N, ci = Con_count, n2i = Con_N))
+```
+
+Now I need to investigate the variables that have been measured across studies and account for instances where a negative relationship is actually a positive outcome eg lower mortality than control group is a positive browsing outcome. These instances will need to be flipped so that the effect is acting in the correct direction.
+
+```{r}
+df_lo_var <- df_lo4 %>% 
+  distinct(Variable)
+```
+
+Write a function for the sign switching
+
+```{r}
+sign_switch_lo <- function(Variable, Value) {
+  case_when(Variable == "Mortality" | "Plants damaged" | "Plants browsed" | "Leader browsing" | "Lateral browsing" | 
+                        "Bud damage" | "Leaf damage" | "Stems harvested" ~ Value * -1,
+            TRUE ~ Value)
+            
+}
+```
+
+Execute
+
+```{r}
+df_lo5 <- df_lo4 %>% 
+  mutate(Effect_size = sign_switch_lo(Variable, Effect_size))
+```
+
+Write out the file with the generated effects ready for analysis
+
+```{r}
+write_xlsx(df_lo5, "Meta_lo_es.xlsx") #add metadata sheet to this file
+```
+
+Add code for converting log odds effects to something comparable to SMD - join all the effects into one dataframe...

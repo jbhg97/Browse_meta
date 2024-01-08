@@ -1,0 +1,99 @@
+---
+title: "Mammal browsing control meta-analysis results"
+author: "Jamie"
+format: html
+editor: visual
+---
+
+# Non-lethal mammal control Meta analysis - Results
+
+```{r}
+library(pacman)
+p_load(tidyverse, readxl, writexl, kableExtra)
+```
+
+## Literature synthesis
+
+(Fill gaps with information from Prelim_process quarto doc or from tables produced in this doc)
+
+```{r}
+#code to do the average effects per paper
+#Run code chunks from prelim_process to add Paper IDs to dataframe - take df1
+
+df_avg <- df1 %>% group_by(Paper_ID) %>% 
+  summarise(count = n()) %>% 
+  summarise(mean = mean(df_avg$count),
+            sd = sd(df_avg$count),
+            min = min(df_avg$count),
+            max = max(df_avg$count))
+```
+
+Data were extracted from XXX papers, resulting in XXXX pairwise effect sizes (XXX SMD effects and XXX Log odds effects). Papers contributed an average of XXX +- XXX (mean +- SD) effect sizes to the data set (range: X-X). Experiments were distributed globally across XX countries, see Fig XXX (map of distribution of studies). One study conducted experiments in two countries (Barrere et al., 2021): France and Sweden, hence why N = number of papers + 1.
+
+```{r}
+#packages
+p_load(sf, rnaturalearth, rnaturalearthdata)
+
+#read in
+df_map <- read_excel("Lit review data.xlsx", sheet = "Effects (post responses)")
+
+#edit strings for map making packages
+df_map <- df_map %>% 
+  mutate(Country = case_when(Country == "USA" ~ "United States",
+                   Country == "UK" ~"United Kingdom",
+                   TRUE ~ Country))
+
+#get unique combinations of study and country - should be No. of studies + 1 because of Barrere et al
+df_map1 <- df_map %>% 
+  group_by(Authors, `Article Title`, Country) %>% 
+  distinct(Authors, `Article Title`, Country) %>% 
+  ungroup() %>% select(Country)
+
+df_map_inset <- df_map1 %>% 
+  count(Country, name = "N") %>% 
+  arrange(desc(N))
+
+#map
+world <- ne_countries(scale = "medium", returnclass = "sf")
+world <- subset(world, continent != "Antarctica") #Antarctica is unnecessary for this map - no forests
+
+world <- merge(world, df_map_inset, by.x = "name", by.y = "Country", all.x = TRUE)
+world$N[is.na(world$N)] <- 0
+world$is_zero <- ifelse(world$N == 0, "Zero", "Non-zero")
+
+map_plot <- ggplot() +
+  geom_sf(data = world[world$is_zero == "Zero", ], fill = "lightgrey", color = "black") +
+  geom_sf(data = world[world$is_zero == "Non-zero", ], aes(fill = N)) +
+  scale_fill_gradient(low = "lightblue", high = "darkgreen", name = "N") +
+  labs(caption = str_wrap("Fig XX. A map showing the distribution of experimental locations globally. Grey denotes N = 0. Inset table shows the number of papers that conducted experiments in given countries; note that N = No. of papers + 1 as Barrere et al. (2021) conducted experiments in both France and Sweden.", width = 110)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        panel.border = element_blank(),
+        plot.margin = margin(0, 0, 0, 0, "mm"),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        plot.caption = element_text(hjust = 0.5))
+
+print(map_plot)
+
+#still want to add an inset table - it will increase the clarity of the figure as some of the small numbers are not easy to discern based solely on colour or make USA single colour then the others will be spread better?
+```
+
+Next tasks - write results for breakdown of the effects into broad categories. Produce tables for N \>25? and then a full table for supp info. Table will include avg effect size with SD/SE.
+
+```{r}
+#Table for supp info 
+
+```
+
+```{r}
+#Table for main text
+
+
+```
+
+## Further results - questions to be defined
+
+Likely to look at impacts of different browsers, tree genera on the efficacy of different control methods. Will need to review the sample sizes as groups become increasingly more complex (sample will shrink as each layer is added - control method + browser + tree genus)
+
+Also want to examine the retention of efficacy over time - will likely be able to do this at the broad control method groupings with some comment on how method sub-type impacts the retention of efficacy (do some repellents last longer, are taller/different material fences more efficacious over time)
