@@ -12,7 +12,6 @@ library(pacman)
 p_load(tidyverse, readxl, writexl, kableExtra)
 ```
 
-
 ## Literature synthesis
 
 (Fill gaps with information from Prelim_process quarto doc or from tables produced in this doc)
@@ -79,18 +78,11 @@ print(map_plot)
 
 #still want to add an inset table - it will increase the clarity of the figure as some of the small numbers are not easy to discern based solely on colour or make USA single colour then the others will be spread better?
 ```
-Next tasks - write results for breakdown of the effects into broad categories. Produce tables for N >25? and then a full table for supp info. Table will include avg effect size with SD/SE.
+
+Next tasks - write results for breakdown of the effects into broad categories. Produce tables for N \>25? and then a full table for supp info. Table will include avg effect size with SD/SE.
 
 ```{r}
 #Table for supp info 
-
-df_SMD <- read_excel("Meta_SMD_es", sheet = "SMD")
-df_lo <- read_excel("Meta_lo_es", sheet = "Log odds")
-
-df_SMD1 <- df_SMD %>% select(Paper_ID, Method, Type, Animal, `PLant genus`, Scale, `Effect type`, Effect_size)
-df_lo1 <- df_lo %>% select(Paper_ID, Method, Type, Animal, `PLant genus`, Scale, `Effect type`, Effect_size)
-
-df_table <- rbind(df_SMD1, df_lo1)
 
 ```
 

@@ -309,4 +309,3 @@ write_xlsx(df_lo5, "Meta_lo_es.xlsx") #add metadata sheet to this file
 ```
 
 Add code for converting log odds effects to something comparable to SMD - join all the effects into one dataframe...
-
