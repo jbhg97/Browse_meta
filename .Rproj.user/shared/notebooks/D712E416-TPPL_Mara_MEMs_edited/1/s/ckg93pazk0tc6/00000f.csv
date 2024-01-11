@@ -1,0 +1,3 @@
+"0","# There is evidence for a linear trend in the data so we proceed with the detrended data "
+"0",""
+"0","BrN.det.db <- resid(lm(as.matrix(ZBrNdb)~.,data=xydb)) # Here we detrend the data "

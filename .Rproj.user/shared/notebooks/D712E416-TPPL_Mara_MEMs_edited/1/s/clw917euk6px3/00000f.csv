@@ -1,0 +1,7 @@
+"0","par(mfrow =c(1,2))"
+"0","for(i in 1 : ncol(dbmem.red.BrN))"
+"0","{sr.value(xydb,"
+"0","          dbmem.red.BrN[,i],"
+"0","          sub=paste(""MEM"",significant.dbMEM.BrN[i]),"
+"0","          csub=2,"
+"0","          xlim = xlim, ylim = ylim)} # Plot significant eigenvectors"

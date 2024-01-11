@@ -1,0 +1,2 @@
+"0","va.sc <- scores(dbmem.rda2.BrN, choices=1:2, scaling=2, display=""sp"")"
+"0","text(va.sc, row.names(va.sc), cex=0.5)"

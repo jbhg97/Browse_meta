@@ -1,0 +1,17 @@
+"0",""
+"0","# We will need these packages"
+"0","library(pacman)"
+"0",""
+"0","p_load(tidyverse, corrgram, sp, adespatial, openxlsx, tibble, LandGenCourse, readxl, spdep, mapview, gridExtra, tibble, proxy, FactoMineR, ggpubr, corrplot, geosphere, vegan, ade4, grid, here , lattice, nlme, MuMIn, ggplot2, spmoran, sf, leafem)"
+"2","Installing package into ‘/homevol/jbhg/R/x86_64-pc-linux-gnu-library/4.2’
+(as ‘lib’ is unspecified)
+"
+"2","Warning: package ‘LandGenCourse’ is not available for this version of R
+
+A version of this package for your version of R might be available elsewhere,
+see the ideas at
+https://cran.r-project.org/doc/manuals/r-patched/R-admin.html#Installing-packages"
+"2","Warning: "
+"2","Warning: there is no package called ‘LandGenCourse’"
+"2","Warning: Failed to install/load:
+LandGenCourse"

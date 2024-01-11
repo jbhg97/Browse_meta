@@ -1,0 +1,20 @@
+"0",""
+"0","# Note that forward selection of MEMs can vary slightly between runs. "
+"0",""
+"0","(dbmem.rda.r.BrN <- RsquareAdj(dbmem.rda.BrN)$adj.r.squared) # Here we create a variable which contains R2 of our model"
+"1","[1]"
+"1"," 0.07375435"
+"1","
+"
+"0","(dbmem.fwd.BrN <- forward.sel(BrN.det.db, as.matrix(xy.dbmem), "
+"0","                        adjR2thresh = dbmem.rda.r.BrN)) # Then we use that variable to forward select MEMs"
+"1","Testing variable 1
+"
+"1","Testing variable 2
+"
+"1","Testing variable 3
+"
+"1","Testing variable 4
+"
+"1","Procedure stopped (adjR2thresh criteria) adjR2cum = 0.074372 with 4 variables (> 0.073754)
+"

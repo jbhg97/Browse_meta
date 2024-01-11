@@ -1,0 +1,33 @@
+---
+title: "Figure extractions"
+author: "James Grimsdale"
+date: "2023-10-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Get the shinydigitise package
+
+```{r}
+devtools::install_github("EIvimeyCook/ShinyDigitise", force = TRUE)
+```
+
+```{r}
+library(pacman)
+p_load(shinyDigitise)
+p_load(readxl,writexl,tidyverse)
+```
+
+Fire up shiny digitise   
+
+```{r}
+df <- shinyDigitise()
+```
+
+```{r}
+write_xlsx(df, "Meta figs 14.xlsx")
+```
+
