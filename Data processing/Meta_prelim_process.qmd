@@ -67,6 +67,13 @@ df2 <- df1 %>% rowwise() %>%
 summary(df2)
 ```
 
+Split out LS means here into their own dataframe - may reinclude but will need to do sensitivity analyses.
+
+```{r}
+df_LS <- df2 %>% filter(!is.na(`Control LS mean`))
+df2 <- df2 %>% filter(is.na(`Control LS mean`))
+```
+
 ## SMD effects
 
 Separate data into SMD and log odds effects.
@@ -76,20 +83,26 @@ df_SMD <- df2 %>% filter(`Effect type` == "SMD")
 df_lo <- df2 %>% filter (`Effect type` == "Log odds")
 ```
 
-### Imputing errors and Convert errors to SD
+###Convert errors to SD
 
 The SMD effect size formula uses standard deviation to generate effect sizes. The errors in my data are in various formats and therefore need to be standardised. Possible to do something like with the time where I have 2 columns, one with the numeric value and one with the error type for treatment and control. Then I can write a function that will do the different conversions based on the type of error.
 
 Need to impute some errors before conversions so there are no NAs in the data set.
 
+Split data into complete cases and errors missing
+
 ```{r}
-#Error imputation code will go here
+df_SMD_miss <- df_SMD %>%
+  filter(if_all(c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`), ~ all(is.na(.))))
+
+df_SMD <- df_SMD %>% 
+  filter(if_any(c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`), ~ !is.na(.)))
 ```
 
-(Don't worry about losing effects at this stage - data set is incomplete in some areas which is causing NAs to be dropped)
+Take complete cases and rearrange error columns into - error value and error type
 
 ```{r}
-df_SMD1 <- df_SMD %>% 
+df_SMD1 <- df_SMD %>% mutate(`Control SD` = as.numeric(`Control SD`)) %>% 
   rownames_to_column() %>% 
   pivot_longer(cols = c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`),
                names_to = "Control_Error_type",
@@ -124,15 +137,13 @@ df_SMD3<- df_SMD2 %>%
 
 Write a function for the conversion to SD.
 
-Might need to account for the LS means here before the error conversion.
-
 ```{r}
 to_SD <- function(Error_type, Value, Sample_size, Mean) {
   case_when(
     Error_type == "SE" ~ Value * sqrt(Sample_size),
     Error_type == "SD" ~ Value,
-    Error_type == "CV" ~ Value * Mean,
-    Error_type == "95CI" ~ Value #issue here as the only paper that I have errors as 95CI also used LS means - ask Dan how to clear this up
+    Error_type == "CV" ~ Value * Mean
+   # Error_type == "95CI" ~ Value #issue here as the only paper that I have errors as 95CI also used LS means - cross this bridge if LS means become included
   )
 }
 ```
@@ -158,28 +169,33 @@ df_SMD5 <- df_SMD4 %>%
 
 ```{r}
 df_SMD6 <- df_SMD5 %>% 
-  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`, Con_N,
-         Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)
+  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`,                  Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)
 ```
 
 ### Generate effect sizes
 
-Use metafor package escalc() to generate the effect sizes. Will then need to review the variables that were measured in order to make sure that instances where a negative impact on the variable is a positive browsing outcome are accounted for. Also need to investigate how to convert the F statistic data from Andelt et al into an SMD effect.
+Use metafor package escalc() to generate the effect sizes. Will then need to review the variables that were measured in order to make sure that instances where a negative impact on the variable is a positive browsing outcome are accounted for.
 
 Conventional SMD effects
 
 ```{r}
-df_SMD7 <- df_SMD6 %>% 
-  mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N))
+df_SMD7 <- df_SMD6 %>% mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean,
+                              sd2i = Con_SD, n2i = Con_N, data = df_SMD6, var.names = c("Effect_size", "Sampling_variance"),
+                              append = FALSE))
 ```
+Getting some warnings here - could be instances where the SD is 0 (may need to add a constant to fix those or review those cases and exclude) - will fix later.
 
-F stat SMD effects
+### Impute missing errors
+
+Need to impute the errors for cases where no error was reported. 
 
 ```{r}
-# write relevant f stat code here
+#Error imputation will go here - all missing cases are in df_SMD_miss. Will rejoin the imputed dataframe to the full cases dataframe before the coining step
 ```
 
-Check on the variables that are in play and then write a function to swap relevant effects.
+### Coining
+
+Check on the variables that are in play and then write a function to coin relevant effects.
 
 ```{r}
 df_SMD_var <- df_SMD7 %>% 
@@ -189,17 +205,26 @@ df_SMD_var <- df_SMD7 %>%
 Write the function
 
 ```{r}
-sign_switch_SMD <- function(Variable, Value) {
-  case_when(Variable ==  ~ Value * -1, # insert list of variables to be switched here
+coin_SMD <- function(Variable, Value) {
+  case_when(Variable == "sqrt Height removed" | Variable == "Bark wounds/tree" | Variable == "Branches browsed" | 
+            Variable == "Browse intensity" | Variable == "Browsing" | Variable == "Browsing damage" | Variable == "Consumption" |
+            Variable == "Damage score" | Variable == "Deformed base" | Variable == "Deformed stem" | Variable == "Foliage removed" |
+            Variable == "Height removed" | Variable == "Height to 1st branch" | Variable == "Juveniles browsed" |
+            Variable == "Lateral shoot browsing" | Variable == "Leader browsing" | Variable == "Leaves eaten" | 
+            Variable == "log(twigs|stems browsed)" | Variable == "Mass of browsed seedlings" | Variable == "Mortality" |
+            Variable == "Multi stem plants" | Variable == "No. of leaders" | Variable == "Plants browsed" |
+            Variable == "Prop. bottom consumed" | Variable == "Prop. top consumed" | Variable == "Shoots browsed" |
+            Variable == "Shoots eaten/plant" | Variable == "Stems damaged" | Variable == "Suckers browsed" |
+            Variable == "Twigs removed/tree" | Variable == "Twigs/tree browsed" | Variable == "Twigs|Stems browsed" ~ Value * -1,
             TRUE  ~ Value)
 }
 ```
 
-Execute
+Execute - need to unnest the Effect_size columns first (escalc class objects don't work for these functions)
 
 ```{r}
-df_SMD8 <- df_SMD7 %>% 
-  mutate(Effect_size = sign_switch_SMD(Variable, Effect_size))
+df_SMD8 <- df_SMD7 %>% unnest_wider(Effect_size) %>% 
+  mutate(Effect_size = coin_SMD(Variable, Effect_size))
 ```
 
 Write out excel file with SMD effects ready for analysis
@@ -217,13 +242,12 @@ Clean up the dataframe and rename some columns for easier downstream processing.
 ```{r}
 df_lo1 <- df_lo %>% 
   rename(Method = `Control method`, Type = `Method sub-type`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,
-         Con_N = `Control sample size`, Con_ = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
+         Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
 ```
 
 ```{r}
 df_lo2 <- df_lo1 %>% 
-  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`, Con_N,
-         Con_mean, Trt_N, Trt_mean)
+  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`,                  Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean)
 ```
 
 ### Count data
@@ -256,7 +280,7 @@ to_count <- function(Unit, Value, Sample_size) {
 } 
 ```
 
-Execute
+Execute and trim
 
 ```{r}
 df_lo3 <- df_lo2 %>% 
@@ -273,23 +297,25 @@ Using the count data I can generate the log odds effect sizes ready for analysis
 Use metafor escalc() to calculate the log odds ratio effect sizes.
 
 ```{r}
-df_lo4 <- df_lo3 %>% 
-  mutate(Effect_size = escalc(measure = "OR", ai = Trt_count, n1i = Trt_N, ci = Con_count, n2i = Con_N))
+df_lo3$Effect_size <- escalc(measure = "OR", ai = Trt_count, n1i = Trt_N, ci = Con_count, n2i = Con_N, data = df_lo3,                                       var.names = c("Effect_size", "Sampling_variance"), append = FALSE)
 ```
+
+### Coining
 
 Now I need to investigate the variables that have been measured across studies and account for instances where a negative relationship is actually a positive outcome eg lower mortality than control group is a positive browsing outcome. These instances will need to be flipped so that the effect is acting in the correct direction.
 
 ```{r}
-df_lo_var <- df_lo4 %>% 
+df_lo_var <- df_lo3 %>% 
   distinct(Variable)
 ```
 
 Write a function for the sign switching
 
 ```{r}
-sign_switch_lo <- function(Variable, Value) {
-  case_when(Variable == "Mortality" | "Plants damaged" | "Plants browsed" | "Leader browsing" | "Lateral browsing" | 
-                        "Bud damage" | "Leaf damage" | "Stems harvested" ~ Value * -1,
+coin_lo <- function(Variable, Value) {
+  case_when(Variable == "Mortality" | Variable == "Plants damaged" | Variable == "Plants browsed" | Variable == "Leader browsing" |
+            Variable == "Lateral browsing" | Variable == "Bud damage" | Variable == "Leaf damage" | Variable == "Stems harvested" 
+            ~ Value * -1,
             TRUE ~ Value)
             
 }
@@ -298,14 +324,33 @@ sign_switch_lo <- function(Variable, Value) {
 Execute
 
 ```{r}
-df_lo5 <- df_lo4 %>% 
-  mutate(Effect_size = sign_switch_lo(Variable, Effect_size))
+df_lo4 <- df_lo3 %>% unnest_wider(Effect_size) %>% 
+  mutate(Effect_size = coin_lo(Variable, Effect_size))
 ```
 
 Write out the file with the generated effects ready for analysis
 
 ```{r}
-write_xlsx(df_lo5, "Meta_lo_es.xlsx") #add metadata sheet to this file
+write_xlsx(df_lo4, "Meta_lo_es.xlsx") #add metadata sheet to this file
 ```
 
-Add code for converting log odds effects to something comparable to SMD - join all the effects into one dataframe...
+## All effects comparison
+
+Need to convert the log odds effects into something that can be readily compared to the SMD effects and then rejoin the dataframes into an all cases df.
+
+### Conversion
+
+```{r}
+#conversion from log odds to SMD compatible goes here
+```
+
+### Rejoin
+
+```{r}
+#merging code goes here
+```
+
+```{r}
+#write out code here - Meta_all_cases_es.xlsx
+```
+
