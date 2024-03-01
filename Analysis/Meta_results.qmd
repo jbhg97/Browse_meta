@@ -92,6 +92,46 @@ Next tasks - write results for breakdown of the effects into broad categories. P
 
 ```
 
+```{r}
+#| label: imputation
+
+## Some R code example for imputing data using PMM in mice
+# Packages
+	pacman::p_load(metafor, mice, miceadds)
+
+# Import data frames and have a look at what things look like. here's an example dataset
+		Hedges_g <- read.csv("./data/AllHedgesG.csv")
+
+	# How much missing data are we dealing with here? 
+		md.pattern(Hedges_g, rotate.names = TRUE) 
+		aggr(Hedges_g)
+
+    # Make predictor matrix which defines which variables will be used to impute. You need to modify this based on your data
+			predHg <- make.predictorMatrix(Hedges_sub)
+			predHg[, c(1, 2, 4)] <- 0
+			predHg[c(1, 2, 4), ] <- 0
+
+	# Lets have a look at how well pmm performs.
+			impData_hedges <- mice(Hedges_sub,m=20,maxit=50, pred = predHg, meth='pmm',seed=500)
+			summary(impData_hedges)
+
+	# Actually, these looks pretty decent!
+			xyplot(impData_hedges, PBTgravid ~ N_gravid + SD_gravid)
+			densityplot(impData_hedges)
+
+	# Get all imputed datasets
+			Hedges_datasets <- complete(impData_hedges, "all")
+
+	# Calculate a weighted mean for each dataset, and each repeat species
+			Hedges_datasets_singleSpp <- lapply(Hedges_datasets, function(x) condense_species_dat(x))
+		
+	# Save imputed datasets for running the MCMCglmm models
+			saveRDS(Hedges_datasets_singleSpp, "./output/Imputations/Hedges_datasets_singleSpp")
+	
+  # We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. 
+
+```
+
 ## Further results - questions to be defined
 
 Likely to look at impacts of different browsers, tree genera on the efficacy of different control methods. Will need to review the sample sizes as groups become increasingly more complex (sample will shrink as each layer is added - control method + browser + tree genus)
