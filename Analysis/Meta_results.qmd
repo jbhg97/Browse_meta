@@ -21,8 +21,11 @@ p_load(tidyverse, readxl, writexl, kableExtra)
 #Run code chunks from prelim_process to add Paper IDs to dataframe - take df1
 
 df_avg <- df1 %>% group_by(Paper_ID) %>% 
-  summarise(count = n()) %>% 
-  summarise(mean = mean(df_avg$count),
+  summarise(count = n())
+
+df_avg <- df_avg %>% 
+  summarise(N = nrow(df_avg),
+            mean = mean(df_avg$count),
             sd = sd(df_avg$count),
             min = min(df_avg$count),
             max = max(df_avg$count))
@@ -34,19 +37,16 @@ Data were extracted from XXX papers, resulting in XXXX pairwise effect sizes (XX
 #packages
 p_load(sf, rnaturalearth, rnaturalearthdata)
 
-#read in
-df_map <- read_excel("Lit review data.xlsx", sheet = "Effects (post responses)")
-
 #edit strings for map making packages
-df_map <- df_map %>% 
+df_map <- df1 %>% 
   mutate(Country = case_when(Country == "USA" ~ "United States",
                    Country == "UK" ~"United Kingdom",
                    TRUE ~ Country))
 
 #get unique combinations of study and country - should be No. of studies + 1 because of Barrere et al
 df_map1 <- df_map %>% 
-  group_by(Authors, `Article Title`, Country) %>% 
-  distinct(Authors, `Article Title`, Country) %>% 
+  group_by(ref, Country) %>% 
+  distinct(ref, Country) %>% 
   ungroup() %>% select(Country)
 
 df_map_inset <- df_map1 %>% 
