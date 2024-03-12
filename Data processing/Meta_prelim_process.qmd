@@ -13,7 +13,7 @@ Packages
 
 ```{r}
 library(pacman)
-p_load(tidyverse, readxl, writexl, meta, metafor)
+p_load(tidyverse, readxl, writexl, meta, metafor, mice, miceadds, VIM)
 ```
 
 Read in
@@ -164,12 +164,74 @@ I'll rename some column headings for greater clarity and then trim down the data
 
 ```{r}
 df_SMD5 <- df_SMD4 %>% 
-  rename(Method = `Control method`, Type = `Method sub-type`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,           Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
+  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,
+         Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, 
+         Trt_mean = `Treatment mean`)
 ```
 
 ```{r}
 df_SMD6 <- df_SMD5 %>% 
-  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`,                  Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N,
+         Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)
+```
+
+### Impute missing errors
+
+Need to impute the errors for cases where no error was reported.
+
+First I need to rebind the missing cases to the full cases. To do that I need to make sure the 2 dataframes have the same structure.
+
+```{r}
+df_SMD_miss1 <- df_SMD_miss %>%
+  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,
+         Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, 
+         Trt_mean = `Treatment mean`) %>% 
+  mutate(Con_SD = NA,
+         Trt_SD = NA) %>% 
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N,
+         Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)
+  
+```
+
+Join them up
+
+```{r}
+df_SMD_all <- rbind(df_SMD6, df_SMD_miss1)
+```
+
+Run multiple imputation to fill in the missing standard deviations.
+
+```{r}
+md.pattern(df_SMD_all, rotate.names = TRUE) 
+aggr(df_SMD_all)
+
+# Create an indicator column showing which rows have been imputed vs which had complete data - 1 = imputed, 0 = complete case
+df_SMD_all <- df_SMD_all %>% mutate(Imputed = if_else(is.na(Con_SD), 1, 0))
+
+# Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use the numeric data alone?
+predmatHg <- make.predictorMatrix(df_SMD_all)
+predmatHg[, c(1,2,3,4,5,6,7,8,9,10,11,12,13,20)] <- 0
+predmatHg[c(1,2,3,4,5,6,7,8,9,10,11,12,13,20), ] <- 0
+
+# How well does pmm performs? - had to write out the meth vector in full to stop it imputing the months
+impData_SMD <- mice(df_SMD_all, m=20, maxit=50, pred = predmatHg, meth= c("","","","","","","","","","","","","","","","pmm","","","pmm",""), seed=500)
+summary(impData_SMD)
+
+# Looking at these there are 2 papers with very large means and errors that are making the plots difficult to interpret (Kuiters et al and Leonardsson et al)
+mice::xyplot(impData_SMD, Con_SD ~ Con_N + Con_mean)
+mice::xyplot(impData_SMD, Trt_SD ~ Trt_N + Trt_mean)
+# mice::densityplot(impData_SMD) #this one isn't working - not entirely sure why? when the months are left in this plots out fine
+
+# Get all imputed datasets
+SMD_datasets <- complete(impData_SMD, "all")
+
+# Save imputed datasets for running the MCMCglmm models
+saveRDS(SMD_datasets, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data")
+
+# We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. 
+```
+```{r}
+# Next step of imputation goes here...
 ```
 
 ### Generate effect sizes
@@ -183,15 +245,8 @@ df_SMD7 <- df_SMD6 %>% mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i =
                               sd2i = Con_SD, n2i = Con_N, data = df_SMD6, var.names = c("Effect_size", "Sampling_variance"),
                               append = FALSE))
 ```
+
 Getting some warnings here - could be instances where the SD is 0 (may need to add a constant to fix those or review those cases and exclude) - will fix later.
-
-### Impute missing errors
-
-Need to impute the errors for cases where no error was reported. 
-
-```{r}
-#Error imputation will go here - all missing cases are in df_SMD_miss. Will rejoin the imputed dataframe to the full cases dataframe before the coining step
-```
 
 ### Coining
 
@@ -353,4 +408,3 @@ Need to convert the log odds effects into something that can be readily compared
 ```{r}
 #write out code here - Meta_all_cases_es.xlsx
 ```
-
