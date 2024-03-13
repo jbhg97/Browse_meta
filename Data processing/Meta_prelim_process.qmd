@@ -13,7 +13,7 @@ Packages
 
 ```{r}
 library(pacman)
-p_load(tidyverse, readxl, here, writexl, meta, metafor, mice, miceadds, VIM)
+p_load(tidyverse, readxl, here, writexl, meta, metafor, mice, miceadds, VIM, patchwork)
 ```
 
 Read in
@@ -206,6 +206,15 @@ Run multiple imputation to fill in the missing standard deviations.
 #DN: I'll note some odd missing data patterns where you're missing trt and control means and N. I think if you're missing means I'd probably just exclude. I would probably limit imputation to situations where you: 1) have N and 2) have means, but are missing SDs OR 1) have SD, SE and 2) have means. I think the missing data patterns in there that you have at times are not really conducive to imputation. 
 md.pattern(df_SMD_all, rotate.names = TRUE) 
 aggr(df_SMD_all)
+
+# Usually there is a strong mean-variance relationship. This should help you impute missing data well. We can plot these to have a look. 
+
+p1 <- ggplot(df_SMD_all, aes(x = log(Con_mean), y = log(Con_SD))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + labs(title = "Control", y = "log(SD)", x = "log(Mean)")
+p2 <- ggplot(df_SMD_all, aes(x = log(Trt_mean), y = log(Trt_SD))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + labs(title = "Treatment", y = "log(SD)", x = "log(Mean)")
+
+p1/p2
+
+# Yes, clear mean variance relationship. This should help with imputation, but there are some issues with the data. Probably a lot of 'zeros', which will cause problems but not necessarily incorrect. Though, SD = 0? Also possible I suppose.
 
 # Create an indicator column showing which rows have been imputed vs which had complete data - 1 = imputed, 0 = complete case.
 df_SMD_all <- df_SMD_all %>% mutate(Imputed = if_else(is.na(Con_SD), 1, 0))
