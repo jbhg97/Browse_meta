@@ -13,13 +13,13 @@ Packages
 
 ```{r}
 library(pacman)
-p_load(tidyverse, readxl, writexl, meta, metafor, mice, miceadds, VIM)
+p_load(tidyverse, readxl, here, writexl, meta, metafor, mice, miceadds, VIM)
 ```
 
 Read in
 
 ```{r}
-df <- read_excel("Lit review data.xlsx", sheet = "Effects (post responses)")
+df <- read_excel(here("Data processing", "Lit review data.xlsx"), sheet = "Effects (post responses)")
 ```
 
 ### Assign papers ID codes
@@ -202,19 +202,21 @@ df_SMD_all <- rbind(df_SMD6, df_SMD_miss1)
 Run multiple imputation to fill in the missing standard deviations.
 
 ```{r}
+
+#DN: I'll note some odd missing data patterns where you're missing trt and control means and N. I think if you're missing means I'd probably just exclude. I would probably limit imputation to situations where you: 1) have N and 2) have means, but are missing SDs OR 1) have SD, SE and 2) have means. I think the missing data patterns in there that you have at times are not really conducive to imputation. 
 md.pattern(df_SMD_all, rotate.names = TRUE) 
 aggr(df_SMD_all)
 
-# Create an indicator column showing which rows have been imputed vs which had complete data - 1 = imputed, 0 = complete case
+# Create an indicator column showing which rows have been imputed vs which had complete data - 1 = imputed, 0 = complete case.
 df_SMD_all <- df_SMD_all %>% mutate(Imputed = if_else(is.na(Con_SD), 1, 0))
 
-# Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use the numeric data alone?
+# Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use the numeric data alone? DN: technically you can include as many moderators as you can to help with imputation. paperID is probably sensible because effects from teh same paper will have the same sample sizes
 predmatHg <- make.predictorMatrix(df_SMD_all)
-predmatHg[, c(1,2,3,4,5,6,7,8,9,10,11,12,13,20)] <- 0
-predmatHg[c(1,2,3,4,5,6,7,8,9,10,11,12,13,20), ] <- 0
+predmatHg[, c(2,3,4,5,6,7,8,9,10,11,12,13)] <- 0
+predmatHg[c(2,3,4,5,6,7,8,9,10,11,12,13), ] <- 0
 
-# How well does pmm performs? - had to write out the meth vector in full to stop it imputing the months
-impData_SMD <- mice(df_SMD_all, m=20, maxit=50, pred = predmatHg, meth= c("","","","","","","","","","","","","","","","pmm","","","pmm",""), seed=500)
+# How well does pmm performs? - had to write out the meth vector in full to stop it imputing the months: DN: You shouldn't need to. I think it had to do with some issues in your predcition matrix
+impData_SMD <- mice(df_SMD_all, m=20, maxit=50, pred = predmatHg, seed=500)
 summary(impData_SMD)
 
 # Looking at these there are 2 papers with very large means and errors that are making the plots difficult to interpret (Kuiters et al and Leonardsson et al)
@@ -228,8 +230,9 @@ SMD_datasets <- complete(impData_SMD, "all")
 # Save imputed datasets for running the MCMCglmm models
 saveRDS(SMD_datasets, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data")
 
-# We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. 
+# We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. DN: note that rubins rules assume you're ruing metafor::rma.mv for the model. 
 ```
+
 ```{r}
 # Next step of imputation goes here...
 ```
