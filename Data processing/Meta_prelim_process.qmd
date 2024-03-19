@@ -179,7 +179,40 @@ df_SMD6 <- df_SMD5 %>%
 
 Need to impute the errors for cases where no error was reported.
 
-First I need to rebind the missing cases to the full cases. To do that I need to make sure the 2 dataframes have the same structure.
+Before putting the missing cases and complete cases back together I need to assess the quality of the data that will be used for the imputation and further downstream analyses. Instances where the control/treatment SD is 0 will not be suitable for generating SMD effect sizes as they cause an effect size of infinity. Moreover, instances where either sample size is 1 will result in an SD = 0 creating the same problem. I will remove these cases and then conduct a modified Geary's test (Lajeunesse 2015, Nakagawa et al 2023).
+
+Remove problematic data
+
+```{r}
+# Filter out instances where control/treatment SD = 0
+df_SMD7 <- df_SMD6 %>% 
+  filter(Con_SD != 0 & Trt_SD != 0)
+
+# Filter out instances where control/treatment N = 1 
+df_SMD8 <-  df_SMD7 %>% 
+  filter(Con_N != 1 & Trt_N != 1)
+```
+
+Perform modified Geary's test
+
+```{r}
+# Function to calculate Geary's "number"
+  geary <- function(mean, sd, n){
+    (1 / (sd / mean)) * ((4*n^(3/2)) / (1 + 4*n))
+  }
+
+#Perform test
+df_SMD_geary <- df_SMD8 %>% 
+  mutate(Con_geary = geary(Con_mean, Con_SD, Con_N),
+         Trt_geary = geary(Trt_mean, Trt_SD, Trt_N),
+         Geary_test = ifelse(Con_geary >=3 & Trt_geary >= 3, "Pass", "Fail"))
+
+Geary_results <- df_SMD_geary %>% group_by(Geary_test) %>% summarise(n = n())
+```
+
+Approximately 32% of effects fail the Geary test.
+
+I need to rebind the missing cases to the full cases. To do that I need to make sure the 2 dataframes have the same structure.
 
 ```{r}
 df_SMD_miss1 <- df_SMD_miss %>%
@@ -196,13 +229,12 @@ df_SMD_miss1 <- df_SMD_miss %>%
 Join them up
 
 ```{r}
-df_SMD_all <- rbind(df_SMD6, df_SMD_miss1)
+df_SMD_all <- rbind(df_SMD8, df_SMD_miss1)
 ```
 
 Run multiple imputation to fill in the missing standard deviations.
 
 ```{r}
-
 #DN: I'll note some odd missing data patterns where you're missing trt and control means and N. I think if you're missing means I'd probably just exclude. I would probably limit imputation to situations where you: 1) have N and 2) have means, but are missing SDs OR 1) have SD, SE and 2) have means. I think the missing data patterns in there that you have at times are not really conducive to imputation. 
 md.pattern(df_SMD_all, rotate.names = TRUE) 
 aggr(df_SMD_all)
@@ -216,22 +248,52 @@ p1/p2
 
 # Yes, clear mean variance relationship. This should help with imputation, but there are some issues with the data. Probably a lot of 'zeros', which will cause problems but not necessarily incorrect. Though, SD = 0? Also possible I suppose.
 
-# Create an indicator column showing which rows have been imputed vs which had complete data - 1 = imputed, 0 = complete case.
-df_SMD_all <- df_SMD_all %>% mutate(Imputed = if_else(is.na(Con_SD), 1, 0))
+df_SMD_all1 <- df_SMD_all %>% 
+  mutate(log_Con_mean = log(Con_mean),
+         log_Con_SD = log(Con_SD),
+         log_Trt_mean = log(Trt_mean),
+         log_Trt_SD = log(Trt_SD))
 
+# on review of some the data there are some instances where the log mean is minus infinity - will need to track these back to their papers
+
+# Create an indicator column showing which rows have been imputed vs which had complete data - 1 = imputed, 0 = complete case.
+df_SMD_all2 <- df_SMD_all1 %>% mutate(Imputed = if_else(is.na(Con_SD), 1, 0))
+```
+
+Does Geary's test perform better on the log data than the raw data? - almost identical to the non-log data
+
+```{r}
+df_log_geary <- df_SMD_all1 %>% 
+  mutate(log_Con_geary = geary(log_Con_mean, log_Con_SD, Con_N),
+         log_Trt_geary = geary(log_Trt_mean, log_Trt_SD, Trt_N),
+         Geary_test = ifelse(log_Con_geary >= 3 & log_Trt_geary >= 3, "Pass", "Fail"))
+
+log_Geary_results <- df_log_geary %>% group_by(Geary_test) %>% summarise(n = n())
+```
+
+
+```{r}
 # Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use the numeric data alone? DN: technically you can include as many moderators as you can to help with imputation. paperID is probably sensible because effects from teh same paper will have the same sample sizes
-predmatHg <- make.predictorMatrix(df_SMD_all)
-predmatHg[, c(2,3,4,5,6,7,8,9,10,11,12,13)] <- 0
-predmatHg[c(2,3,4,5,6,7,8,9,10,11,12,13), ] <- 0
+predmatHg <- make.predictorMatrix(df_SMD_all2)
+predmatHg[, c(2:13,24)] <- 0
+predmatHg[c(1:15,17,18,20,22,24), ] <- 0
+
+#Ensure missing log data is only imputed using log data and vice versa for original data
+predmatHg[16, 20:24] <- 0
+predmatHg[19, 20:24] <- 0
+predmatHg[21, c(15,16,18,19)] <- 0
+predmatHg[23, c(15,16,18,19)] <- 0
 
 # How well does pmm performs? - had to write out the meth vector in full to stop it imputing the months: DN: You shouldn't need to. I think it had to do with some issues in your prediction matrix
-impData_SMD <- mice(df_SMD_all, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","pmm","","","pmm",""), pred = predmatHg, seed=500)
+impData_SMD <- mice(df_SMD_all2, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","pmm","","","pmm","","pmm","","pmm",""), pred = predmatHg, seed=500)
 summary(impData_SMD)
 
 # Looking at these there are 2 papers with very large means and errors that are making the plots difficult to interpret (Kuiters et al and Leonardsson et al)
 mice::xyplot(impData_SMD, Con_SD ~ Con_mean)
 mice::xyplot(impData_SMD, Trt_SD ~ Trt_mean)
-mice::densityplot(impData_SMD) #this one isn't working - not entirely sure why? when the months are left in this plots out fine
+mice::xyplot(impData_SMD, log_Con_SD ~ log_Con_mean)
+mice::xyplot(impData_SMD, log_Trt_SD ~ log_Trt_mean)
+# mice::densityplot(impData_SMD) #this one isn't working - not entirely sure why? when the months are left in this plots out fine
 
 # Get all imputed datasets
 SMD_datasets <- complete(impData_SMD, "all")
@@ -243,29 +305,30 @@ saveRDS(SMD_datasets, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data")
 ```
 
 ```{r}
-# Next step of imputation goes here...
+# Next step of imputation goes here... back transformation of imputed log data to gain imputed raw data for effect size generation.
 ```
 
 ### Generate effect sizes
 
 Use metafor package escalc() to generate the effect sizes. Will then need to review the variables that were measured in order to make sure that instances where a negative impact on the variable is a positive browsing outcome are accounted for.
 
-Conventional SMD effects
+Conventional SMD effects - NEED TO EDIT CODE FROM HERE IN TO ACT ON ALL IMPUTED DATASETS (use with() calls)
 
 ```{r}
-df_SMD7 <- df_SMD6 %>% mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean,
+df_SMD_all3 <- df_SMD_all2 %>% 
+  mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean,
                               sd2i = Con_SD, n2i = Con_N, data = df_SMD6, var.names = c("Effect_size", "Sampling_variance"),
                               append = FALSE))
 ```
 
-Getting some warnings here - could be instances where the SD is 0 (may need to add a constant to fix those or review those cases and exclude) - will fix later.
+Getting some warnings here - could be instances where the SD is 0 (may need to add a constant to fix those or review those cases and exclude) - will fix later. Have elected to exclude instances with a SD of 0
 
 ### Coining
 
 Check on the variables that are in play and then write a function to coin relevant effects.
 
 ```{r}
-df_SMD_var <- df_SMD7 %>% 
+df_SMD_var <- df_SMD_all3 %>% 
   distinct(Variable)
 ```
 
@@ -290,7 +353,7 @@ coin_SMD <- function(Variable, Value) {
 Execute - need to unnest the Effect_size columns first (escalc class objects don't work for these functions)
 
 ```{r}
-df_SMD8 <- df_SMD7 %>% unnest_wider(Effect_size) %>% 
+df_SMD_all4 <- df_SMD_all3 %>% unnest_wider(Effect_size) %>% 
   mutate(Effect_size = coin_SMD(Variable, Effect_size))
 ```
 
