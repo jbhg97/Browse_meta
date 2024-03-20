@@ -298,27 +298,34 @@ mice::xyplot(impData_SMD, log_Trt_SD ~ log_Trt_mean)
 # Get all imputed datasets
 SMD_datasets <- complete(impData_SMD, "all")
 
-# Save imputed datasets for running the MCMCglmm models
-saveRDS(SMD_datasets, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data")
-
-# We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. DN: note that rubins rules assume you're ruing metafor::rma.mv for the model. 
 ```
+Need to back transform the imputed log data.
 
 ```{r}
-# Next step of imputation goes here... back transformation of imputed log data to gain imputed raw data for effect size generation.
+SMD_datasets1 <- lapply(SMD_datasets, function(df){
+  df %>% mutate(Trans_Con_mean = exp(log_Con_mean),
+                Trans_Con_SD = exp(log_Con_SD),
+                Trans_Trt_mean = exp(log_Trt_mean),
+                Trans_Trt_SD = exp(log_Trt_SD)) 
+  })
 ```
 
 ### Generate effect sizes
 
 Use metafor package escalc() to generate the effect sizes. Will then need to review the variables that were measured in order to make sure that instances where a negative impact on the variable is a positive browsing outcome are accounted for.
 
-Conventional SMD effects - NEED TO EDIT CODE FROM HERE IN TO ACT ON ALL IMPUTED DATASETS (use with() calls)
+Conventional SMD effects - conducted on both the data imputed from the raw data and the data imputed from the log transformed data
 
 ```{r}
-df_SMD_all3 <- df_SMD_all2 %>% 
-  mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean,
-                              sd2i = Con_SD, n2i = Con_N, data = df_SMD6, var.names = c("Effect_size", "Sampling_variance"),
-                              append = FALSE))
+SMD_datasets_raw <- lapply(SMD_datasets1, function(df){
+  df %>% mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N, data = df,
+                                     var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
+ })
+
+SMD_datasets_log <- lapply(SMD_datasets1, function(df){
+  df %>% mutate(Effect_size = escalc("SMD", m1i = Trans_Trt_mean, sd1i = Trans_Trt_SD, n1i = Trt_N, m2i = Trans_Con_mean, sd2i = Trans_Con_SD, n2i = Con_N,
+                                     data = df, var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
+ })
 ```
 
 Getting some warnings here - could be instances where the SD is 0 (may need to add a constant to fix those or review those cases and exclude) - will fix later. Have elected to exclude instances with a SD of 0
@@ -328,7 +335,7 @@ Getting some warnings here - could be instances where the SD is 0 (may need to a
 Check on the variables that are in play and then write a function to coin relevant effects.
 
 ```{r}
-df_SMD_var <- df_SMD_all3 %>% 
+df_SMD_var <- df_SMD_all2 %>% 
   distinct(Variable)
 ```
 
@@ -353,14 +360,25 @@ coin_SMD <- function(Variable, Value) {
 Execute - need to unnest the Effect_size columns first (escalc class objects don't work for these functions)
 
 ```{r}
-df_SMD_all4 <- df_SMD_all3 %>% unnest_wider(Effect_size) %>% 
+SMD_datasets_log1 <- lapply(SMD_datasets_log, function(df){
+  df %>% unnest_wider(Effect_size) %>% 
   mutate(Effect_size = coin_SMD(Variable, Effect_size))
+})
+
+SMD_datasets_raw1 <- lapply(SMD_datasets_raw, function(df){
+  df %>% unnest_wider(Effect_size) %>% 
+  mutate(Effect_size = coin_SMD(Variable, Effect_size))
+})
 ```
 
-Write out excel file with SMD effects ready for analysis
+Save lists of imputed dataframes for later analysis.
 
 ```{r}
-write_xlsx(df_SMD8, "Meta_SMD_es.xlsx") # add metadata sheet to this file
+saveRDS(SMD_datasets_log1, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_log")
+
+saveRDS(SMD_datasets_raw1, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_raw")
+
+# We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. DN: note that rubins rules assume you're ruing metafor::rma.mv for the model. 
 ```
 
 ## Log odds effects
