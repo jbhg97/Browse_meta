@@ -260,7 +260,7 @@ df_SMD_all1 <- df_SMD_all %>%
 df_SMD_all2 <- df_SMD_all1 %>% mutate(Imputed = if_else(is.na(Con_SD), 1, 0))
 ```
 
-Does Geary's test perform better on the log data than the raw data? - almost identical to the non-log data
+Does Geary's test perform better on the log data than the raw data? - marginally worse
 
 ```{r}
 df_log_geary <- df_SMD_all1 %>% 
