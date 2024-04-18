@@ -271,7 +271,6 @@ df_log_geary <- df_SMD_all1 %>%
 log_Geary_results <- df_log_geary %>% group_by(Geary_test) %>% summarise(n = n())
 ```
 
-
 ```{r}
 # Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use the numeric data alone? DN: technically you can include as many moderators as you can to help with imputation. paperID is probably sensible because effects from teh same paper will have the same sample sizes
 predmatHg <- make.predictorMatrix(df_SMD_all2)
@@ -299,6 +298,7 @@ mice::xyplot(impData_SMD, log_Trt_SD ~ log_Trt_mean)
 SMD_datasets <- complete(impData_SMD, "all")
 
 ```
+
 Need to back transform the imputed log data.
 
 ```{r}
@@ -395,7 +395,7 @@ df_lo1 <- df_lo %>%
 
 ```{r}
 df_lo2 <- df_lo1 %>% 
-  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`,                  Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean)
+  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`, Shared_data, Repeat_measures, Con_N,                  Con_mean, Trt_N, Trt_mean)
 ```
 
 ### Count data
