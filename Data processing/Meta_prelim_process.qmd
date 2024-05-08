@@ -286,10 +286,11 @@ predmatHg[23, c(15,16,18,19)] <- 0
 # How well does pmm performs? - had to write out the meth vector in full to stop it imputing the months: DN: You shouldn't need to. I think it had to do with some issues in your prediction matrix
 impData_SMD <- mice(df_SMD_all2, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","pmm","","","pmm","","pmm","","pmm",""), pred = predmatHg, seed=500)
 summary(impData_SMD)
-
+```
+```{r}
 # Looking at these there are 2 papers with very large means and errors that are making the plots difficult to interpret (Kuiters et al and Leonardsson et al)
 mice::xyplot(impData_SMD, Con_SD ~ Con_mean)
-mice::xyplot(impData_SMD, Trt_SD ~ Trt_mean)
+mice::xyplot(impData_SMD, Trt_SD ~ Trt_mean, xlim = c(0,10000), ylim = c(0,10000))
 mice::xyplot(impData_SMD, log_Con_SD ~ log_Con_mean)
 mice::xyplot(impData_SMD, log_Trt_SD ~ log_Trt_mean)
 # mice::densityplot(impData_SMD) #this one isn't working - not entirely sure why? when the months are left in this plots out fine
