@@ -1,0 +1,3 @@
+"0","df_SMD4 <- df_SMD3 %>% "
+"0","  mutate(Con_SD = to_SD(Control_Error_type, Control_Error, `Control sample size`, `Control mean`),"
+"0","         Trt_SD = to_SD(Treatment_Error_type, Treatment_Error, `Treatment sample`, `Treatment mean`))"

@@ -1,0 +1,2 @@
+"0","df_SMD <- df2 %>% filter(`Effect type` == ""SMD"")"
+"0","df_lo <- df2 %>% filter (`Effect type` == ""Log odds"")"

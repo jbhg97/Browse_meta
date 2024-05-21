@@ -1,0 +1,7 @@
+"0",""
+"0","# Usually there is a strong mean-variance relationship. This should help you impute missing data well. We can plot these to have a look. "
+"0",""
+"0","p1 <- ggplot(df_SMD_all, aes(x = log(Con_mean), y = log(Con_SD))) + geom_point() + geom_smooth(method = ""lm"", se = FALSE) + labs(title = ""Control"", y = ""log(SD)"", x = ""log(Mean)"")"
+"0","p2 <- ggplot(df_SMD_all, aes(x = log(Trt_mean), y = log(Trt_SD))) + geom_point() + geom_smooth(method = ""lm"", se = FALSE) + labs(title = ""Treatment"", y = ""log(SD)"", x = ""log(Mean)"")"
+"0",""
+"0","p1/p2"

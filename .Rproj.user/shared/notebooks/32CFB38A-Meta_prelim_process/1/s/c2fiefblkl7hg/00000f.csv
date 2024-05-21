@@ -1,0 +1,6 @@
+"0","SMD_datasets1 <- lapply(SMD_datasets, function(df){"
+"0","  df %>% mutate(Trans_Con_mean = exp(log_Con_mean),"
+"0","                Trans_Con_SD = exp(log_Con_SD),"
+"0","                Trans_Trt_mean = exp(log_Trt_mean),"
+"0","                Trans_Trt_SD = exp(log_Trt_SD)) "
+"0","  })"

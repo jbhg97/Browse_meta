@@ -1,0 +1,505 @@
+---
+title: "Mammal browsing control meta-analysis data processing"
+author: "Jamie"
+format: html
+editor: visual
+---
+
+# Non-lethal mammal control Meta analysis - Data clean up and processing
+
+## Initial processing
+
+Packages
+
+```{r}
+library(pacman)
+p_load(tidyverse, readxl, here, writexl, meta, metafor, mice, miceadds, VIM, patchwork)
+```
+
+Read in
+
+```{r}
+df <- read_excel(here("Data processing", "Lit review data.xlsx"), sheet = "Effects (post responses)")
+```
+
+### Assign papers ID codes
+
+I need to assign each paper an ID code that can be tied to the effects that were extracted from that paper. This will make downstream processing and modelling easier.
+
+```{r}
+df <- df %>% mutate(ref = paste(Authors,`Article Title`, `Source Title`))
+
+df1 <- df %>% group_by(ref) %>% mutate(Paper_ID = cur_group_id()) %>% ungroup()
+```
+
+### Standardise time
+
+Length of trial was measured in various units from years to hours. I need to standardise the units so that they can be easily compared later. I'll take a look at the breakdown of the different units and make a call as to which unit to use as standard - a priori I think months will probably be optimal.
+
+```{r}
+df1 <- df1 %>% mutate(Time_unit = as.factor(Time_unit))
+
+summary(df1)
+```
+
+Opting for months as the best option. Need to standardise so that all the times are in months. Write a function that will convert all the different units into months and then execute that function using the Time and Time_unit data in the dataframe.
+
+Write the function
+
+```{r}
+to_months <- function(Time_unit, Time) {
+  case_when(Time_unit == is.na(Time_unit) ~ NA,
+            Time_unit == "day" ~ Time / 30.417,
+            Time_unit == "week" ~ Time / (30.417/7),
+            Time_unit == "month" ~ Time,
+            Time_unit == "year" ~ Time * 12,
+            Time_unit == "hour" ~ Time / (30.417*24))
+}
+```
+
+Execute
+
+```{r}
+df2 <- df1 %>% rowwise() %>% 
+  mutate(Months = to_months(Time_unit, Time))
+
+#take a look at the spread of the months data
+summary(df2)
+```
+
+Split out LS means here into their own dataframe - may reinclude but will need to do sensitivity analyses.
+
+```{r}
+df_LS <- df2 %>% filter(!is.na(`Control LS mean`))
+df2 <- df2 %>% filter(is.na(`Control LS mean`))
+```
+
+## SMD effects
+
+Separate data into SMD and log odds effects.
+
+```{r}
+df_SMD <- df2 %>% filter(`Effect type` == "SMD")
+df_lo <- df2 %>% filter (`Effect type` == "Log odds")
+```
+
+###Convert errors to SD
+
+The SMD effect size formula uses standard deviation to generate effect sizes. The errors in my data are in various formats and therefore need to be standardised. Possible to do something like with the time where I have 2 columns, one with the numeric value and one with the error type for treatment and control. Then I can write a function that will do the different conversions based on the type of error.
+
+Need to impute some errors before conversions so there are no NAs in the data set.
+
+Split data into complete cases and errors missing
+
+```{r}
+df_SMD_miss <- df_SMD %>%
+  filter(if_all(c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`), ~ all(is.na(.))))
+
+df_SMD <- df_SMD %>% 
+  filter(if_any(c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`), ~ !is.na(.)))
+```
+
+Take complete cases and rearrange error columns into - error value and error type
+
+```{r}
+df_SMD1 <- df_SMD %>% mutate(`Control SD` = as.numeric(`Control SD`)) %>% 
+  rownames_to_column() %>% 
+  pivot_longer(cols = c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`),
+               names_to = "Control_Error_type",
+               values_to = "Control_Error") %>% 
+  drop_na(Control_Error)
+
+df_SMD2 <- df_SMD1 %>% select(-rowname) %>% 
+  rownames_to_column() %>% 
+  pivot_longer(cols = c(`Treatment SD`, `Treatment SE`, `Treatment CV`, `Treatment 95CI`),
+               names_to = "Treatment_Error_type",
+               values_to = "Treatment_Error") %>% 
+  drop_na(Treatment_Error)
+```
+
+Tidy up the strings so they don't have control/treatment at the start of the cell entry in the dataframe.
+
+```{r}
+df_SMD3<- df_SMD2 %>%
+  mutate(Control_Error_type = case_when(
+    Control_Error_type == "Control SE" ~ "SE",
+    Control_Error_type == "Control SD" ~ "SD",
+    Control_Error_type == "Control CV" ~ "CV",
+    Control_Error_type == "Control 95CI(lower:upper)" ~ "95CI",
+    TRUE ~ Control_Error_type),
+    Treatment_Error_type = case_when(
+      Treatment_Error_type == "Treatment SE" ~ "SE",
+      Treatment_Error_type == "Treatment SD" ~ "SD",
+      Treatment_Error_type == "Treatment CV" ~ "CV",
+      Treatment_Error_type == "Treatment 95CI" ~ "95CI",
+      TRUE ~ Treatment_Error_type))
+```
+
+Write a function for the conversion to SD.
+
+```{r}
+to_SD <- function(Error_type, Value, Sample_size, Mean) {
+  case_when(
+    Error_type == "SE" ~ Value * sqrt(Sample_size),
+    Error_type == "SD" ~ Value,
+    Error_type == "CV" ~ Value * Mean
+   # Error_type == "95CI" ~ Value #issue here as the only paper that I have errors as 95CI also used LS means - cross this bridge if LS means become included
+  )
+}
+```
+
+Execute
+
+```{r}
+df_SMD4 <- df_SMD3 %>% 
+  mutate(Con_SD = to_SD(Control_Error_type, Control_Error, `Control sample size`, `Control mean`),
+         Trt_SD = to_SD(Treatment_Error_type, Treatment_Error, `Treatment sample`, `Treatment mean`))
+```
+
+### Trim up
+
+The output dataframes that I will use for analysis do not need to contain columns that were relevant for data extraction and identification.
+
+I'll rename some column headings for greater clarity and then trim down the dataframe to the necessary columns.
+
+```{r}
+df_SMD5 <- df_SMD4 %>% 
+  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,
+         Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, 
+         Trt_mean = `Treatment mean`)
+```
+
+```{r}
+df_SMD6 <- df_SMD5 %>% 
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N,
+         Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)
+```
+
+### Impute missing errors
+
+Need to impute the errors for cases where no error was reported.
+
+Before putting the missing cases and complete cases back together I need to assess the quality of the data that will be used for the imputation and further downstream analyses. Instances where the control/treatment SD is 0 will not be suitable for generating SMD effect sizes as they cause an effect size of infinity. Moreover, instances where either sample size is 1 will result in an SD = 0 creating the same problem. I will remove these cases and then conduct a modified Geary's test (Lajeunesse 2015, Nakagawa et al 2023).
+
+Remove problematic data
+
+```{r}
+# Filter out instances where control/treatment SD = 0
+df_SMD7 <- df_SMD6 %>% 
+  filter(Con_SD != 0 & Trt_SD != 0)
+
+# Filter out instances where control/treatment N = 1 
+df_SMD8 <-  df_SMD7 %>% 
+  filter(Con_N != 1 & Trt_N != 1)
+```
+
+Perform modified Geary's test
+
+```{r}
+# Function to calculate Geary's "number"
+  geary <- function(mean, sd, n){
+    (1 / (sd / mean)) * ((4*n^(3/2)) / (1 + 4*n))
+  }
+
+#Perform test
+df_SMD_geary <- df_SMD8 %>% 
+  mutate(Con_geary = geary(Con_mean, Con_SD, Con_N),
+         Trt_geary = geary(Trt_mean, Trt_SD, Trt_N),
+         Geary_test = ifelse(Con_geary >=3 & Trt_geary >= 3, "Pass", "Fail"))
+
+Geary_results <- df_SMD_geary %>% group_by(Geary_test) %>% summarise(n = n())
+```
+
+Approximately 32% of effects fail the Geary test.
+
+I need to rebind the missing cases to the full cases. To do that I need to make sure the 2 dataframes have the same structure.
+
+```{r}
+df_SMD_miss1 <- df_SMD_miss %>%
+  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,
+         Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, 
+         Trt_mean = `Treatment mean`) %>% 
+  mutate(Con_SD = NA,
+         Trt_SD = NA) %>% 
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N,
+         Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)
+  
+```
+
+Join them up
+
+```{r}
+df_SMD_all <- rbind(df_SMD8, df_SMD_miss1)
+```
+
+Run multiple imputation to fill in the missing standard deviations.
+
+```{r}
+#DN: I'll note some odd missing data patterns where you're missing trt and control means and N. I think if you're missing means I'd probably just exclude. I would probably limit imputation to situations where you: 1) have N and 2) have means, but are missing SDs OR 1) have SD, SE and 2) have means. I think the missing data patterns in there that you have at times are not really conducive to imputation. 
+md.pattern(df_SMD_all, rotate.names = TRUE) 
+aggr(df_SMD_all)
+
+# Usually there is a strong mean-variance relationship. This should help you impute missing data well. We can plot these to have a look. 
+
+p1 <- ggplot(df_SMD_all, aes(x = log(Con_mean), y = log(Con_SD))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + labs(title = "Control", y = "log(SD)", x = "log(Mean)")
+p2 <- ggplot(df_SMD_all, aes(x = log(Trt_mean), y = log(Trt_SD))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + labs(title = "Treatment", y = "log(SD)", x = "log(Mean)")
+
+p1/p2
+
+# Yes, clear mean variance relationship. This should help with imputation, but there are some issues with the data. Probably a lot of 'zeros', which will cause problems but not necessarily incorrect. Though, SD = 0? Also possible I suppose.
+
+df_SMD_all1 <- df_SMD_all %>% 
+  mutate(log_Con_mean = log(Con_mean),
+         log_Con_SD = log(Con_SD),
+         log_Trt_mean = log(Trt_mean),
+         log_Trt_SD = log(Trt_SD))
+
+# on review of some the data there are some instances where the log mean is minus infinity - will need to track these back to their papers
+
+# Create an indicator column showing which rows have been imputed vs which had complete data - 1 = imputed, 0 = complete case.
+df_SMD_all2 <- df_SMD_all1 %>% mutate(Imputed = if_else(is.na(Con_SD), 1, 0))
+```
+
+Does Geary's test perform better on the log data than the raw data? - marginally worse
+
+```{r}
+df_log_geary <- df_SMD_all1 %>% 
+  mutate(log_Con_geary = geary(log_Con_mean, log_Con_SD, Con_N),
+         log_Trt_geary = geary(log_Trt_mean, log_Trt_SD, Trt_N),
+         Geary_test = ifelse(log_Con_geary >= 3 & log_Trt_geary >= 3, "Pass", "Fail"))
+
+log_Geary_results <- df_log_geary %>% group_by(Geary_test) %>% summarise(n = n())
+```
+
+```{r}
+# Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use thete numeric data alone? DN: technically you can include as many moderators as you can to help with imputation. paperID is probably sensible because effects from teh same paper will have the same sample sizes
+predmatHg <- make.predictorMatrix(df_SMD_all2)
+predmatHg[, c(2:13,24)] <- 0
+predmatHg[c(1:15,17,18,20,22,24), ] <- 0
+
+#Ensure missing log data is only imputed using log data and vice versa for original data
+predmatHg[16, 20:24] <- 0
+predmatHg[19, 20:24] <- 0
+predmatHg[21, c(15,16,18,19)] <- 0
+predmatHg[23, c(15,16,18,19)] <- 0
+
+# How well does pmm performs? - had to write out the meth vector in full to stop it imputing the months: DN: You shouldn't need to. I think it had to do with some issues in your prediction matrix
+impData_SMD <- mice(df_SMD_all2, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","pmm","","","pmm","","pmm","","pmm",""), pred = predmatHg, seed=500)
+summary(impData_SMD)
+```
+
+```{r}
+# Looking at these there are 2 papers with very large means and errors that are making the plots difficult to interpret (Kuiters et al and Leonardsson et al)
+mice::xyplot(impData_SMD, Con_SD ~ Con_mean)
+mice::xyplot(impData_SMD, Trt_SD ~ Trt_mean, xlim = c(0,20000), ylim = c(0,20000))
+mice::xyplot(impData_SMD, log_Con_SD ~ log_Con_mean)
+mice::xyplot(impData_SMD, log_Trt_SD ~ log_Trt_mean)
+# mice::densityplot(impData_SMD) #this one isn't working - not entirely sure why? when the months are left in this plots out fine
+
+# Get all imputed datasets
+SMD_datasets <- complete(impData_SMD, "all")
+
+```
+
+Need to back transform the imputed log data.
+
+```{r}
+SMD_datasets1 <- lapply(SMD_datasets, function(df){
+  df %>% mutate(Trans_Con_mean = exp(log_Con_mean),
+                Trans_Con_SD = exp(log_Con_SD),
+                Trans_Trt_mean = exp(log_Trt_mean),
+                Trans_Trt_SD = exp(log_Trt_SD)) 
+  })
+```
+
+### Generate effect sizes
+
+Use metafor package escalc() to generate the effect sizes. Will then need to review the variables that were measured in order to make sure that instances where a negative impact on the variable is a positive browsing outcome are accounted for.
+
+Conventional SMD effects - conducted on both the data imputed from the raw data and the data imputed from the log transformed data
+
+```{r}
+SMD_datasets_raw <- lapply(SMD_datasets1, function(df){
+  df %>% mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N, data = df,
+                                     var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
+ })
+
+SMD_datasets_log <- lapply(SMD_datasets1, function(df){
+  df %>% mutate(Effect_size = escalc("SMD", m1i = Trans_Trt_mean, sd1i = Trans_Trt_SD, n1i = Trt_N, m2i = Trans_Con_mean, sd2i = Trans_Con_SD, n2i = Con_N,
+                                     data = df, var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
+ })
+```
+
+Getting some warnings here - could be instances where the SD is 0 (may need to add a constant to fix those or review those cases and exclude) - will fix later. Have elected to exclude instances with a SD of 0
+
+### Coining
+
+Check on the variables that are in play and then write a function to coin relevant effects.
+
+```{r}
+df_SMD_var <- df_SMD_all2 %>% 
+  distinct(Variable)
+```
+
+Write the function
+
+```{r}
+coin_SMD <- function(Variable, Value) {
+  case_when(Variable == "sqrt Height removed" | Variable == "Bark wounds/tree" | Variable == "Branches browsed" | 
+            Variable == "Browse intensity" | Variable == "Browsing" | Variable == "Browsing damage" | Variable == "Consumption" |
+            Variable == "Damage score" | Variable == "Deformed base" | Variable == "Deformed stem" | Variable == "Foliage removed" |
+            Variable == "Height removed" | Variable == "Height to 1st branch" | Variable == "Juveniles browsed" |
+            Variable == "Lateral shoot browsing" | Variable == "Leader browsing" | Variable == "Leaves eaten" | 
+            Variable == "log(twigs|stems browsed)" | Variable == "Mass of browsed seedlings" | Variable == "Mortality" |
+            Variable == "Multi stem plants" | Variable == "No. of leaders" | Variable == "Plants browsed" |
+            Variable == "Prop. bottom consumed" | Variable == "Prop. top consumed" | Variable == "Shoots browsed" |
+            Variable == "Shoots eaten/plant" | Variable == "Stems damaged" | Variable == "Suckers browsed" |
+            Variable == "Twigs removed/tree" | Variable == "Twigs/tree browsed" | Variable == "Twigs|Stems browsed" ~ Value * -1,
+            TRUE  ~ Value)
+}
+```
+
+Execute - need to unnest the Effect_size columns first (escalc class objects don't work for these functions)
+
+```{r}
+SMD_datasets_log1 <- lapply(SMD_datasets_log, function(df){
+  df %>% unnest_wider(Effect_size) %>% 
+  mutate(Effect_size = coin_SMD(Variable, Effect_size))
+})
+
+SMD_datasets_raw1 <- lapply(SMD_datasets_raw, function(df){
+  df %>% unnest_wider(Effect_size) %>% 
+  mutate(Effect_size = coin_SMD(Variable, Effect_size))
+})
+```
+
+Save lists of imputed dataframes for later analysis.
+
+```{r}
+saveRDS(SMD_datasets_log1, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_log")
+
+saveRDS(SMD_datasets_raw1, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_raw")
+
+# We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. DN: note that rubins rules assume you're ruing metafor::rma.mv for the model. 
+```
+
+## Log odds effects
+
+### Trim up
+
+Clean up the dataframe and rename some columns for easier downstream processing.
+
+```{r}
+df_lo1 <- df_lo %>% 
+  rename(Method = `Control method`, Type = `Method sub-type`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,
+         Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
+```
+
+```{r}
+df_lo2 <- df_lo1 %>% 
+  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`, Shared_data, Repeat_measures, Con_N,                  Con_mean, Trt_N, Trt_mean)
+```
+
+### Count data
+
+The binomial data I have eg survival or browsed/not browsed has been measured with various units: percent, proportion, probability, count etc. I need to get all of the log odds effects back to count data so that I can generate effect sizes. I need to write a function to convert the values based on the units. Then I can generate the effect sizes.
+
+What units need to be accounted for? Make any edits for entry errors
+
+```{r}
+df_lo_units <- df_lo2 %>% 
+  distinct(Units)
+
+df_lo2 <-  df_lo2 %>% 
+  mutate(Units = ifelse(Units == "count", "Count", Units))
+```
+
+Write the function
+
+```{r}
+to_count <- function(Unit, Value, Sample_size) {
+  counts <- case_when(
+    Unit == "Count" ~ Value,
+    Unit == "Percent" ~ (Sample_size/100) * Value,
+    Unit ==  "Proportion" ~ Sample_size * Value,
+    Unit ==  "Probability" ~ Sample_size * Value)
+  
+  output <- round(counts, 0) #count data has to be whole number - survival etc can't be half a plant survived
+  
+  return(output)
+} 
+```
+
+Execute and trim
+
+```{r}
+df_lo3 <- df_lo2 %>% 
+  mutate(Con_count = to_count(Units, Con_mean, Con_N),
+         Trt_count = to_count(Units, Trt_mean, Trt_N)) %>% 
+  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`, Con_N,
+         Con_count, Trt_N, Trt_count)
+```
+
+### Generate effect sizes
+
+Using the count data I can generate the log odds effect sizes ready for analysis. I will need to account for the fact that some of the variables measured act in opposite directions when there has been a positive outcome eg survival vs mortality. I should be able to account for this by looking at the variables measured and switching the signs of the relevant data points.
+
+Use metafor escalc() to calculate the log odds ratio effect sizes.
+
+```{r}
+df_lo3$Effect_size <- escalc(measure = "OR", ai = Trt_count, n1i = Trt_N, ci = Con_count, n2i = Con_N, data = df_lo3,                                       var.names = c("Effect_size", "Sampling_variance"), append = FALSE)
+```
+
+### Coining
+
+Now I need to investigate the variables that have been measured across studies and account for instances where a negative relationship is actually a positive outcome eg lower mortality than control group is a positive browsing outcome. These instances will need to be flipped so that the effect is acting in the correct direction.
+
+```{r}
+df_lo_var <- df_lo3 %>% 
+  distinct(Variable)
+```
+
+Write a function for the sign switching
+
+```{r}
+coin_lo <- function(Variable, Value) {
+  case_when(Variable == "Mortality" | Variable == "Plants damaged" | Variable == "Plants browsed" | Variable == "Leader browsing" |
+            Variable == "Lateral browsing" | Variable == "Bud damage" | Variable == "Leaf damage" | Variable == "Stems harvested" 
+            ~ Value * -1,
+            TRUE ~ Value)
+            
+}
+```
+
+Execute
+
+```{r}
+df_lo4 <- df_lo3 %>% unnest_wider(Effect_size) %>% 
+  mutate(Effect_size = coin_lo(Variable, Effect_size))
+```
+
+Write out the file with the generated effects ready for analysis
+
+```{r}
+write_xlsx(df_lo4, "Meta_lo_es.xlsx") #add metadata sheet to this file
+```
+
+## All effects comparison
+
+Need to convert the log odds effects into something that can be readily compared to the SMD effects and then rejoin the dataframes into an all cases df.
+
+### Conversion
+
+```{r}
+#conversion from log odds to SMD compatible goes here
+```
+
+### Rejoin
+
+```{r}
+#merging code goes here
+```
+
+```{r}
+#write out code here - Meta_all_cases_es.xlsx
+```

@@ -1,0 +1,5 @@
+"0","saveRDS(SMD_datasets_log1, ""/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_log"")"
+"0",""
+"0","saveRDS(SMD_datasets_raw1, ""/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_raw"")"
+"0",""
+"0","# We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. DN: note that rubins rules assume you're ruing metafor::rma.mv for the model. "

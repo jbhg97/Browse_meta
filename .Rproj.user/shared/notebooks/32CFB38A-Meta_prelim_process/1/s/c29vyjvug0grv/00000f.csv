@@ -1,0 +1,7 @@
+"0","# Filter out instances where control/treatment SD = 0"
+"0","df_SMD7 <- df_SMD6 %>% "
+"0","  filter(Con_SD != 0 & Trt_SD != 0)"
+"0",""
+"0","# Filter out instances where control/treatment N = 1 "
+"0","df_SMD8 <-  df_SMD7 %>% "
+"0","  filter(Con_N != 1 & Trt_N != 1)"
