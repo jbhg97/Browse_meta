@@ -1,3 +1,4 @@
+
 ---
 title: "Mammal browsing control meta-analysis results"
 author: "Jamie"
@@ -39,7 +40,7 @@ p_load(sf, rnaturalearth, rnaturalearthdata)
 
 #edit strings for map making packages
 df_map <- df1 %>% 
-  mutate(Country = case_when(Country == "USA" ~ "United States",
+  mutate(Country = case_when(Country == "USA" ~ "United States of America",
                    Country == "UK" ~"United Kingdom",
                    TRUE ~ Country))
 
@@ -97,3 +98,7 @@ Next tasks - write results for breakdown of the effects into broad categories. P
 Likely to look at impacts of different browsers, tree genera on the efficacy of different control methods. Will need to review the sample sizes as groups become increasingly more complex (sample will shrink as each layer is added - control method + browser + tree genus)
 
 Also want to examine the retention of efficacy over time - will likely be able to do this at the broad control method groupings with some comment on how method sub-type impacts the retention of efficacy (do some repellents last longer, are taller/different material fences more efficacious over time)
+
+## Log Odds Effects
+
+

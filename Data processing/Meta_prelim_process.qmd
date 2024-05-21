@@ -272,7 +272,7 @@ log_Geary_results <- df_log_geary %>% group_by(Geary_test) %>% summarise(n = n()
 ```
 
 ```{r}
-# Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use the numeric data alone? DN: technically you can include as many moderators as you can to help with imputation. paperID is probably sensible because effects from teh same paper will have the same sample sizes
+# Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use thete numeric data alone? DN: technically you can include as many moderators as you can to help with imputation. paperID is probably sensible because effects from teh same paper will have the same sample sizes
 predmatHg <- make.predictorMatrix(df_SMD_all2)
 predmatHg[, c(2:13,24)] <- 0
 predmatHg[c(1:15,17,18,20,22,24), ] <- 0
@@ -287,10 +287,11 @@ predmatHg[23, c(15,16,18,19)] <- 0
 impData_SMD <- mice(df_SMD_all2, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","pmm","","","pmm","","pmm","","pmm",""), pred = predmatHg, seed=500)
 summary(impData_SMD)
 ```
+
 ```{r}
 # Looking at these there are 2 papers with very large means and errors that are making the plots difficult to interpret (Kuiters et al and Leonardsson et al)
 mice::xyplot(impData_SMD, Con_SD ~ Con_mean)
-mice::xyplot(impData_SMD, Trt_SD ~ Trt_mean, xlim = c(0,10000), ylim = c(0,10000))
+mice::xyplot(impData_SMD, Trt_SD ~ Trt_mean, xlim = c(0,20000), ylim = c(0,20000))
 mice::xyplot(impData_SMD, log_Con_SD ~ log_Con_mean)
 mice::xyplot(impData_SMD, log_Trt_SD ~ log_Trt_mean)
 # mice::densityplot(impData_SMD) #this one isn't working - not entirely sure why? when the months are left in this plots out fine
