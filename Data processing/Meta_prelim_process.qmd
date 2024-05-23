@@ -19,7 +19,7 @@ p_load(tidyverse, readxl, here, writexl, meta, metafor, mice, miceadds, VIM, pat
 Read in
 
 ```{r}
-df <- read_excel(here("Data processing", "Lit review data.xlsx"), sheet = "Effects (post responses)")
+df <- read_excel(here("/homevol/jbhg/Browse_meta/Data processing", "Lit review data.xlsx"), sheet = "Effects (post responses)")
 ```
 
 ### Assign papers ID codes
@@ -71,7 +71,7 @@ Split out LS means here into their own dataframe - may reinclude but will need t
 
 ```{r}
 df_LS <- df2 %>% filter(!is.na(`Control LS mean`))
-df2 <- df2 %>% filter(is.na(`Control LS mean`))
+df3 <- df2 %>% filter(is.na(`Control LS mean`))
 ```
 
 ## SMD effects
@@ -79,11 +79,72 @@ df2 <- df2 %>% filter(is.na(`Control LS mean`))
 Separate data into SMD and log odds effects.
 
 ```{r}
-df_SMD <- df2 %>% filter(`Effect type` == "SMD")
-df_lo <- df2 %>% filter (`Effect type` == "Log odds")
+df_SMD <- df3 %>% filter(`Effect type` == "SMD")
+df_lo <- df3 %>% filter (`Effect type` == "Log odds")
 ```
 
-###Convert errors to SD
+### Conversions and transformations
+
+#### Mean Proportion data
+
+Proportion style data measured across multiple plots and therefore producing a mean can be problematic. Need to process this so that first, the units are the same ie all proportions. Second, transform it to put the data on to an unbounded scale - see Harrison et al 2021 biorev paper.
+
+```{r}
+#Identify problem rows
+unique(df_SMD$`Var. measured`)
+```
+
+Checked this df in excel and identified combinations of variable and unit that will need to be converted as the measurements are bounded 0-100/0-1 based on percent/proportion presented.
+
+I need to filter out the problem rows. Apply the transformations and then join them back to the data.
+
+```{r}
+#filter - concatenate variable and unit and then filter out problem combinations
+
+df_SMD_trans <- df_SMD %>% mutate(Var_unit = paste(`Var. measured`, Units, sep = "_"))
+
+df_SMD_trans_y <- df_SMD_trans %>% filter(Var_unit == "Cover_Percent"|Var_unit == "Browsing_Percent"|Var_unit == "Plants browsed_Percent"|Var_unit == "Survival_Percent"|Var_unit == "Prop. bottom consumed_Percent"|Var_unit == "Prop. top consumed_Percent"|Var_unit == "Stems damaged_Proportion"|Var_unit == "Mortality_Percent"|Var_unit == "Plants browsed_Proportion"|Var_unit == "Survival_Proportion"|Var_unit == "Browse intensity_Percent"|Var_unit == "Lateral shoot browsing_Percent"|Var_unit == "Leader browsing_Percent"|Var_unit == "Establishment_Percent"|Var_unit == "Browsing damage_Percent"|Var_unit == "Deformed base_Percent"|Var_unit == "Deformed stem_Percent"|Var_unit == "Multi stem plants_Percent"|Var_unit == "Foliage removed_Percent"|Var_unit == "Consumption_Percent/day"|Var_unit == "Branches browsed_Percent"|Var_unit == "Juveniles browsed_Proportion"|Var_unit == "Suckers browsed_Proportion"|Var_unit == "Plants browsed_Probability"|Var_unit == "Leader browsing_Probability"|Var_unit == "Shoots browsed_Percent")
+
+df_SMD_trans_n <- df_SMD_trans %>% filter(!(Var_unit == "Cover_Percent"|Var_unit == "Browsing_Percent"|Var_unit == "Plants browsed_Percent"|Var_unit == "Survival_Percent"|Var_unit == "Prop. bottom consumed_Percent"|Var_unit == "Prop. top consumed_Percent"|Var_unit == "Stems damaged_Proportion"|Var_unit == "Mortality_Percent"|Var_unit == "Plants browsed_Proportion"|Var_unit == "Survival_Proportion"|Var_unit == "Browse intensity_Percent"|Var_unit == "Lateral shoot browsing_Percent"|Var_unit == "Leader browsing_Percent"|Var_unit == "Establishment_Percent"|Var_unit == "Browsing damage_Percent"|Var_unit == "Deformed base_Percent"|Var_unit == "Deformed stem_Percent"|Var_unit == "Multi stem plants_Percent"|Var_unit == "Foliage removed_Percent"|Var_unit == "Consumption_Percent/day"|Var_unit == "Branches browsed_Percent"|Var_unit == "Juveniles browsed_Proportion"|Var_unit == "Suckers browsed_Proportion"|Var_unit == "Plants browsed_Probability"|Var_unit == "Leader browsing_Probability"|Var_unit == "Shoots browsed_Percent"))
+```
+
+Only convert and transform the means here - will convert and transform the errors after the missing cases have been cut out and the errors converted to SD.
+
+```{r}
+#Convert percentages to proportions - probability is the same as proportion so need to convert. Will also add a column to the dataframe that shows these data were transformed.
+
+#write a function for converting based on units
+
+pct_to_prop <- function(Unit, Value){
+  case_when(Unit == "Percent" ~ Value/100,
+            Unit == "Percent/day" ~ Value/100,
+            Unit == "Probability" ~ Value,
+            Unit == "Proportion" ~ Value)
+}
+
+df_SMD_trans_y1 <- df_SMD_trans_y %>% 
+  mutate(Trans = "Y",
+         Con_trans_mean = pct_to_prop(Units, `Control mean`),
+         Trt_trans_mean = pct_to_prop(Units, `Treatment mean`))
+
+#write a function to transform the means
+
+logit_trans_means <- function(Value){
+  trans <- log(Value/(1 - Value))
+  return(trans)
+}
+
+df_SMD_trans_y2 <- df_SMD_trans_y1 %>% mutate(Con_trans_mean = logit_trans_means(Con_trans_mean),
+                                              Trt_trans_mean = logit_trans_means(Trt_trans_mean))
+```
+
+Put the data back together for error conversion
+
+```{r}
+df_SMD <- bind_rows(df_SMD_trans_n, df_SMD_trans_y2)
+```
+
+#### Convert errors to SD
 
 The SMD effect size formula uses standard deviation to generate effect sizes. The errors in my data are in various formats and therefore need to be standardised. Possible to do something like with the time where I have 2 columns, one with the numeric value and one with the error type for treatment and control. Then I can write a function that will do the different conversions based on the type of error.
 
@@ -156,7 +217,7 @@ df_SMD4 <- df_SMD3 %>%
          Trt_SD = to_SD(Treatment_Error_type, Treatment_Error, `Treatment sample`, `Treatment mean`))
 ```
 
-### Trim up
+#### Trim up
 
 The output dataframes that I will use for analysis do not need to contain columns that were relevant for data extraction and identification.
 
@@ -164,34 +225,124 @@ I'll rename some column headings for greater clarity and then trim down the data
 
 ```{r}
 df_SMD5 <- df_SMD4 %>% 
-  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,
-         Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, 
-         Trt_mean = `Treatment mean`)
+  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`, Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
 ```
 
 ```{r}
 df_SMD6 <- df_SMD5 %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N,
-         Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
 ```
 
-### Impute missing errors
+#### Convert and transform errors
 
-Need to impute the errors for cases where no error was reported.
+Now I will transform the SDs for the SMD proportion data as mentioned earlier - use Trans = "Y" to quickly identify the rows for which this is relevant and then apply the functions written earlier.
 
-Before putting the missing cases and complete cases back together I need to assess the quality of the data that will be used for the imputation and further downstream analyses. Instances where the control/treatment SD is 0 will not be suitable for generating SMD effect sizes as they cause an effect size of infinity. Moreover, instances where either sample size is 1 will result in an SD = 0 creating the same problem. I will remove these cases and then conduct a modified Geary's test (Lajeunesse 2015, Nakagawa et al 2023).
+```{r}
+# write function for SD
+logit_trans_SD <- function(SD, prop, ID){
+  if_else(ID == "Y", sqrt(((SD^2)*(1/prop)) + (1/(1-(prop^2)))), NA)
+}
+
+# first convert instances where SD is still percentage rather than proportion
+
+df_SMD_sdtrans <- df_SMD6 %>% mutate(Con_trans_SD = pct_to_prop(Units, Con_SD),
+                                     Trt_trans_SD = pct_to_prop(Units, Trt_SD))
+
+#then execute logit function
+
+df_SMD_sdtrans1 <- df_SMD_sdtrans %>% mutate(Con_trans_SD = logit_trans_SD(Con_SD, Con_mean, Trans), 
+                                             Trt_trans_SD = logit_trans_SD(Trt_SD, Trt_mean, Trans))
+```
+
+Write this dataframe out as a record of the Complete case data showing both raw means and sds and transformed means and sds
+
+```{r}
+write_xlsx(df_SMD_sdtrans1, "/homevol/jbhg/Browse_meta/Data processing/SMD_compcase_raw and transform.xlsx")
+```
+
+#### Quality control 1
+
+Need to impute the errors for cases where no error was reported - this is handled later.
+
+I need to assess the quality of the data that will be used for the imputation and further downstream analyses. Instances where the control/treatment SD is 0 will not be suitable for generating SMD effect sizes as they cause an effect size of infinity. Moreover, instances where either sample size is 1 will result in an SD = 0 creating the same problem. I will remove these cases and then conduct a modified Geary's test (Lajeunesse 2015, Nakagawa et al 2023).
 
 Remove problematic data
 
 ```{r}
 # Filter out instances where control/treatment SD = 0
-df_SMD7 <- df_SMD6 %>% 
+df_SMD7 <- df_SMD_sdtrans1 %>% 
   filter(Con_SD != 0 & Trt_SD != 0)
 
 # Filter out instances where control/treatment N = 1 
 df_SMD8 <-  df_SMD7 %>% 
   filter(Con_N != 1 & Trt_N != 1)
+
+#filter out transformed data that was problematic ie produced an infinite value
+df_SMD9 <- df_SMD8 %>% 
+  filter(Con_trans_mean != Inf | is.na(Con_trans_mean)) %>% filter(Trt_trans_mean != Inf | is.na(Trt_trans_mean)) %>%
+  filter(Con_trans_SD != Inf | is.na(Con_trans_SD)) %>% filter(Trt_trans_SD != Inf | is.na(Trt_trans_SD))
 ```
+
+### Complete case data generation
+
+I'm going to conduct a complete case and imputed analysis.
+
+First ensure that instances with transformed data are using the transformed data to generate effect sizes.
+
+```{r}
+df_SMD10 <- df_SMD9 %>% mutate(Con_mean = if_else(is.na(Trans), Con_mean, Con_trans_mean),
+                              Con_SD = if_else(is.na(Trans), Con_SD, Con_trans_SD),
+                              Trt_mean = if_else(is.na(Trans), Trt_mean, Trt_trans_mean),
+                              Trt_SD = if_else(is.na(Trans), Trt_SD, Trt_trans_SD))
+```
+
+Take the complete case data and generate SMD effect sizes using metafor - escalc()
+
+```{r}
+df_comp_SMD <- df_SMD9 %>% 
+  mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N,     data = df_SMD9, var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
+```
+
+Coin effects
+
+```{r}
+df_SMD_var <- df_SMD_all2 %>% 
+  distinct(Variable)
+```
+
+Write the function
+
+```{r}
+coin_SMD <- function(Variable, Value) {
+  case_when(Variable == "sqrt Height removed" | Variable == "Bark wounds/tree" | Variable == "Branches browsed" | 
+            Variable == "Browse intensity" | Variable == "Browsing" | Variable == "Browsing damage" | Variable == "Consumption" |
+            Variable == "Damage score" | Variable == "Deformed base" | Variable == "Deformed stem" | Variable == "Foliage removed" |
+            Variable == "Height removed" | Variable == "Height to 1st branch" | Variable == "Juveniles browsed" |
+            Variable == "Lateral shoot browsing" | Variable == "Leader browsing" | Variable == "Leaves eaten" | 
+            Variable == "log(twigs|stems browsed)" | Variable == "Mass of browsed seedlings" | Variable == "Mortality" |
+            Variable == "Multi stem plants" | Variable == "No. of leaders" | Variable == "Plants browsed" |
+            Variable == "Prop. bottom consumed" | Variable == "Prop. top consumed" | Variable == "Shoots browsed" |
+            Variable == "Shoots eaten/plant" | Variable == "Stems damaged" | Variable == "Suckers browsed" |
+            Variable == "Twigs removed/tree" | Variable == "Twigs/tree browsed" | Variable == "Twigs|Stems browsed" ~ Value * -1,
+            TRUE  ~ Value)
+}
+```
+
+Execute - need to unnest the Effect_size columns first (escalc class objects don't work for these functions)
+
+```{r}
+df_comp_SMD1 <- df_comp_SMD %>% unnest_wider(Effect_size) %>% 
+  mutate(Effect_size = coin_SMD(Variable, Effect_size))
+```
+
+
+Write out comp case SMD only effects data
+
+```{r}
+write_xlsx(df_comp_SMD1, "/homevol/jbhg/Browse_meta/Data processing/SMD_compcase_es.xlsx")
+```
+
+### Imputed case data generation
 
 Perform modified Geary's test
 
@@ -221,34 +372,49 @@ df_SMD_miss1 <- df_SMD_miss %>%
          Trt_mean = `Treatment mean`) %>% 
   mutate(Con_SD = NA,
          Trt_SD = NA) %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N,
-         Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
   
 ```
 
 Join them up
 
 ```{r}
-df_SMD_all <- rbind(df_SMD8, df_SMD_miss1)
+df_SMD_all <- bind_rows(df_SMD9, df_SMD_miss1)
+```
+
+Write this out as a record of all cases with indication of transformed data
+
+```{r}
+write_xlsx(df_SMD_all, "/homevol/jbhg/Browse_meta/Data processing/SMD_impcase_raw and transform.xlsx")
+```
+
+Ensure correct means are being used
+
+```{r}
+df_SMD_all1 <- df_SMD_all %>% mutate(Con_mean = if_else(is.na(Trans), Con_mean, Con_trans_mean),
+                              Con_SD = if_else(is.na(Trans), Con_SD, Con_trans_SD),
+                              Trt_mean = if_else(is.na(Trans), Trt_mean, Trt_trans_mean),
+                              Trt_SD = if_else(is.na(Trans), Trt_SD, Trt_trans_SD)) %>% 
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans)
 ```
 
 Run multiple imputation to fill in the missing standard deviations.
 
 ```{r}
 #DN: I'll note some odd missing data patterns where you're missing trt and control means and N. I think if you're missing means I'd probably just exclude. I would probably limit imputation to situations where you: 1) have N and 2) have means, but are missing SDs OR 1) have SD, SE and 2) have means. I think the missing data patterns in there that you have at times are not really conducive to imputation. 
-md.pattern(df_SMD_all, rotate.names = TRUE) 
-aggr(df_SMD_all)
+md.pattern(df_SMD_all1, rotate.names = TRUE) 
+aggr(df_SMD_all1)
 
 # Usually there is a strong mean-variance relationship. This should help you impute missing data well. We can plot these to have a look. 
 
-p1 <- ggplot(df_SMD_all, aes(x = log(Con_mean), y = log(Con_SD))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + labs(title = "Control", y = "log(SD)", x = "log(Mean)")
-p2 <- ggplot(df_SMD_all, aes(x = log(Trt_mean), y = log(Trt_SD))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + labs(title = "Treatment", y = "log(SD)", x = "log(Mean)")
+p1 <- ggplot(df_SMD_all1, aes(x = log(Con_mean), y = log(Con_SD))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + labs(title = "Control", y = "log(SD)", x = "log(Mean)")
+p2 <- ggplot(df_SMD_all1, aes(x = log(Trt_mean), y = log(Trt_SD))) + geom_point() + geom_smooth(method = "lm", se = FALSE) + labs(title = "Treatment", y = "log(SD)", x = "log(Mean)")
 
 p1/p2
 
 # Yes, clear mean variance relationship. This should help with imputation, but there are some issues with the data. Probably a lot of 'zeros', which will cause problems but not necessarily incorrect. Though, SD = 0? Also possible I suppose.
 
-df_SMD_all1 <- df_SMD_all %>% 
+df_SMD_all2 <- df_SMD_all1 %>% 
   mutate(log_Con_mean = log(Con_mean),
          log_Con_SD = log(Con_SD),
          log_Trt_mean = log(Trt_mean),
@@ -256,35 +422,33 @@ df_SMD_all1 <- df_SMD_all %>%
 
 # on review of some the data there are some instances where the log mean is minus infinity - will need to track these back to their papers
 
-# Create an indicator column showing which rows have been imputed vs which had complete data - 1 = imputed, 0 = complete case.
-df_SMD_all2 <- df_SMD_all1 %>% mutate(Imputed = if_else(is.na(Con_SD), 1, 0))
+# Create an indicator column showing which rows have been imputed vs which had complete data
+df_SMD_all3 <- df_SMD_all2 %>% mutate(Imputed = if_else(is.na(Con_SD), "Y", "N"))
 ```
 
-Does Geary's test perform better on the log data than the raw data? - marginally worse
+#### Quality control
+
+Obvious issues here with data points that the log scale is putting at infinity - instances where the mean is 0 and hence the standard deviation should also be 0. These will be excluded from the imputation process to ensure as robust as possible imputation. Note that this may create some disparity between complete case and imputed case where complete case has effects not included in the imputed case.
 
 ```{r}
-df_log_geary <- df_SMD_all1 %>% 
-  mutate(log_Con_geary = geary(log_Con_mean, log_Con_SD, Con_N),
-         log_Trt_geary = geary(log_Trt_mean, log_Trt_SD, Trt_N),
-         Geary_test = ifelse(log_Con_geary >= 3 & log_Trt_geary >= 3, "Pass", "Fail"))
-
-log_Geary_results <- df_log_geary %>% group_by(Geary_test) %>% summarise(n = n())
+df_SMD_all4 <- df_SMD_all3 %>% filter(is.finite(log_Con_mean))
 ```
+
 
 ```{r}
 # Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use thete numeric data alone? DN: technically you can include as many moderators as you can to help with imputation. paperID is probably sensible because effects from teh same paper will have the same sample sizes
-predmatHg <- make.predictorMatrix(df_SMD_all2)
-predmatHg[, c(2:13,24)] <- 0
-predmatHg[c(1:15,17,18,20,22,24), ] <- 0
+predmatHg <- make.predictorMatrix(df_SMD_all3)
+predmatHg[, c(2:13,24,25)] <- 0
+predmatHg[c(1:15,17,18,20,22,24,25), ] <- 0
 
 #Ensure missing log data is only imputed using log data and vice versa for original data
-predmatHg[16, 20:24] <- 0
-predmatHg[19, 20:24] <- 0
+predmatHg[16, 20:25] <- 0
+predmatHg[19, 20:25] <- 0
 predmatHg[21, c(15,16,18,19)] <- 0
 predmatHg[23, c(15,16,18,19)] <- 0
 
 # How well does pmm performs? - had to write out the meth vector in full to stop it imputing the months: DN: You shouldn't need to. I think it had to do with some issues in your prediction matrix
-impData_SMD <- mice(df_SMD_all2, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","pmm","","","pmm","","pmm","","pmm",""), pred = predmatHg, seed=500)
+impData_SMD <- mice(df_SMD_all3, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","pmm","","","pmm","","pmm","","pmm","",""), pred = predmatHg, seed=500)
 summary(impData_SMD)
 ```
 
@@ -312,19 +476,17 @@ SMD_datasets1 <- lapply(SMD_datasets, function(df){
   })
 ```
 
-### Generate effect sizes
-
 Use metafor package escalc() to generate the effect sizes. Will then need to review the variables that were measured in order to make sure that instances where a negative impact on the variable is a positive browsing outcome are accounted for.
 
 Conventional SMD effects - conducted on both the data imputed from the raw data and the data imputed from the log transformed data
 
 ```{r}
-SMD_datasets_raw <- lapply(SMD_datasets1, function(df){
+SMD_imp_raw <- lapply(SMD_datasets1, function(df){
   df %>% mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N, data = df,
                                      var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
  })
 
-SMD_datasets_log <- lapply(SMD_datasets1, function(df){
+SMD_imp_log <- lapply(SMD_datasets1, function(df){
   df %>% mutate(Effect_size = escalc("SMD", m1i = Trans_Trt_mean, sd1i = Trans_Trt_SD, n1i = Trt_N, m2i = Trans_Con_mean, sd2i = Trans_Con_SD, n2i = Con_N,
                                      data = df, var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
  })
@@ -332,42 +494,15 @@ SMD_datasets_log <- lapply(SMD_datasets1, function(df){
 
 Getting some warnings here - could be instances where the SD is 0 (may need to add a constant to fix those or review those cases and exclude) - will fix later. Have elected to exclude instances with a SD of 0
 
-### Coining
-
-Check on the variables that are in play and then write a function to coin relevant effects.
+Coining
 
 ```{r}
-df_SMD_var <- df_SMD_all2 %>% 
-  distinct(Variable)
-```
-
-Write the function
-
-```{r}
-coin_SMD <- function(Variable, Value) {
-  case_when(Variable == "sqrt Height removed" | Variable == "Bark wounds/tree" | Variable == "Branches browsed" | 
-            Variable == "Browse intensity" | Variable == "Browsing" | Variable == "Browsing damage" | Variable == "Consumption" |
-            Variable == "Damage score" | Variable == "Deformed base" | Variable == "Deformed stem" | Variable == "Foliage removed" |
-            Variable == "Height removed" | Variable == "Height to 1st branch" | Variable == "Juveniles browsed" |
-            Variable == "Lateral shoot browsing" | Variable == "Leader browsing" | Variable == "Leaves eaten" | 
-            Variable == "log(twigs|stems browsed)" | Variable == "Mass of browsed seedlings" | Variable == "Mortality" |
-            Variable == "Multi stem plants" | Variable == "No. of leaders" | Variable == "Plants browsed" |
-            Variable == "Prop. bottom consumed" | Variable == "Prop. top consumed" | Variable == "Shoots browsed" |
-            Variable == "Shoots eaten/plant" | Variable == "Stems damaged" | Variable == "Suckers browsed" |
-            Variable == "Twigs removed/tree" | Variable == "Twigs/tree browsed" | Variable == "Twigs|Stems browsed" ~ Value * -1,
-            TRUE  ~ Value)
-}
-```
-
-Execute - need to unnest the Effect_size columns first (escalc class objects don't work for these functions)
-
-```{r}
-SMD_datasets_log1 <- lapply(SMD_datasets_log, function(df){
+SMD_imp_log1 <- lapply(SMD_imp_log, function(df){
   df %>% unnest_wider(Effect_size) %>% 
   mutate(Effect_size = coin_SMD(Variable, Effect_size))
 })
 
-SMD_datasets_raw1 <- lapply(SMD_datasets_raw, function(df){
+SMD_imp_raw1 <- lapply(SMD_imp_raw, function(df){
   df %>% unnest_wider(Effect_size) %>% 
   mutate(Effect_size = coin_SMD(Variable, Effect_size))
 })
@@ -376,9 +511,9 @@ SMD_datasets_raw1 <- lapply(SMD_datasets_raw, function(df){
 Save lists of imputed dataframes for later analysis.
 
 ```{r}
-saveRDS(SMD_datasets_log1, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_log")
+saveRDS(SMD_imp_log1, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_log")
 
-saveRDS(SMD_datasets_raw1, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_raw")
+saveRDS(SMD_imp_raw1, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_raw")
 
 # We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. DN: note that rubins rules assume you're ruing metafor::rma.mv for the model. 
 ```
@@ -391,13 +526,12 @@ Clean up the dataframe and rename some columns for easier downstream processing.
 
 ```{r}
 df_lo1 <- df_lo %>% 
-  rename(Method = `Control method`, Type = `Method sub-type`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,
-         Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
+  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`, Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
 ```
 
 ```{r}
 df_lo2 <- df_lo1 %>% 
-  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`, Shared_data, Repeat_measures, Con_N,                  Con_mean, Trt_N, Trt_mean)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean)
 ```
 
 ### Count data
@@ -436,8 +570,7 @@ Execute and trim
 df_lo3 <- df_lo2 %>% 
   mutate(Con_count = to_count(Units, Con_mean, Con_N),
          Trt_count = to_count(Units, Trt_mean, Trt_N)) %>% 
-  select(Paper_ID, Method, Type, Animal, `Plant genus`, Scale, Months, Variable, Units, `Confounding factors`, `Effect type`, Con_N,
-         Con_count, Trt_N, Trt_count)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_count, Trt_N, Trt_count)
 ```
 
 ### Generate effect sizes
@@ -490,16 +623,56 @@ Need to convert the log odds effects into something that can be readily compared
 
 ### Conversion
 
+Write the functions for converting from Log odds to SMD - using formulae from Borenstein chapter in Cooper et al. (2019) Handbook of meta-analysis
+
 ```{r}
-#conversion from log odds to SMD compatible goes here
+lo_to_SMD_ES <- function(Lo_es){
+  SMD_es <- (Lo_es*sqrt(3)) / pi 
+  
+  return(SMD_es)
+}
+
+lo_to_SMD_var <- function(Lo_var){
+  SMD_var <- (Lo_var*3) / (pi^2) 
+  
+  return(SMD_var)
+}
+```
+
+Execute those functions
+
+```{r}
+df_lo_conv <- df_lo4 %>% mutate(
+  Effect_size = lo_to_SMD_ES(Effect_size),
+  Sampling_variance = lo_to_SMD_var(Sampling_variance)
+)
 ```
 
 ### Rejoin
 
 ```{r}
-#merging code goes here
+df_comp_all <- bind_rows(df_comp_SMD1, df_lo_conv) 
+  
+df_imp_all <- bind_rows()
+```
+
+### Split into different scales
+
+```{r}
+df_comp_plant <- df_comp_all %>% filter(Scale == "Plant")
+write_xlsx(df_comp_plant, "/homevol/jbhg/Browse_meta/Analysis/Comp_comb_plant.xlsx")
+  
+df_comp_coupe <- df_comp_all %>% filter(Scale == "Coupe")
+write_xlsx(df_comp_coupe, "/homevol/jbhg/Browse_meta/Analysis/Comp_comb_coupe.xlsx")
+  
+df_comp_lscape <- df_comp_all %>% filter(Scale == "Landscape")
+write_xlsx(df_comp_lscape, "/homevol/jbhg/Browse_meta/Analysis/Comp_comb_lscape.xlsx")
 ```
 
 ```{r}
-#write out code here - Meta_all_cases_es.xlsx
+df_imp_plant <- 
+  
+df_imp_coupe <- 
+  
+df_imp_lscape <-
 ```
