@@ -74,13 +74,72 @@ df_LS <- df2 %>% filter(!is.na(`Control LS mean`))
 df3 <- df2 %>% filter(is.na(`Control LS mean`))
 ```
 
+### Simplify moderators
+
+#### Browsing fauna
+
+Browsing animal data could present problems with there being too many levels. Will move to simplify this into 5 broader categories that fill similar browsing niches.
+
+Assess the number of different levels and how many fall into each level.
+
+```{r}
+table(df3$Animal)
+```
+
+Write a function to group the levels into broader categories. Deer is a large enough group to be left as is.
+
+```{r}
+group_fauna <- function(Animal){
+  case_when(Animal %in% c("Beaver", "Coypu", "Kangaroo", "Pademelon (captive)", "Wallaby", "Wallaby, pademelon, possum", "Hares", "Possum (captive)", "Hyrax", "Kangaroo, wallaby", "Rabbits", "Voles") ~ "Other",
+            Animal %in% c("Deer, ELk", "Deer, sheep", "Goats", "Moose", "Reindeer", "Sheep", "Wild boar, sheep, goat", "Cattle", "Deer, elk", "Deer, pigs", "Elk", "Ungulates") ~ "Other ungulates",
+            Animal == "Deer" ~ "Deer",
+            Animal %in% c("Ungulates, hares", "Beaver, rabbit, deer", "Deer, hare", "Deer, voles, rabbits", "Kangaroo, goat, rabbits", "Moose, hares", "Ungulates, hares, rabbits", "Wallaby, deer", "Wallaby, kangaroo, deer, rabbit") ~ "Mixed",
+            Animal == "Not specified" ~ "Not specified")
+}
+```
+
+Execute and then check
+
+```{r}
+df4 <- df3 %>% mutate(Animal = group_fauna(Animal))
+
+table(df4$Animal)
+```
+
+#### Control methods
+
+Check the split of control methods - do repellents need to be grouped? Different fencing strategies?
+
+```{r}
+table(df4$`Control method`)
+```
+Can group some of these - cover crop and plant refuge. fertiliser, nursery, genetic resistance (stock manipulation), repellents, other fencing (maintain the split between exclusion and other fencing strategies as they are not the same).
+
+```{r}
+group_method <- function(Method){
+  case_when(Method %in% c("Cover crop", "Plant refuge") ~ "Plant refuge",
+            Method %in% c("Electric fence", "Fencing") ~ "Other fencing",
+            Method %in% c("Fertiliser treatment", "Genetic resistance", "Nursery treatment", "Silvicultural treatment") ~ "Stock manipulation",
+            Method %in% c("Repellent (absorption)", "Repellent (hanging)", "Repellent (on ground)", "Repellent (on-browse)") ~ "Repellents",
+            TRUE ~ Method)
+}
+```
+
+Execute and check
+
+```{r}
+df5 <- df4 %>% mutate(`Control method` = group_method(`Control method`))
+
+table(df5$`Control method`)
+```
+
 ## SMD effects
 
 Separate data into SMD and log odds effects.
 
 ```{r}
-df_SMD <- df3 %>% filter(`Effect type` == "SMD")
-df_lo <- df3 %>% filter (`Effect type` == "Log odds")
+df_SMD <- df5 %>% filter(`Effect type` == "SMD")
+df_lo <- df5 %>% filter (`Effect type` == "Log odds")
 ```
 
 ### Conversions and transformations
@@ -156,14 +215,14 @@ Split data into complete cases and errors missing
 df_SMD_miss <- df_SMD %>%
   filter(if_all(c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`), ~ all(is.na(.))))
 
-df_SMD <- df_SMD %>% 
+df_SMD1 <- df_SMD %>% 
   filter(if_any(c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`), ~ !is.na(.)))
 ```
 
 Take complete cases and rearrange error columns into - error value and error type
 
 ```{r}
-df_SMD1 <- df_SMD %>% mutate(`Control SD` = as.numeric(`Control SD`)) %>% 
+df_SMD1 <- df_SMD1 %>% mutate(`Control SD` = as.numeric(`Control SD`)) %>% 
   rownames_to_column() %>% 
   pivot_longer(cols = c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`),
                names_to = "Control_Error_type",
@@ -299,15 +358,15 @@ df_SMD10 <- df_SMD9 %>% mutate(Con_mean = if_else(is.na(Trans), Con_mean, Con_tr
 Take the complete case data and generate SMD effect sizes using metafor - escalc()
 
 ```{r}
-df_comp_SMD <- df_SMD9 %>% 
+df_comp_SMD <- df_SMD10 %>% 
   mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N,     data = df_SMD9, var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
 ```
 
 Coin effects
 
 ```{r}
-df_SMD_var <- df_SMD_all2 %>% 
-  distinct(Variable)
+df_SMD_var <- df_SMD1 %>% 
+  distinct(`Var. measured`)
 ```
 
 Write the function
@@ -334,7 +393,6 @@ Execute - need to unnest the Effect_size columns first (escalc class objects don
 df_comp_SMD1 <- df_comp_SMD %>% unnest_wider(Effect_size) %>% 
   mutate(Effect_size = coin_SMD(Variable, Effect_size))
 ```
-
 
 Write out comp case SMD only effects data
 
@@ -428,27 +486,29 @@ df_SMD_all3 <- df_SMD_all2 %>% mutate(Imputed = if_else(is.na(Con_SD), "Y", "N")
 
 #### Quality control
 
-Obvious issues here with data points that the log scale is putting at infinity - instances where the mean is 0 and hence the standard deviation should also be 0. These will be excluded from the imputation process to ensure as robust as possible imputation. Note that this may create some disparity between complete case and imputed case where complete case has effects not included in the imputed case.
+There are some instances where the logit transformation of the proportion data has generated an infinite mean. These will need to be removed.
 
 ```{r}
-df_SMD_all4 <- df_SMD_all3 %>% filter(is.finite(log_Con_mean))
+df_SMD_all4 <- df_SMD_all3 %>% 
+  filter(Con_mean != -Inf | is.na(Con_mean)) %>% filter(Trt_mean != Inf | is.na(Trt_mean))
 ```
 
+#### Build the predictor matrix
+
+Due to the negative values created by the logit transformation we will pursue imputation using the raw data rather than log transformed. Therefore, these columns can be removed before building the predictor matrix.
+
+```{r}
+df_SMD_all5 <- df_SMD_all4 %>% dplyr::select(!c(log_Con_mean, log_Con_SD, log_Trt_mean, log_Trt_SD))
+```
 
 ```{r}
 # Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use thete numeric data alone? DN: technically you can include as many moderators as you can to help with imputation. paperID is probably sensible because effects from teh same paper will have the same sample sizes
-predmatHg <- make.predictorMatrix(df_SMD_all3)
-predmatHg[, c(2:13,24,25)] <- 0
-predmatHg[c(1:15,17,18,20,22,24,25), ] <- 0
-
-#Ensure missing log data is only imputed using log data and vice versa for original data
-predmatHg[16, 20:25] <- 0
-predmatHg[19, 20:25] <- 0
-predmatHg[21, c(15,16,18,19)] <- 0
-predmatHg[23, c(15,16,18,19)] <- 0
+predmatHg <- make.predictorMatrix(df_SMD_all5)
+predmatHg[, c(2:13,20,21)] <- 0
+predmatHg[c(1:15,17,18,20,21), ] <- 0
 
 # How well does pmm performs? - had to write out the meth vector in full to stop it imputing the months: DN: You shouldn't need to. I think it had to do with some issues in your prediction matrix
-impData_SMD <- mice(df_SMD_all3, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","pmm","","","pmm","","pmm","","pmm","",""), pred = predmatHg, seed=500)
+impData_SMD <- mice(df_SMD_all5, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","pmm","","","pmm","",""), pred = predmatHg, seed=500)
 summary(impData_SMD)
 ```
 
@@ -456,40 +516,25 @@ summary(impData_SMD)
 # Looking at these there are 2 papers with very large means and errors that are making the plots difficult to interpret (Kuiters et al and Leonardsson et al)
 mice::xyplot(impData_SMD, Con_SD ~ Con_mean)
 mice::xyplot(impData_SMD, Trt_SD ~ Trt_mean, xlim = c(0,20000), ylim = c(0,20000))
-mice::xyplot(impData_SMD, log_Con_SD ~ log_Con_mean)
-mice::xyplot(impData_SMD, log_Trt_SD ~ log_Trt_mean)
+
 # mice::densityplot(impData_SMD) #this one isn't working - not entirely sure why? when the months are left in this plots out fine
 
 # Get all imputed datasets
-SMD_datasets <- complete(impData_SMD, "all")
+df_imp_SMD <- complete(impData_SMD, "all")
 
 ```
 
-Need to back transform the imputed log data.
-
-```{r}
-SMD_datasets1 <- lapply(SMD_datasets, function(df){
-  df %>% mutate(Trans_Con_mean = exp(log_Con_mean),
-                Trans_Con_SD = exp(log_Con_SD),
-                Trans_Trt_mean = exp(log_Trt_mean),
-                Trans_Trt_SD = exp(log_Trt_SD)) 
-  })
-```
+#### Calculate effect sizes
 
 Use metafor package escalc() to generate the effect sizes. Will then need to review the variables that were measured in order to make sure that instances where a negative impact on the variable is a positive browsing outcome are accounted for.
 
 Conventional SMD effects - conducted on both the data imputed from the raw data and the data imputed from the log transformed data
 
 ```{r}
-SMD_imp_raw <- lapply(SMD_datasets1, function(df){
-  df %>% mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N, data = df,
-                                     var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
+df_imp_SMD1 <- lapply(df_imp_SMD, function(df){
+  df %>% mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N, data = df, var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
  })
 
-SMD_imp_log <- lapply(SMD_datasets1, function(df){
-  df %>% mutate(Effect_size = escalc("SMD", m1i = Trans_Trt_mean, sd1i = Trans_Trt_SD, n1i = Trt_N, m2i = Trans_Con_mean, sd2i = Trans_Con_SD, n2i = Con_N,
-                                     data = df, var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
- })
 ```
 
 Getting some warnings here - could be instances where the SD is 0 (may need to add a constant to fix those or review those cases and exclude) - will fix later. Have elected to exclude instances with a SD of 0
@@ -497,23 +542,17 @@ Getting some warnings here - could be instances where the SD is 0 (may need to a
 Coining
 
 ```{r}
-SMD_imp_log1 <- lapply(SMD_imp_log, function(df){
+df_imp_SMD2 <- lapply(df_imp_SMD1, function(df){
   df %>% unnest_wider(Effect_size) %>% 
   mutate(Effect_size = coin_SMD(Variable, Effect_size))
 })
 
-SMD_imp_raw1 <- lapply(SMD_imp_raw, function(df){
-  df %>% unnest_wider(Effect_size) %>% 
-  mutate(Effect_size = coin_SMD(Variable, Effect_size))
-})
 ```
 
 Save lists of imputed dataframes for later analysis.
 
 ```{r}
-saveRDS(SMD_imp_log1, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_log")
-
-saveRDS(SMD_imp_raw1, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_raw")
+saveRDS(df_imp_SMD2, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_log")
 
 # We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. DN: note that rubins rules assume you're ruing metafor::rma.mv for the model. 
 ```
@@ -642,10 +681,8 @@ lo_to_SMD_var <- function(Lo_var){
 Execute those functions
 
 ```{r}
-df_lo_conv <- df_lo4 %>% mutate(
-  Effect_size = lo_to_SMD_ES(Effect_size),
-  Sampling_variance = lo_to_SMD_var(Sampling_variance)
-)
+df_lo_conv <- df_lo4 %>% mutate(Effect_size = lo_to_SMD_ES(Effect_size), 
+                                Sampling_variance = lo_to_SMD_var(Sampling_variance))
 ```
 
 ### Rejoin
@@ -653,7 +690,10 @@ df_lo_conv <- df_lo4 %>% mutate(
 ```{r}
 df_comp_all <- bind_rows(df_comp_SMD1, df_lo_conv) 
   
-df_imp_all <- bind_rows()
+df_imp_all <- lapply(df_imp_SMD2, function(df){
+  bind_rows(df, df_lo_conv)
+ })
+
 ```
 
 ### Split into different scales
@@ -670,9 +710,17 @@ write_xlsx(df_comp_lscape, "/homevol/jbhg/Browse_meta/Analysis/Comp_comb_lscape.
 ```
 
 ```{r}
-df_imp_plant <- 
+df_imp_plant <- lapply(df_imp_all, function(df){
+  df %>% filter(Scale == "Plant") })
+saveRDS(df_imp_plant, "/homevol/jbhg/Browse_meta/Analysis/Imp_comb_plant")
   
-df_imp_coupe <- 
+df_imp_coupe <- lapply(df_imp_all, function(df){
+  df %>% filter(Scale == "Coupe") })
+saveRDS(df_imp_coupe, "/homevol/jbhg/Browse_meta/Analysis/Imp_comb_coupe")
   
-df_imp_lscape <-
+  
+df_imp_lscape <- lapply(df_imp_all, function(df){
+  df %>% filter(Scale == "Landscape") })
+saveRDS(df_imp_lscape, "/homevol/jbhg/Browse_meta/Analysis/Imp_comb_lscape")
+  
 ```
