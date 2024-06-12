@@ -1,5 +1,0 @@
-"0","df_SMD_miss <- df_SMD %>%"
-"0","  filter(if_all(c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`), ~ all(is.na(.))))"
-"0",""
-"0","df_SMD <- df_SMD %>% "
-"0","  filter(if_any(c(`Control SD`, `Control SE`, `Control CV`, `Control 95CI(lower:upper)`), ~ !is.na(.)))"
