@@ -1,6 +1,0 @@
-"0","df_log_geary <- df_SMD_all1 %>% "
-"0","  mutate(log_Con_geary = geary(log_Con_mean, log_Con_SD, Con_N),"
-"0","         log_Trt_geary = geary(log_Trt_mean, log_Trt_SD, Trt_N),"
-"0","         Geary_test = ifelse(log_Con_geary >= 3 & log_Trt_geary >= 3, ""Pass"", ""Fail""))"
-"0",""
-"0","log_Geary_results <- df_log_geary %>% group_by(Geary_test) %>% summarise(n = n())"

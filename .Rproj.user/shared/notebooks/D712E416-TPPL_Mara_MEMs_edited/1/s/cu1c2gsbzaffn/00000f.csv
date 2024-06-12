@@ -1,6 +1,0 @@
-"0","DBMEMmulti <- data.frame(Dmg_L = dataDBMEMmulti@data$Dmg_light, # % w. light damage"
-"0","                         Dmg_M = dataDBMEMmulti@data$Dmg_mid, # % w. medium damage"
-"0","                         Dmg_H = dataDBMEMmulti@data$Dmg_heavy, # % w. heavy damage"
-"0","                         fcs = dataDBMEMmulti@data$fcs, # spatial identifier"
-"0","                         Lat = MEMdb$ycoord,"
-"0","                         Lon = MEMdb$xcoord)"

@@ -1,3 +1,0 @@
-"0","df_SMD6 <- df_SMD5 %>% "
-"0","  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N,"
-"0","         Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD)"

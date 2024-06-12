@@ -1,8 +1,0 @@
-"0","to_SD <- function(Error_type, Value, Sample_size, Mean) {"
-"0","  case_when("
-"0","    Error_type == ""SE"" ~ Value * sqrt(Sample_size),"
-"0","    Error_type == ""SD"" ~ Value,"
-"0","    Error_type == ""CV"" ~ Value * Mean"
-"0","   # Error_type == ""95CI"" ~ Value #issue here as the only paper that I have errors as 95CI also used LS means - cross this bridge if LS means become included"
-"0","  )"
-"0","}"

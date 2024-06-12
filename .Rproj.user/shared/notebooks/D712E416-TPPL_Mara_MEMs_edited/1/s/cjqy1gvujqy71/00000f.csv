@@ -1,3 +1,0 @@
-"0","BrNdb  <- DBMEMmulti[,c(""Dmg_L"")] # select the column with response variable "
-"0","ZBrNdb <- scale(BrNdb) # Scale the response variable"
-"0","xydb <- DBMEMmulti[,c(""Lon"", ""Lat"")] # These are the columns with the x and y coordinates"

@@ -1,1 +1,0 @@
-"0","MEMdb <- MEMdb[!is.na(MEMdb$LinkKey),]"

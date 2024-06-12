@@ -1,7 +1,0 @@
-"0","require(sf)"
-"0","require(mapview)"
-"0","coor <- st_as_sf(x = MEMdb, # Transforming coordinate points to spatial data"
-"0","                        coords = c(""xcoord"", ""ycoord""),  # The name of the variables where your coords are"
-"0","                         crs = ""+proj=longlat +datum=WGS84"") # The reference system of coordinates"
-"0",""
-"0","mapview(coor)"

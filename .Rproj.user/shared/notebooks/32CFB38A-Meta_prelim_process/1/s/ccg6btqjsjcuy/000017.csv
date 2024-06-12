@@ -1,5 +1,0 @@
-"0","# mice::densityplot(impData_SMD) #this one isn't working - not entirely sure why? when the months are left in this plots out fine"
-"0",""
-"0","# Get all imputed datasets"
-"0","SMD_datasets <- complete(impData_SMD, ""all"")"
-"0",""

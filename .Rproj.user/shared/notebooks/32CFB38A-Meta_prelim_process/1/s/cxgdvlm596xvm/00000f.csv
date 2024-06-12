@@ -1,4 +1,0 @@
-"0","df_SMD5 <- df_SMD4 %>% "
-"0","  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,"
-"0","         Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, "
-"0","         Trt_mean = `Treatment mean`)"

@@ -91,7 +91,7 @@ Write a function to group the levels into broader categories. Deer is a large en
 ```{r}
 group_fauna <- function(Animal){
   case_when(Animal %in% c("Beaver", "Coypu", "Kangaroo", "Pademelon (captive)", "Wallaby", "Wallaby, pademelon, possum", "Hares", "Possum (captive)", "Hyrax", "Kangaroo, wallaby", "Rabbits", "Voles") ~ "Other",
-            Animal %in% c("Deer, ELk", "Deer, sheep", "Goats", "Moose", "Reindeer", "Sheep", "Wild boar, sheep, goat", "Cattle", "Deer, elk", "Deer, pigs", "Elk", "Ungulates") ~ "Other ungulates",
+            Animal %in% c("Deer, ELk", "Deer, sheep", "Goats", "Moose", "Reindeer", "Sheep", "Wild boar, sheep, goat", "Cattle", "Deer, elk", "Deer, pigs", "Elk", "Ungulates", "Llama") ~ "Other ungulates", 
             Animal == "Deer" ~ "Deer",
             Animal %in% c("Ungulates, hares", "Beaver, rabbit, deer", "Deer, hare", "Deer, voles, rabbits", "Kangaroo, goat, rabbits", "Moose, hares", "Ungulates, hares, rabbits", "Wallaby, deer", "Wallaby, kangaroo, deer, rabbit") ~ "Mixed",
             Animal == "Not specified" ~ "Not specified")
@@ -113,11 +113,12 @@ Check the split of control methods - do repellents need to be grouped? Different
 ```{r}
 table(df4$`Control method`)
 ```
+
 Can group some of these - cover crop and plant refuge. fertiliser, nursery, genetic resistance (stock manipulation), repellents, other fencing (maintain the split between exclusion and other fencing strategies as they are not the same).
 
 ```{r}
 group_method <- function(Method){
-  case_when(Method %in% c("Cover crop", "Plant refuge") ~ "Plant refuge",
+  case_when(Method %in% c("Cover crop", "Plant refuge") ~ "Neighbour effects",
             Method %in% c("Electric fence", "Fencing") ~ "Other fencing",
             Method %in% c("Fertiliser treatment", "Genetic resistance", "Nursery treatment", "Silvicultural treatment") ~ "Stock manipulation",
             Method %in% c("Repellent (absorption)", "Repellent (hanging)", "Repellent (on ground)", "Repellent (on-browse)") ~ "Repellents",
@@ -162,9 +163,9 @@ I need to filter out the problem rows. Apply the transformations and then join t
 
 df_SMD_trans <- df_SMD %>% mutate(Var_unit = paste(`Var. measured`, Units, sep = "_"))
 
-df_SMD_trans_y <- df_SMD_trans %>% filter(Var_unit == "Cover_Percent"|Var_unit == "Browsing_Percent"|Var_unit == "Plants browsed_Percent"|Var_unit == "Survival_Percent"|Var_unit == "Prop. bottom consumed_Percent"|Var_unit == "Prop. top consumed_Percent"|Var_unit == "Stems damaged_Proportion"|Var_unit == "Mortality_Percent"|Var_unit == "Plants browsed_Proportion"|Var_unit == "Survival_Proportion"|Var_unit == "Browse intensity_Percent"|Var_unit == "Lateral shoot browsing_Percent"|Var_unit == "Leader browsing_Percent"|Var_unit == "Establishment_Percent"|Var_unit == "Browsing damage_Percent"|Var_unit == "Deformed base_Percent"|Var_unit == "Deformed stem_Percent"|Var_unit == "Multi stem plants_Percent"|Var_unit == "Foliage removed_Percent"|Var_unit == "Consumption_Percent/day"|Var_unit == "Branches browsed_Percent"|Var_unit == "Juveniles browsed_Proportion"|Var_unit == "Suckers browsed_Proportion"|Var_unit == "Plants browsed_Probability"|Var_unit == "Leader browsing_Probability"|Var_unit == "Shoots browsed_Percent")
+df_SMD_trans_y <- df_SMD_trans %>% filter(Var_unit == "Cover_Percent"|Var_unit == "Browsing_Percent"|Var_unit == "Plants browsed_Percent"|Var_unit == "Survival_Percent"|Var_unit == "Prop. bottom consumed_Percent"|Var_unit == "Prop. top consumed_Percent"|Var_unit == "Stems damaged_Proportion"|Var_unit == "Mortality_Percent"|Var_unit == "Plants browsed_Proportion"|Var_unit == "Survival_Proportion"|Var_unit == "Browse intensity_Percent"|Var_unit == "Lateral shoot browsing_Percent"|Var_unit == "Leader browsing_Percent"|Var_unit == "Establishment_Percent"|Var_unit == "Browsing damage_Percent"|Var_unit == "Deformed base_Percent"|Var_unit == "Deformed stem_Percent"|Var_unit == "Multi stem plants_Percent"|Var_unit == "Foliage removed_Percent"|Var_unit == "Consumption_Percent/day"|Var_unit == "Branches browsed_Percent"|Var_unit == "Juveniles browsed_Proportion"|Var_unit == "Suckers browsed_Proportion"|Var_unit == "Plants browsed_Probability"|Var_unit == "Leader browsing_Probability"|Var_unit == "Shoots browsed_Percent"|Var_unit == "Browsing_score_Score")
 
-df_SMD_trans_n <- df_SMD_trans %>% filter(!(Var_unit == "Cover_Percent"|Var_unit == "Browsing_Percent"|Var_unit == "Plants browsed_Percent"|Var_unit == "Survival_Percent"|Var_unit == "Prop. bottom consumed_Percent"|Var_unit == "Prop. top consumed_Percent"|Var_unit == "Stems damaged_Proportion"|Var_unit == "Mortality_Percent"|Var_unit == "Plants browsed_Proportion"|Var_unit == "Survival_Proportion"|Var_unit == "Browse intensity_Percent"|Var_unit == "Lateral shoot browsing_Percent"|Var_unit == "Leader browsing_Percent"|Var_unit == "Establishment_Percent"|Var_unit == "Browsing damage_Percent"|Var_unit == "Deformed base_Percent"|Var_unit == "Deformed stem_Percent"|Var_unit == "Multi stem plants_Percent"|Var_unit == "Foliage removed_Percent"|Var_unit == "Consumption_Percent/day"|Var_unit == "Branches browsed_Percent"|Var_unit == "Juveniles browsed_Proportion"|Var_unit == "Suckers browsed_Proportion"|Var_unit == "Plants browsed_Probability"|Var_unit == "Leader browsing_Probability"|Var_unit == "Shoots browsed_Percent"))
+df_SMD_trans_n <- df_SMD_trans %>% filter(!(Var_unit == "Cover_Percent"|Var_unit == "Browsing_Percent"|Var_unit == "Plants browsed_Percent"|Var_unit == "Survival_Percent"|Var_unit == "Prop. bottom consumed_Percent"|Var_unit == "Prop. top consumed_Percent"|Var_unit == "Stems damaged_Proportion"|Var_unit == "Mortality_Percent"|Var_unit == "Plants browsed_Proportion"|Var_unit == "Survival_Proportion"|Var_unit == "Browse intensity_Percent"|Var_unit == "Lateral shoot browsing_Percent"|Var_unit == "Leader browsing_Percent"|Var_unit == "Establishment_Percent"|Var_unit == "Browsing damage_Percent"|Var_unit == "Deformed base_Percent"|Var_unit == "Deformed stem_Percent"|Var_unit == "Multi stem plants_Percent"|Var_unit == "Foliage removed_Percent"|Var_unit == "Consumption_Percent/day"|Var_unit == "Branches browsed_Percent"|Var_unit == "Juveniles browsed_Proportion"|Var_unit == "Suckers browsed_Proportion"|Var_unit == "Plants browsed_Probability"|Var_unit == "Leader browsing_Probability"|Var_unit == "Shoots browsed_Percent"|Var_unit == "Browsing_score_Score"))
 ```
 
 Only convert and transform the means here - will convert and transform the errors after the missing cases have been cut out and the errors converted to SD.
@@ -284,12 +285,12 @@ I'll rename some column headings for greater clarity and then trim down the data
 
 ```{r}
 df_SMD5 <- df_SMD4 %>% 
-  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`, Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
+  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`, Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`, Plot_size = `Plot_size(m2)`)
 ```
 
 ```{r}
 df_SMD6 <- df_SMD5 %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
 ```
 
 #### Convert and transform errors
@@ -359,7 +360,7 @@ Take the complete case data and generate SMD effect sizes using metafor - escalc
 
 ```{r}
 df_comp_SMD <- df_SMD10 %>% 
-  mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N,     data = df_SMD9, var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
+  mutate(Effect_size = escalc("SMD", m1i = Trt_mean, sd1i = Trt_SD, n1i = Trt_N, m2i = Con_mean, sd2i = Con_SD, n2i = Con_N, data = df_SMD9, var.names = c("Effect_size", "Sampling_variance"), append = FALSE))
 ```
 
 Coin effects
@@ -382,7 +383,8 @@ coin_SMD <- function(Variable, Value) {
             Variable == "Multi stem plants" | Variable == "No. of leaders" | Variable == "Plants browsed" |
             Variable == "Prop. bottom consumed" | Variable == "Prop. top consumed" | Variable == "Shoots browsed" |
             Variable == "Shoots eaten/plant" | Variable == "Stems damaged" | Variable == "Suckers browsed" |
-            Variable == "Twigs removed/tree" | Variable == "Twigs/tree browsed" | Variable == "Twigs|Stems browsed" ~ Value * -1,
+            Variable == "Twigs removed/tree" | Variable == "Twigs/tree browsed" | Variable == "Twigs|Stems browsed" |
+            Variable == "Browsing_score" ~ Value * -1,
             TRUE  ~ Value)
 }
 ```
@@ -425,12 +427,10 @@ I need to rebind the missing cases to the full cases. To do that I need to make 
 
 ```{r}
 df_SMD_miss1 <- df_SMD_miss %>%
-  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`,
-         Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, 
-         Trt_mean = `Treatment mean`) %>% 
+  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`, Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`, Plot_size = `Plot_size(m2)`) %>% 
   mutate(Con_SD = NA,
          Trt_SD = NA) %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
   
 ```
 
@@ -453,7 +453,7 @@ df_SMD_all1 <- df_SMD_all %>% mutate(Con_mean = if_else(is.na(Trans), Con_mean, 
                               Con_SD = if_else(is.na(Trans), Con_SD, Con_trans_SD),
                               Trt_mean = if_else(is.na(Trans), Trt_mean, Trt_trans_mean),
                               Trt_SD = if_else(is.na(Trans), Trt_SD, Trt_trans_SD)) %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans)
 ```
 
 Run multiple imputation to fill in the missing standard deviations.
@@ -504,11 +504,13 @@ df_SMD_all5 <- df_SMD_all4 %>% dplyr::select(!c(log_Con_mean, log_Con_SD, log_Tr
 ```{r}
 # Make predictor matrix which defines which variables will be used to impute. Should moderators be included in this or just use thete numeric data alone? DN: technically you can include as many moderators as you can to help with imputation. paperID is probably sensible because effects from teh same paper will have the same sample sizes
 predmatHg <- make.predictorMatrix(df_SMD_all5)
-predmatHg[, c(2:13,20,21)] <- 0
-predmatHg[c(1:15,17,18,20,21), ] <- 0
+predmatHg[, c(2:5,10:14,21,22)] <- 0
+predmatHg[c(1:16,18,19,21,22), ] <- 0
+```
 
+```{r}
 # How well does pmm performs? - had to write out the meth vector in full to stop it imputing the months: DN: You shouldn't need to. I think it had to do with some issues in your prediction matrix
-impData_SMD <- mice(df_SMD_all5, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","pmm","","","pmm","",""), pred = predmatHg, seed=500)
+impData_SMD <- mice(df_SMD_all5, m=20, maxit=50, meth = c("","","","","","","","","","","","","","","","","pmm","","","pmm","",""), pred = predmatHg, seed=500)
 summary(impData_SMD)
 ```
 
@@ -552,7 +554,7 @@ df_imp_SMD2 <- lapply(df_imp_SMD1, function(df){
 Save lists of imputed dataframes for later analysis.
 
 ```{r}
-saveRDS(df_imp_SMD2, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data_log")
+saveRDS(df_imp_SMD2, "/homevol/jbhg/Browse_meta/Data processing/SMD_imp_data")
 
 # We can then sample over all these datasets in a Bayseian model or use Rubin's rules to pool estimates. DN: note that rubins rules assume you're ruing metafor::rma.mv for the model. 
 ```
@@ -565,12 +567,12 @@ Clean up the dataframe and rename some columns for easier downstream processing.
 
 ```{r}
 df_lo1 <- df_lo %>% 
-  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`, Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`)
+  rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`, Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`, Plot_size = `Plot_size(m2)`)
 ```
 
 ```{r}
 df_lo2 <- df_lo1 %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean)
 ```
 
 ### Count data
@@ -609,7 +611,7 @@ Execute and trim
 df_lo3 <- df_lo2 %>% 
   mutate(Con_count = to_count(Units, Con_mean, Con_N),
          Trt_count = to_count(Units, Trt_mean, Trt_N)) %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_count, Trt_N, Trt_count)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_count, Trt_N, Trt_count)
 ```
 
 ### Generate effect sizes
