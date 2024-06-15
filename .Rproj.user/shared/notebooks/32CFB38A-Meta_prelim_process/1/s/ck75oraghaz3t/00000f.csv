@@ -1,2 +1,0 @@
-"0","df_LS <- df2 %>% filter(!is.na(`Control LS mean`))"
-"0","df3 <- df2 %>% filter(is.na(`Control LS mean`))"

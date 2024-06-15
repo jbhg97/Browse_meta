@@ -9,7 +9,8 @@ editor: visual
 
 ```{r}
 library(pacman)
-p_load(tidyverse, readxl, writexl, kableExtra, orchaRd, clubSandwich, metafor, mice)
+devtools::install_github("daniel1noble/orchaRd", ref = "main", force = TRUE)
+p_load(tidyverse, readxl, writexl, kableExtra, orchaRd, clubSandwich, metafor, mice, orchaRd)
 ```
 
 ## Literature synthesis
@@ -114,7 +115,7 @@ VCV_mat_plant <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df_
 Multilevel Meta-analytic model
 
 ```{r}
-plant_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_comp_plant)
+plant_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
 
 # the plot size data is incomplete - toss up. Either lose plot size (Spake et al 2020 shows its important for measures of biodiversity which I deliberately excluded for this but its still going to be relevant for any effects measuring density, cover etc) or lose the NAs approx. 340 rows. Is it possible to add a constant in the place of the NAs?
 
@@ -126,13 +127,20 @@ orchaRd::i2_ml(plant_MMA_mod1)
 Meta-regression models
 
 ```{r}
-plant_MR_mod1 <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_comp_plant)
-
+plant_MR_mod1 <- rma.mv(Effect_size ~ Method, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
 summary(plant_MR_mod1)
 
-plant_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_comp_plant) #suppressed intercept - need to fix so it works at all levels
-
+plant_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant) #suppressed intercept
 summary(plant_MR_mod2)
+
+plant_MR_mod3 <- rma.mv(Effect_size ~ Animal, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
+summary(plant_MR_mod3)
+
+plant_MR_mod4 <- rma.mv(Effect_size ~ -1 + Animal, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
+summary(plant_MR_mod4)
+
+plant_MR_mod5<- rma.mv(Effect_size ~ Method * Months, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
+summary(plant_MR_mod5)
 ```
 
 Orchard plots
@@ -140,6 +148,14 @@ Orchard plots
 ```{r}
 orchard_plot(plant_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD")
 mod_results(plant_MR_mod1, mod = "Method", group = "Paper_ID")
+
+orchard_plot(plant_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "SMD")
+mod_results(plant_MR_mod3, mod = "Animal", group = "Paper_ID")
+
+plant_MR5_bub <- mod_results(plant_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method")
+bubble_plot(plant_MR5_bub, mod = "Months", group = "Paper_ID", xlab = "Months")
+
+# need to work out the best way to show the months data - of most interest is the efficacy over time of the different methods.
 ```
 
 Non-independence sensitivity
@@ -170,7 +186,7 @@ VCV_mat_coupe <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df_
 Multilevel Meta-analytic model
 
 ```{r}
-coupe_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_comp_coupe)
+coupe_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
 
 summary(coupe_MMA_mod1)
 
@@ -180,11 +196,11 @@ orchaRd::i2_ml(coupe_MMA_mod1)
 Meta-regression models
 
 ```{r}
-coupe_MR_mod1 <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_comp_coupe)
+coupe_MR_mod1 <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
 
 summary(coupe_MR_mod1)
 
-coupe_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_comp_coupe) #suppressed intercept - need to fix so it works at all levels
+coupe_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe) #suppressed intercept - need to fix so it works at all levels
 
 summary(coupe_MR_mod2)
 ```
@@ -224,7 +240,7 @@ VCV_mat_lscape <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df
 Multilevel Meta-analytic model
 
 ```{r}
-lscape_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_comp_lscape)
+lscape_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape)
 
 summary(lscape_MMA_mod1)
 
@@ -234,11 +250,11 @@ orchaRd::i2_ml(lscape_MMA_mod1)
 Meta-regression models
 
 ```{r}
-lscape_MR_mod1 <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_comp_lscape)
+lscape_MR_mod1 <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape)
 
 summary(lscape_MR_mod1)
 
-lscape_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_comp_lscape) #suppressed intercept - need to fix so it works at all levels
+lscape_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape) #suppressed intercept - need to fix so it works at all levels
 
 summary(lscape_MR_mod2)
 ```
@@ -285,7 +301,7 @@ Multilevel Meta-analytic model
 imp_plant_MMA_mod1 <- list()
 
 for (i in seq_along(df_imp_plant1)) { 
-  imp_plant_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_imp_plant1[[i]]) }
+  imp_plant_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]]) }
 
 #pool step isn't working correctly - it pools the estimates adequately but loses the data structure so that orchard cannot recognise it as a rma.mv object.
 
@@ -301,14 +317,14 @@ Meta-regression models
 imp_plant_MR_mod1 <- list()
 
 for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod1[[i]] <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_imp_plant1[[i]]) }
+  imp_plant_MR_mod1[[i]] <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]]) }
 
 summary(pool(imp_plant_MR_mod1))
 
 imp_plant_MR_mod2 <- list()
 
 for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_imp_plant1[[i]]) } #suppressed intercept - need to fix so it works at all levels
+  imp_plant_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]]) } #suppressed intercept - need to fix so it works at all levels
 
 summary(pool(imp_plant_MR_mod2))
 ```
@@ -356,7 +372,7 @@ Multilevel Meta-analytic model
 imp_coupe_MMA_mod1 <- list()
 
 for (i in seq_along(df_imp_coupe1)) { 
-  imp_coupe_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_coupe_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_imp_coupe1[[i]], verbose = TRUE) }
+  imp_coupe_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_coupe_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe1[[i]], verbose = TRUE) }
 
 #pool step isn't working correctly - it pools the estimates adequately but loses the data structure so that orchard cannot recognise it as a rma.mv object.
 
@@ -372,14 +388,14 @@ Meta-regression models
 imp_coupe_MR_mod1 <- list()
 
 for (i in seq_along(df_imp_coupe1)) {
-  imp_coupe_MR_mod1[[i]] <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_coupe_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_imp_coupe1[[i]], verbose = TRUE) }
+  imp_coupe_MR_mod1[[i]] <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_coupe_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe1[[i]], verbose = TRUE) }
 
 summary(pool(imp_coupe_MR_mod1))
 
 imp_coupe_MR_mod2 <- list()
 
 for (i in seq_along(df_imp_coupe1)) {
-  imp_coupe_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_coupe_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_imp_coupe1[[i]], verbose = TRUE) } #suppressed intercept - need to fix so it works at all levels
+  imp_coupe_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_coupe_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe1[[i]], verbose = TRUE) } #suppressed intercept - need to fix so it works at all levels
 
 summary(pool(imp_coupe_MR_mod2))
 ```
@@ -427,7 +443,7 @@ Multilevel Meta-analytic model
 imp_lscape_MMA_mod1 <- list()
 
 for (i in seq_along(df_imp_lscape1)) { 
-  imp_lscape_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_lscape_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_imp_lscape1[[i]], verbose = TRUE) }
+  imp_lscape_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_lscape_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape1[[i]], verbose = TRUE) }
 
 #pool step isn't working correctly - it pools the estimates adequately but loses the data structure so that orchard cannot recognise it as a rma.mv object.
 
@@ -443,14 +459,14 @@ Meta-regression models
 imp_lscape_MR_mod1 <- list()
 
 for (i in seq_along(df_imp_lscape1)) {
-  imp_lscape_MR_mod1[[i]] <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_lscape_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_imp_lscape1[[i]], verbose =TRUE) }
+  imp_lscape_MR_mod1[[i]] <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_lscape_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape1[[i]], verbose =TRUE) }
 
 summary(pool(imp_lscape_MR_mod1))
 
 imp_lscape_MR_mod2 <- list()
 
 for (i in seq_along(df_imp_lscape1)) {
-  imp_lscape_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_lscape_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|Plot_size, ~1|OLRE), data = df_imp_lscape1[[i]], verbose = TRUE) } #suppressed intercept - need to fix so it works at all levels
+  imp_lscape_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_lscape_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape1[[i]], verbose = TRUE) } #suppressed intercept - need to fix so it works at all levels
 
 summary(pool(imp_lscape_MR_mod2))
 ```

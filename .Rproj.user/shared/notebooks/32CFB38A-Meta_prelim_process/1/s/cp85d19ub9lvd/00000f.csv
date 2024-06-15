@@ -1,8 +1,0 @@
-"0","to_months <- function(Time_unit, Time) {"
-"0","  case_when(Time_unit == is.na(Time_unit) ~ NA,"
-"0","            Time_unit == ""day"" ~ Time / 30.417,"
-"0","            Time_unit == ""week"" ~ Time / (30.417/7),"
-"0","            Time_unit == ""month"" ~ Time,"
-"0","            Time_unit == ""year"" ~ Time * 12,"
-"0","            Time_unit == ""hour"" ~ Time / (30.417*24))"
-"0","}"
