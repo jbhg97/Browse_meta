@@ -100,50 +100,50 @@ Next tasks - write results for breakdown of the effects into broad categories. P
 Read in
 
 ```{r}
-df_comp_plant <- read_xlsx("/homevol/jbhg/Browse_meta/Analysis/Comp_comb_plant.xlsx")
+df_comp_plant <- read_xlsx("/homevol/jbhg/Browse_meta/Analysis/Comp_all_plant.xlsx")
 
 #add an observation level factor
 df_comp_plant <- df_comp_plant %>% mutate(OLRE = row_number())
 ```
 
-Build Variance Covariance matrix using shared data column
+#### Variance Covariance matrix
+
+Use the shared data column to build a VCV matrix to be used in all models.
 
 ```{r}
 VCV_mat_plant <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df_comp_plant, rho = 0.5, nearpd = TRUE)
 ```
 
-Multilevel Meta-analytic model
+#### Multilevel Meta-analytic model
 
 ```{r}
 plant_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
-
-# the plot size data is incomplete - toss up. Either lose plot size (Spake et al 2020 shows its important for measures of biodiversity which I deliberately excluded for this but its still going to be relevant for any effects measuring density, cover etc) or lose the NAs approx. 340 rows. Is it possible to add a constant in the place of the NAs?
 
 summary(plant_MMA_mod1)
 
 orchaRd::i2_ml(plant_MMA_mod1)
 ```
 
-Meta-regression models
+#### Multilevel Meta-regression models
 
 ```{r}
-plant_MR_mod1 <- rma.mv(Effect_size ~ Method, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
+plant_MR_mod1 <- rma.mv(Effect_size ~ Method + Plot_size, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
 summary(plant_MR_mod1)
 
-plant_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant) #suppressed intercept
+plant_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Plot_size, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant) #suppressed intercept
 summary(plant_MR_mod2)
 
-plant_MR_mod3 <- rma.mv(Effect_size ~ Animal, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
+plant_MR_mod3 <- rma.mv(Effect_size ~ Animal + Plot_size, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
 summary(plant_MR_mod3)
 
-plant_MR_mod4 <- rma.mv(Effect_size ~ -1 + Animal, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
+plant_MR_mod4 <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
 summary(plant_MR_mod4)
 
-plant_MR_mod5<- rma.mv(Effect_size ~ Method * Months, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
+plant_MR_mod5<- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
 summary(plant_MR_mod5)
 ```
 
-Orchard plots
+#### Orchard plots
 
 ```{r}
 orchard_plot(plant_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD")
@@ -154,11 +154,9 @@ mod_results(plant_MR_mod3, mod = "Animal", group = "Paper_ID")
 
 plant_MR5_bub <- mod_results(plant_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method")
 bubble_plot(plant_MR5_bub, mod = "Months", group = "Paper_ID", xlab = "Months")
-
-# need to work out the best way to show the months data - of most interest is the efficacy over time of the different methods.
 ```
 
-Non-independence sensitivity
+#### Non-independence sensitivity
 
 ```{r}
 plant_MR_mod1_rob <- robust(plant_MR_mod1, cluster = df_comp_plant$Paper_ID)
@@ -171,19 +169,19 @@ summary(plant_MR_mod1_rob)
 Read in
 
 ```{r}
-df_comp_coupe <- read_xlsx("/homevol/jbhg/Browse_meta/Analysis/Comp_comb_coupe.xlsx")
+df_comp_coupe <- read_xlsx("/homevol/jbhg/Browse_meta/Analysis/Comp_all_coupe.xlsx")
 
 #add an observation level factor
 df_comp_coupe <- df_comp_coupe %>% mutate(OLRE = row_number())
 ```
 
-Build Variance Covariance matrix using shared data column
+#### Variance Covariance matrix 
 
 ```{r}
 VCV_mat_coupe <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df_comp_coupe, rho = 0.5, nearpd = TRUE)
 ```
 
-Multilevel Meta-analytic model
+#### Multilevel Meta-analytic model
 
 ```{r}
 coupe_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
@@ -193,26 +191,39 @@ summary(coupe_MMA_mod1)
 orchaRd::i2_ml(coupe_MMA_mod1)
 ```
 
-Meta-regression models
+#### Multilevel Meta-regression models
 
 ```{r}
-coupe_MR_mod1 <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
-
+coupe_MR_mod1 <- rma.mv(Effect_size ~ Method + Plot_size, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
 summary(coupe_MR_mod1)
 
-coupe_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe) #suppressed intercept - need to fix so it works at all levels
-
+coupe_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Plot_size, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe) #suppressed intercept
 summary(coupe_MR_mod2)
+
+coupe_MR_mod3 <- rma.mv(Effect_size ~ Animal + Plot_size, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
+summary(coupe_MR_mod3)
+
+coupe_MR_mod4 <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
+summary(coupe_MR_mod4)
+
+coupe_MR_mod5<- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
+summary(coupe_MR_mod5)
 ```
 
-Orchard plots
+#### Orchard plots
 
 ```{r}
-orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD", angle = 0)
+orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD", angle = 90)
 mod_results(coupe_MR_mod1, mod = "Method", group = "Paper_ID")
+
+orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "SMD", angle = 90)
+mod_results(coupe_MR_mod3, mod = "Animal", group = "Paper_ID")
+
+coupe_MR5_bub <- mod_results(coupe_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method")
+bubble_plot(coupe_MR5_bub, mod = "Months", group = "Paper_ID", xlab = "Months")
 ```
 
-Non-independence sensitivity
+#### Non-independence sensitivity
 
 ```{r}
 coupe_MR_mod1_rob <- robust(coupe_MR_mod1, cluster = df_comp_coupe$Paper_ID)
@@ -225,19 +236,19 @@ summary(coupe_MR_mod1_rob)
 Read in
 
 ```{r}
-df_comp_lscape <- read_xlsx("/homevol/jbhg/Browse_meta/Analysis/Comp_comb_lscape.xlsx")
+df_comp_lscape <- read_xlsx("/homevol/jbhg/Browse_meta/Analysis/Comp_all_lscape.xlsx")
 
 #add an observation level factor
 df_comp_lscape <- df_comp_lscape %>% mutate(OLRE = row_number())
 ```
 
-Build Variance Covariance matrix using shared data column
+#### Variance Covariance matrix 
 
 ```{r}
 VCV_mat_lscape <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df_comp_lscape, rho = 0.5, nearpd = TRUE)
 ```
 
-Multilevel Meta-analytic model
+#### Multilevel Meta-analytic model
 
 ```{r}
 lscape_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape)
@@ -247,26 +258,45 @@ summary(lscape_MMA_mod1)
 orchaRd::i2_ml(lscape_MMA_mod1)
 ```
 
-Meta-regression models
+#### Multilevel Meta-regression models
 
 ```{r}
-lscape_MR_mod1 <- rma.mv(Effect_size ~ Method + Animal, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape)
-
+lscape_MR_mod1 <- rma.mv(Effect_size ~ Method + Plot_size, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape)
 summary(lscape_MR_mod1)
 
-lscape_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Animal, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape) #suppressed intercept - need to fix so it works at all levels
-
+lscape_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Plot_size, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape) #suppressed intercept
 summary(lscape_MR_mod2)
+
+lscape_MR_mod3 <- rma.mv(Effect_size ~ Animal + Plot_size, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape)
+summary(lscape_MR_mod3)
+
+lscape_MR_mod4 <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape)
+summary(lscape_MR_mod4)
+
+# last model spits warnings and then errors later due to coolinearity - other fencing has no variation when months NAs are removed. Removing it removes the warnings of dropping redundant predictors. Need to make a new VCV matrix with the reduced sample size.
+
+df_comp_lscape1 <- df_comp_lscape %>% filter(!(Method == "Other fencing"))
+
+VCV_mat_lscape1 <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df_comp_lscape1, rho = 0.5, nearpd = TRUE)
+
+lscape_MR_mod5<- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_lscape1, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape1)
+summary(lscape_MR_mod5)
 ```
 
-Orchard plots
+#### Orchard plots
 
 ```{r}
-orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD", angle = 0)
+orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD", angle = 90)
 mod_results(lscape_MR_mod1, mod = "Method", group = "Paper_ID")
+
+orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "SMD", angle = 90)
+mod_results(lscape_MR_mod3, mod = "Animal", group = "Paper_ID")
+
+lscape_MR5_bub <- mod_results(lscape_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method")
+bubble_plot(lscape_MR5_bub, mod = "Months", group = "Paper_ID", xlab = "Months")
 ```
 
-Non-independence sensitivity
+#### Non-independence sensitivity
 
 ```{r}
 lscape_MR_mod1_rob <- robust(lscape_MR_mod1, cluster = df_comp_lscape$Paper_ID)
@@ -281,21 +311,21 @@ summary(lscape_MR_mod1_rob)
 Read in
 
 ```{r}
-df_imp_plant <- readRDS("/homevol/jbhg/Browse_meta/Analysis/Imp_comb_plant")
+df_imp_plant <- readRDS("/homevol/jbhg/Browse_meta/Analysis/Imp_all_plant")
 
 # Add an observation level random effect
 df_imp_plant1 <- lapply(df_imp_plant, function(df){ 
   df %>% mutate(OLRE = row_number()) })
 ```
 
-Build Variance Covariance matrices using shared data column
+#### Variance Covariance matrices 
 
 ```{r}
 VCV_mat_plant_imp <- lapply(df_imp_plant1, function(df){
   vcalc(vi = Sampling_variance, cluster = Shared_data, data = df, rho = 0.5, nearpd = TRUE) })
 ```
 
-Multilevel Meta-analytic model
+#### Multilevel Meta-analytic model
 
 ```{r}
 imp_plant_MMA_mod1 <- list()
@@ -303,15 +333,13 @@ imp_plant_MMA_mod1 <- list()
 for (i in seq_along(df_imp_plant1)) { 
   imp_plant_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]]) }
 
-#pool step isn't working correctly - it pools the estimates adequately but loses the data structure so that orchard cannot recognise it as a rma.mv object.
-
 imp_plant_MMA_pool1 <- summary(pool(imp_plant_MMA_mod1))
 print(imp_plant_MMA_pool1)
 
 #orchaRd::i2_ml(imp_plant_MMA_pool1) #this will work on any of the frames in the imp_plant_MMA_mod1 list but not on the pooled
 ```
 
-Meta-regression models
+#### Multilevel Meta-regression models
 
 ```{r}
 imp_plant_MR_mod1 <- list()
@@ -329,14 +357,7 @@ for (i in seq_along(df_imp_plant1)) {
 summary(pool(imp_plant_MR_mod2))
 ```
 
-Orchard plots - these will not currently work. Need to work out a way to fix this.
-
-```{r}
-#orchard_plot(plant_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD")
-#mod_results(plant_MR_mod1, mod = "Method", group = "Paper_ID")
-```
-
-Non-independence sensitivity
+#### Non-independence sensitivity
 
 ```{r}
 imp_plant_MR_mod1_rob <- list()
@@ -352,21 +373,21 @@ summary(pool(imp_plant_MR_mod1_rob))
 Read in
 
 ```{r}
-df_imp_coupe <- readRDS("/homevol/jbhg/Browse_meta/Analysis/Imp_comb_coupe")
+df_imp_coupe <- readRDS("/homevol/jbhg/Browse_meta/Analysis/Imp_all_coupe")
 
 # Add an observation level random effect
 df_imp_coupe1 <- lapply(df_imp_coupe, function(df){ 
   df %>% mutate(OLRE = row_number()) })
 ```
 
-Build Variance Covariance matrices using shared data column
+#### Variance Covariance matrices 
 
 ```{r}
 VCV_mat_coupe_imp <- lapply(df_imp_coupe1, function(df){
   vcalc(vi = Sampling_variance, cluster = Shared_data, data = df, rho = 0.5, nearpd = TRUE) })
 ```
 
-Multilevel Meta-analytic model
+#### Multilevel Meta-analytic model
 
 ```{r}
 imp_coupe_MMA_mod1 <- list()
@@ -374,15 +395,13 @@ imp_coupe_MMA_mod1 <- list()
 for (i in seq_along(df_imp_coupe1)) { 
   imp_coupe_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_coupe_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe1[[i]], verbose = TRUE) }
 
-#pool step isn't working correctly - it pools the estimates adequately but loses the data structure so that orchard cannot recognise it as a rma.mv object.
-
 imp_coupe_MMA_pool1 <- summary(pool(imp_coupe_MMA_mod1))
 print(imp_coupe_MMA_pool1)
 
 #orchaRd::i2_ml(imp_plant_MMA_pool1) #this will work on any of the frames in the imp_plant_MMA_mod1 list but not on the pooled
 ```
 
-Meta-regression models
+#### Multilevel Meta-regression models
 
 ```{r}
 imp_coupe_MR_mod1 <- list()
@@ -400,14 +419,7 @@ for (i in seq_along(df_imp_coupe1)) {
 summary(pool(imp_coupe_MR_mod2))
 ```
 
-Orchard plots - these will not currently work. Need to work out a way to fix this.
-
-```{r}
-#orchard_plot(plant_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD")
-#mod_results(plant_MR_mod1, mod = "Method", group = "Paper_ID")
-```
-
-Non-independence sensitivity
+#### Non-independence sensitivity
 
 ```{r}
 imp_coupe_MR_mod1_rob <- list()
@@ -423,21 +435,21 @@ summary(pool(imp_coupe_MR_mod1_rob))
 Read in
 
 ```{r}
-df_imp_lscape <- readRDS("/homevol/jbhg/Browse_meta/Analysis/Imp_comb_lscape")
+df_imp_lscape <- readRDS("/homevol/jbhg/Browse_meta/Analysis/Imp_all_lscape")
 
 # Add an observation level random effect
 df_imp_lscape1 <- lapply(df_imp_lscape, function(df){ 
   df %>% mutate(OLRE = row_number()) })
 ```
 
-Build Variance Covariance matrices using shared data column
+#### Variance Covariance matrices
 
 ```{r}
 VCV_mat_lscape_imp <- lapply(df_imp_lscape1, function(df){
   vcalc(vi = Sampling_variance, cluster = Shared_data, data = df, rho = 0.5, nearpd = TRUE) })
 ```
 
-Multilevel Meta-analytic model
+#### Multilevel Meta-analytic model
 
 ```{r}
 imp_lscape_MMA_mod1 <- list()
@@ -445,15 +457,13 @@ imp_lscape_MMA_mod1 <- list()
 for (i in seq_along(df_imp_lscape1)) { 
   imp_lscape_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_lscape_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape1[[i]], verbose = TRUE) }
 
-#pool step isn't working correctly - it pools the estimates adequately but loses the data structure so that orchard cannot recognise it as a rma.mv object.
-
 imp_lscape_MMA_pool1 <- summary(pool(imp_lscape_MMA_mod1))
 print(imp_lscape_MMA_pool1)
 
 #orchaRd::i2_ml(imp_plant_MMA_pool1) #this will work on any of the frames in the imp_plant_MMA_mod1 list but not on the pooled
 ```
 
-Meta-regression models
+#### Multilevel Meta-regression models
 
 ```{r}
 imp_lscape_MR_mod1 <- list()
@@ -471,14 +481,7 @@ for (i in seq_along(df_imp_lscape1)) {
 summary(pool(imp_lscape_MR_mod2))
 ```
 
-Orchard plots - these will not currently work. Need to work out a way to fix this.
-
-```{r}
-#orchard_plot(plant_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD")
-#mod_results(plant_MR_mod1, mod = "Method", group = "Paper_ID")
-```
-
-Non-independence sensitivity
+#### Non-independence sensitivity
 
 ```{r}
 imp_lscape_MR_mod1_rob <- list()
@@ -488,3 +491,5 @@ for (i in seq_along(df_imp_lscape1)) {
 
 summary(pool(imp_lscape_MR_mod1_rob))
 ```
+
+### Publication bias
