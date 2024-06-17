@@ -198,7 +198,10 @@ df_SMD_trans_y2 <- df_SMD_trans_y1 %>% mutate(Con_trans_mean = logit_trans_means
 Put the data back together for error conversion
 
 ```{r}
-df_SMD <- bind_rows(df_SMD_trans_n, df_SMD_trans_y2)
+df_SMD_trans_n1 <- df_SMD_trans_n %>% mutate(Trans = "N")
+df_lo <- df_lo %>% mutate(Trans = "N") #these add an indicator that can be used later for simple sensitivity analyses
+
+df_SMD <- bind_rows(df_SMD_trans_n1, df_SMD_trans_y2)
 ```
 
 ### SMD Convert errors to SD
@@ -349,7 +352,7 @@ df_lo1 <- df_lo %>%
 
 ```{r}
 df_lo2 <- df_lo1 %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean, Trans)
 ```
 
 ### LO Count data
@@ -388,7 +391,7 @@ Execute and trim
 df_lo3 <- df_lo2 %>% 
   mutate(Con_count = to_count(Units, Con_mean, Con_N),
          Trt_count = to_count(Units, Trt_mean, Trt_N)) %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_count, Trt_N, Trt_count)
+  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_count, Trt_N, Trt_count, Trans)
 ```
 
 ## Imputation of missing SD and Plot Size
@@ -415,10 +418,10 @@ df_SMD_all <- bind_rows(df_SMD9, df_SMD_miss1)
 Ensure correct transformed means and SDs are being used
 
 ```{r}
-df_SMD_all1 <- df_SMD_all %>% mutate(Con_mean = if_else(is.na(Trans), Con_mean, Con_trans_mean),
-                              Con_SD = if_else(is.na(Trans), Con_SD, Con_trans_SD),
-                              Trt_mean = if_else(is.na(Trans), Trt_mean, Trt_trans_mean),
-                              Trt_SD = if_else(is.na(Trans), Trt_SD, Trt_trans_SD)) %>% 
+df_SMD_all1 <- df_SMD_all %>% mutate(Con_mean = if_else(Trans == "N", Con_mean, Con_trans_mean),
+                              Con_SD = if_else(Trans == "N", Con_SD, Con_trans_SD),
+                              Trt_mean = if_else(Trans == "N", Trt_mean, Trt_trans_mean),
+                              Trt_SD = if_else(Trans == "N", Trt_SD, Trt_trans_SD)) %>% 
   select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans)
 ```
 
@@ -468,7 +471,7 @@ summary(impData_all)
 mice::xyplot(impData_all, Con_SD ~ Con_mean)
 mice::xyplot(impData_all, Trt_SD ~ Trt_mean, xlim = c(0,20000), ylim = c(0,20000))
 
-# need a plot that shows the imputed plot size data
+# need to work out a plot for the plot size data so I can see the quality of the imputation
 
 # Get all imputed datasets
 df_imp_all <- complete(impData_all, "all")
