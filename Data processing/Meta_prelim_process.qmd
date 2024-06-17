@@ -667,7 +667,6 @@ df_imp_lo_conv <- lapply(df_imp_lo2, function(df) {
 })
 ```
 
-
 ### Rejoin
 
 Join converted log odds data with SMD data. The imputed case data was split after imputation, therefore I need to ensure that dataframe 1 from the SMD list is rejoined to dataframe 1 of the Log odds list.
@@ -676,13 +675,15 @@ Join converted log odds data with SMD data. The imputed case data was split afte
 df_comp_all <- bind_rows(df_comp_SMD2, df_comp_lo_conv) 
   
 df_imp_all <- list()
-
 for (i in seq_along(df_imp_SMD2)) { df_imp_all[[i]] <- bind_rows(df_imp_SMD2[[i]], df_imp_lo2[[i]]) }
+
+df_imp_all1 <- list()
+for (i in seq_along(df_imp_all)) { df_imp_all1[[i]] <- bind_rows(df_imp_all[[i]], df_comp_all) }
 ```
 
 ```{r}
 write_xlsx(df_comp_all, "/homevol/jbhg/Browse_meta/Data processing/All_compcase_es.xlsx")
-saveRDS(df_imp_all, "/homevol/jbhg/Browse_meta/Data processing/All_impcase_es")
+saveRDS(df_imp_all1, "/homevol/jbhg/Browse_meta/Data processing/All_impcase_es")
 ```
 
 ## Divide data for analysis
@@ -699,12 +700,12 @@ write_xlsx(df_comp_lscape, "/homevol/jbhg/Browse_meta/Analysis/Comp_all_lscape.x
 ```
 
 ```{r}
-df_imp_plant <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Plant") })
+df_imp_plant <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Plant") })
 saveRDS(df_imp_plant, "/homevol/jbhg/Browse_meta/Analysis/Imp_all_plant")
   
-df_imp_coupe <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Coupe") })
+df_imp_coupe <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Coupe") })
 saveRDS(df_imp_coupe, "/homevol/jbhg/Browse_meta/Analysis/Imp_all_coupe")
   
-df_imp_lscape <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Landscape") })
+df_imp_lscape <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Landscape") })
 saveRDS(df_imp_lscape, "/homevol/jbhg/Browse_meta/Analysis/Imp_all_lscape")
 ```
