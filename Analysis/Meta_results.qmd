@@ -223,10 +223,10 @@ summary(coupe_MR_mod5)
 #### Orchard plots
 
 ```{r}
-orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD", angle = 90)
+orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD", angle = 0, legend.pos = "top.left")
 mod_results(coupe_MR_mod1, mod = "Method", group = "Paper_ID")
 
-orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "SMD", angle = 90)
+orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "SMD", angle = 0)
 mod_results(coupe_MR_mod3, mod = "Animal", group = "Paper_ID")
 
 coupe_MR5_bub <- mod_results(coupe_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method")
@@ -308,10 +308,10 @@ summary(lscape_MR_mod5)
 #### Orchard plots
 
 ```{r}
-orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD", angle = 90)
+orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "SMD", angle = 0)
 mod_results(lscape_MR_mod1, mod = "Method", group = "Paper_ID")
 
-orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "SMD", angle = 90)
+orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "SMD", angle = 0)
 mod_results(lscape_MR_mod3, mod = "Animal", group = "Paper_ID")
 
 lscape_MR5_bub <- mod_results(lscape_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method")
@@ -558,5 +558,3 @@ summary(pool(imp_lscape_MR_mod1_rob))
 ```
 
 ### Publication bias
-
-

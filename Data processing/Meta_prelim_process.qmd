@@ -4,6 +4,7 @@ author: "Jamie"
 format: html
 editor: visual
 ---
+
 # Non-lethal mammal control Meta analysis - Data clean up and processing
 
 ## Initial processing
@@ -441,7 +442,6 @@ df_SMD_all3 <- df_SMD_all2 %>% mutate(Imputed = if_else(is.na(Con_SD & Plot_size
 
 df_lo4 <- df_lo3 %>% mutate(Imputed = if_else(is.na(Plot_size), "Y", "N"))
 ```
-
 
 #### Join data
 
