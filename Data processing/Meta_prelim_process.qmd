@@ -289,7 +289,7 @@ df_SMD5 <- df_SMD4 %>%
 
 ```{r}
 df_SMD6 <- df_SMD5 %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
+  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
 ```
 
 ### SMD Convert and transform errors
@@ -353,7 +353,7 @@ df_lo1 <- df_lo %>%
 
 ```{r}
 df_lo2 <- df_lo1 %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean, Trans)
+  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean, Trans)
 ```
 
 ### LO Count data
@@ -392,7 +392,7 @@ Execute and trim
 df_lo3 <- df_lo2 %>% 
   mutate(Con_count = to_count(Units, Con_mean, Con_N),
          Trt_count = to_count(Units, Trt_mean, Trt_N)) %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_count, Trt_N, Trt_count, Trans)
+  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_count, Trt_N, Trt_count, Trans)
 ```
 
 ## Imputation of missing SD and Plot Size
@@ -406,7 +406,7 @@ df_SMD_miss1 <- df_SMD_miss %>%
   rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`, Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`, Plot_size = `Plot_size(m2)`) %>% 
   mutate(Con_SD = NA,
          Trt_SD = NA) %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
+  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
   
 ```
 
@@ -423,7 +423,7 @@ df_SMD_all1 <- df_SMD_all %>% mutate(Con_mean = if_else(Trans == "N", Con_mean, 
                               Con_SD = if_else(Trans == "N", Con_SD, Con_trans_SD),
                               Trt_mean = if_else(Trans == "N", Trt_mean, Trt_trans_mean),
                               Trt_SD = if_else(Trans == "N", Trt_SD, Trt_trans_SD)) %>% 
-  select(Paper_ID, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans)
+  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans)
 ```
 
 #### Quality control
@@ -454,15 +454,15 @@ df_all <- bind_rows(df_SMD_all3, df_lo4)
 ```{r}
 # Make predictor matrix which defines which variables will be used to impute. 
 predmatHg <- make.predictorMatrix(df_all)
-predmatHg[, c(2:4,9:14,21:24)] <- 0
-predmatHg[c(1:16,18,19,21:24), ] <- 0 # these rows deal with SD imputation - using PaperID, plant genus, scale, plot size, time and N, mean and SD 
-predmatHg[7, c(1,6,15,18)] <- 1 # this imputes plot size using PaperID, scale and N (smaller plots = higher N and vice versa, Spake et al. (2020))
+predmatHg[, c(2:5,10:15,22:25)] <- 0
+predmatHg[c(1:17,19,20,22:25), ] <- 0 # these rows deal with SD imputation - using PaperID, plant genus, scale, plot size, time and N, mean and SD 
+predmatHg[8, c(1,7,16,19)] <- 1 # this imputes plot size using PaperID, scale and N (smaller plots = higher N and vice versa, Spake et al. (2020))
 ```
 
 ### Multivariate imputation with mice
 
 ```{r}
-impData_all <- mice(df_all, m=20, maxit=50, meth = c("","","","","","","pmm","","","","","","","","","","pmm","","","pmm","","","",""), pred = predmatHg, seed=500)
+impData_all <- mice(df_all, m=20, maxit=50, meth = c("","","","","","","","pmm","","","","","","","","","","pmm","","","pmm","","","",""), pred = predmatHg, seed=500)
 summary(impData_all)
 ```
 
@@ -709,3 +709,8 @@ saveRDS(df_imp_coupe, "/homevol/jbhg/Browse_meta/Analysis/Imp_all_coupe")
 df_imp_lscape <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Landscape") })
 saveRDS(df_imp_lscape, "/homevol/jbhg/Browse_meta/Analysis/Imp_all_lscape")
 ```
+
+```{r}
+rm(list = ls())
+```
+

@@ -5,92 +5,12 @@ format: html
 editor: visual
 ---
 
-# Non-lethal mammal control Meta analysis - Results
+# Non-lethal mammal control Meta analysis - Models
 
 ```{r}
 library(pacman)
 devtools::install_github("daniel1noble/orchaRd", ref = "main", force = TRUE)
 p_load(tidyverse, readxl, writexl, kableExtra, orchaRd, clubSandwich, metafor, mice, orchaRd)
-```
-
-## Literature synthesis
-
-(Fill gaps with information from Prelim_process quarto doc or from tables produced in this doc)
-
-```{r}
-#code to do the average effects per paper
-#Run code chunks from prelim_process to add Paper IDs to dataframe - take df1
-
-df_avg <- df1 %>% group_by(Paper_ID) %>% 
-  summarise(count = n())
-
-df_avg <- df_avg %>% 
-  summarise(N = nrow(df_avg),
-            mean = mean(df_avg$count),
-            sd = sd(df_avg$count),
-            min = min(df_avg$count),
-            max = max(df_avg$count))
-```
-
-Data were extracted from XXX papers, resulting in XXXX pairwise effect sizes (XXX SMD effects and XXX Log odds effects). Papers contributed an average of XXX +- XXX (mean +- SD) effect sizes to the data set (range: X-X). Experiments were distributed globally across XX countries, see Fig XXX (map of distribution of studies). One study conducted experiments in two countries (Barrere et al., 2021): France and Sweden, hence why N = number of papers + 1.
-
-```{r}
-#packages
-p_load(sf, rnaturalearth, rnaturalearthdata)
-
-#edit strings for map making packages
-df_map <- df1 %>% 
-  mutate(Country = case_when(Country == "USA" ~ "United States of America",
-                   Country == "UK" ~"United Kingdom",
-                   TRUE ~ Country))
-
-#get unique combinations of study and country - should be No. of studies + 1 because of Barrere et al
-df_map1 <- df_map %>% 
-  group_by(ref, Country) %>% 
-  distinct(ref, Country) %>% 
-  ungroup() %>% select(Country)
-
-df_map_inset <- df_map1 %>% 
-  count(Country, name = "N") %>% 
-  arrange(desc(N))
-
-#map
-world <- ne_countries(scale = "medium", returnclass = "sf")
-world <- subset(world, continent != "Antarctica") #Antarctica is unnecessary for this map - no forests
-
-world <- merge(world, df_map_inset, by.x = "name", by.y = "Country", all.x = TRUE)
-world$N[is.na(world$N)] <- 0
-world$is_zero <- ifelse(world$N == 0, "Zero", "Non-zero")
-
-map_plot <- ggplot() +
-  geom_sf(data = world[world$is_zero == "Zero", ], fill = "lightgrey", color = "black") +
-  geom_sf(data = world[world$is_zero == "Non-zero", ], aes(fill = N)) +
-  scale_fill_gradient(low = "lightblue", high = "darkgreen", name = "N") +
-  labs(caption = str_wrap("Fig XX. A map showing the distribution of experimental locations globally. Grey denotes N = 0. Inset table shows the number of papers that conducted experiments in given countries; note that N = No. of papers + 1 as Barrere et al. (2021) conducted experiments in both France and Sweden.", width = 110)) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        panel.border = element_blank(),
-        plot.margin = margin(0, 0, 0, 0, "mm"),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        plot.caption = element_text(hjust = 0.5))
-
-print(map_plot)
-
-#still want to add an inset table - it will increase the clarity of the figure as some of the small numbers are not easy to discern based solely on colour or make USA single colour then the others will be spread better?
-```
-
-Next tasks - write results for breakdown of the effects into broad categories. Produce tables for N \>25? and then a full table for supp info. Table will include avg effect size with SD/SE.
-
-```{r}
-#Table for supp info 
-
-```
-
-```{r}
-#Table for main text
-
-
 ```
 
 ## Complete case analysis
@@ -174,6 +94,18 @@ ggplot(df_comp_plant, aes(Effect_size, Sampling_variance, colour = Trans)) + geo
 ggplot(df_comp_plant, aes(Effect_size, Sampling_variance, colour = Effect_type)) + geom_point() + theme_bw()
 ```
 
+#### Save objects
+
+```{r}
+saveRDS(plant_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MMA")
+saveRDS(plant_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MR1")
+saveRDS(plant_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MR2")
+saveRDS(plant_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MR3")
+saveRDS(plant_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MR4")
+saveRDS(plant_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MR5")
+```
+
+
 ### Coupe scale
 
 Read in
@@ -249,6 +181,17 @@ Is there a discrepancy between data that were transformed? Or data that were con
 ggplot(df_comp_coupe, aes(Effect_size, Sampling_variance, colour = Trans)) + geom_point() + theme_bw()
 
 ggplot(df_comp_coupe, aes(Effect_size, Sampling_variance, colour = Effect_type)) + geom_point() + theme_bw()
+```
+
+#### Save objects
+
+```{r}
+saveRDS(coupe_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MMA")
+saveRDS(coupe_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MR1")
+saveRDS(coupe_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MR2")
+saveRDS(coupe_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MR3")
+saveRDS(coupe_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MR4")
+saveRDS(coupe_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MR5")
 ```
 
 ### Landscape scale
@@ -336,6 +279,23 @@ ggplot(df_comp_lscape, aes(Effect_size, Sampling_variance, colour = Trans)) + ge
 ggplot(df_comp_lscape, aes(Effect_size, Sampling_variance, colour = Effect_type)) + geom_point() + theme_bw()
 ```
 
+#### Save objects
+
+```{r}
+saveRDS(lscape_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MMA")
+saveRDS(lscape_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MR1")
+saveRDS(lscape_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MR2")
+saveRDS(lscape_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MR3")
+saveRDS(lscape_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MR4")
+saveRDS(lscape_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MR5")
+```
+
+```{r}
+# clear memory
+rm(list = ls())
+```
+
+
 ## Imputed case analysis
 
 ### Plant scale
@@ -411,6 +371,21 @@ for (i in seq_along(df_imp_plant1)) {
 summary(pool(imp_plant_MR_mod1_rob))
 ```
 
+#### Save objects
+
+```{r}
+saveRDS(imp_plant_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MMA")
+saveRDS(imp_plant_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MR1")
+saveRDS(imp_plant_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MR2")
+saveRDS(imp_plant_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MR3")
+saveRDS(imp_plant_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MR4")
+saveRDS(imp_plant_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MR5")
+```
+
+```{r}
+rm(list = ls())
+```
+
 ### Coupe scale
 
 Read in
@@ -484,6 +459,21 @@ for (i in seq_along(df_imp_coupe1)) {
 summary(pool(imp_coupe_MR_mod1_rob))
 ```
 
+#### Save objects
+
+```{r}
+saveRDS(imp_coupe_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MMA")
+saveRDS(imp_coupe_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MR1")
+saveRDS(imp_coupe_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MR2")
+saveRDS(imp_coupe_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MR3")
+saveRDS(imp_coupe_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MR4")
+saveRDS(imp_coupe_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MR5")
+```
+
+```{r}
+rm(list = ls())
+```
+
 ### Landscape scale
 
 Read in
@@ -555,6 +545,21 @@ for (i in seq_along(df_imp_lscape1)) {
   imp_lscape_MR_mod1_rob[[i]] <- robust(imp_lscape_MR_mod1[[i]], cluster = df_imp_lscape[[i]]$Paper_ID) }
 
 summary(pool(imp_lscape_MR_mod1_rob))
+```
+
+#### Save objects
+
+```{r}
+saveRDS(imp_lscape_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MMA")
+saveRDS(imp_lscape_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MR1")
+saveRDS(imp_lscape_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MR2")
+saveRDS(imp_lscape_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MR3")
+saveRDS(imp_lscape_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MR4")
+saveRDS(imp_lscape_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MR5")
+```
+
+```{r}
+rm(list = ls())
 ```
 
 ### Publication bias
