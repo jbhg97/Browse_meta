@@ -186,12 +186,12 @@ ggplot(df_comp_coupe, aes(Effect_size, Sampling_variance, colour = Effect_type))
 #### Save objects
 
 ```{r}
-saveRDS(coupe_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MMA")
-saveRDS(coupe_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MR1")
-saveRDS(coupe_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MR2")
-saveRDS(coupe_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MR3")
-saveRDS(coupe_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MR4")
-saveRDS(coupe_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/coupe/coupe_MR5")
+saveRDS(coupe_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MMA")
+saveRDS(coupe_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR1")
+saveRDS(coupe_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR2")
+saveRDS(coupe_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR3")
+saveRDS(coupe_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR4")
+saveRDS(coupe_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR5")
 ```
 
 ### Landscape scale
