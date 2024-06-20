@@ -20,7 +20,7 @@ p_load(tidyverse, readxl, writexl, kableExtra, orchaRd, clubSandwich, metafor, m
 Read in
 
 ```{r}
-df_comp_plant <- read_xlsx("/homevol/jbhg/Browse_meta/Analysis/Comp_all_plant.xlsx")
+df_comp_plant <- read_xlsx("/homevol/jbhg97/Browse_meta/Analysis/Comp_all_plant.xlsx")
 
 #add an observation level factor
 df_comp_plant <- df_comp_plant %>% mutate(OLRE = row_number())
@@ -97,21 +97,20 @@ ggplot(df_comp_plant, aes(Effect_size, Sampling_variance, colour = Effect_type))
 #### Save objects
 
 ```{r}
-saveRDS(plant_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MMA")
-saveRDS(plant_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MR1")
-saveRDS(plant_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MR2")
-saveRDS(plant_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MR3")
-saveRDS(plant_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MR4")
-saveRDS(plant_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Plant/Plant_MR5")
+saveRDS(plant_MMA_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MMA")
+saveRDS(plant_MR_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR1")
+saveRDS(plant_MR_mod2, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR2")
+saveRDS(plant_MR_mod3, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR3")
+saveRDS(plant_MR_mod4, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR4")
+saveRDS(plant_MR_mod5, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR5")
 ```
-
 
 ### Coupe scale
 
 Read in
 
 ```{r}
-df_comp_coupe <- read_xlsx("/homevol/jbhg/Browse_meta/Analysis/Comp_all_coupe.xlsx")
+df_comp_coupe <- read_xlsx("/homevol/jbhg97/Browse_meta/Analysis/Comp_all_coupe.xlsx")
 
 #add an observation level factor
 df_comp_coupe <- df_comp_coupe %>% mutate(OLRE = row_number())
@@ -186,12 +185,12 @@ ggplot(df_comp_coupe, aes(Effect_size, Sampling_variance, colour = Effect_type))
 #### Save objects
 
 ```{r}
-saveRDS(coupe_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MMA")
-saveRDS(coupe_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR1")
-saveRDS(coupe_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR2")
-saveRDS(coupe_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR3")
-saveRDS(coupe_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR4")
-saveRDS(coupe_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR5")
+saveRDS(coupe_MMA_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MMA")
+saveRDS(coupe_MR_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR1")
+saveRDS(coupe_MR_mod2, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR2")
+saveRDS(coupe_MR_mod3, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR3")
+saveRDS(coupe_MR_mod4, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR4")
+saveRDS(coupe_MR_mod5, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR5")
 ```
 
 ### Landscape scale
@@ -199,7 +198,7 @@ saveRDS(coupe_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/coupe_MR5
 Read in
 
 ```{r}
-df_comp_lscape <- read_xlsx("/homevol/jbhg/Browse_meta/Analysis/Comp_all_lscape.xlsx")
+df_comp_lscape <- read_xlsx("/homevol/jbhg97/Browse_meta/Analysis/Comp_all_lscape.xlsx")
 
 #add an observation level factor
 df_comp_lscape <- df_comp_lscape %>% mutate(OLRE = row_number())
@@ -282,19 +281,18 @@ ggplot(df_comp_lscape, aes(Effect_size, Sampling_variance, colour = Effect_type)
 #### Save objects
 
 ```{r}
-saveRDS(lscape_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MMA")
-saveRDS(lscape_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MR1")
-saveRDS(lscape_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MR2")
-saveRDS(lscape_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MR3")
-saveRDS(lscape_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MR4")
-saveRDS(lscape_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/lscape_MR5")
+saveRDS(lscape_MMA_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MMA")
+saveRDS(lscape_MR_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR1")
+saveRDS(lscape_MR_mod2, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR2")
+saveRDS(lscape_MR_mod3, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR3")
+saveRDS(lscape_MR_mod4, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR4")
+saveRDS(lscape_MR_mod5, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR5")
 ```
 
 ```{r}
 # clear memory
 rm(list = ls())
 ```
-
 
 ## Imputed case analysis
 
@@ -303,7 +301,7 @@ rm(list = ls())
 Read in
 
 ```{r}
-df_imp_plant <- readRDS("/homevol/jbhg/Browse_meta/Analysis/Imp_all_plant")
+df_imp_plant <- readRDS("/homevol/jbhg97/Browse_meta/Analysis/Imp_all_plant")
 
 # Add an observation level random effect
 df_imp_plant1 <- lapply(df_imp_plant, function(df){ 
@@ -374,12 +372,12 @@ summary(pool(imp_plant_MR_mod1_rob))
 #### Save objects
 
 ```{r}
-saveRDS(imp_plant_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MMA")
-saveRDS(imp_plant_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MR1")
-saveRDS(imp_plant_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MR2")
-saveRDS(imp_plant_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MR3")
-saveRDS(imp_plant_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MR4")
-saveRDS(imp_plant_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Plant/imp_Plant_MR5")
+saveRDS(imp_plant_MMA_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/imp_Plant_MMA")
+saveRDS(imp_plant_MR_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/imp_Plant_MR1")
+saveRDS(imp_plant_MR_mod2, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/imp_Plant_MR2")
+saveRDS(imp_plant_MR_mod3, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/imp_Plant_MR3")
+saveRDS(imp_plant_MR_mod4, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/imp_Plant_MR4")
+saveRDS(imp_plant_MR_mod5, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/imp_Plant_MR5")
 ```
 
 ```{r}
@@ -391,7 +389,7 @@ rm(list = ls())
 Read in
 
 ```{r}
-df_imp_coupe <- readRDS("/homevol/jbhg/Browse_meta/Analysis/Imp_all_coupe")
+df_imp_coupe <- readRDS("/homevol/jbhg97/Browse_meta/Analysis/Imp_all_coupe")
 
 # Add an observation level random effect
 df_imp_coupe1 <- lapply(df_imp_coupe, function(df){ 
@@ -462,12 +460,12 @@ summary(pool(imp_coupe_MR_mod1_rob))
 #### Save objects
 
 ```{r}
-saveRDS(imp_coupe_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MMA")
-saveRDS(imp_coupe_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MR1")
-saveRDS(imp_coupe_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MR2")
-saveRDS(imp_coupe_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MR3")
-saveRDS(imp_coupe_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MR4")
-saveRDS(imp_coupe_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Coupe/imp_coupe_MR5")
+saveRDS(imp_coupe_MMA_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/imp_coupe_MMA")
+saveRDS(imp_coupe_MR_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/imp_coupe_MR1")
+saveRDS(imp_coupe_MR_mod2, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/imp_coupe_MR2")
+saveRDS(imp_coupe_MR_mod3, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/imp_coupe_MR3")
+saveRDS(imp_coupe_MR_mod4, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/imp_coupe_MR4")
+saveRDS(imp_coupe_MR_mod5, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/imp_coupe_MR5")
 ```
 
 ```{r}
@@ -479,7 +477,7 @@ rm(list = ls())
 Read in
 
 ```{r}
-df_imp_lscape <- readRDS("/homevol/jbhg/Browse_meta/Analysis/Imp_all_lscape")
+df_imp_lscape <- readRDS("/homevol/jbhg97/Browse_meta/Analysis/Imp_all_lscape")
 
 # Add an observation level random effect
 df_imp_lscape1 <- lapply(df_imp_lscape, function(df){ 
@@ -550,12 +548,12 @@ summary(pool(imp_lscape_MR_mod1_rob))
 #### Save objects
 
 ```{r}
-saveRDS(imp_lscape_MMA_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MMA")
-saveRDS(imp_lscape_MR_mod1, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MR1")
-saveRDS(imp_lscape_MR_mod2, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MR2")
-saveRDS(imp_lscape_MR_mod3, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MR3")
-saveRDS(imp_lscape_MR_mod4, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MR4")
-saveRDS(imp_lscape_MR_mod5, "/homevol/jbhg/Browse_meta/Results/Models/Landscape/imp_lscape_MR5")
+saveRDS(imp_lscape_MMA_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/imp_lscape_MMA")
+saveRDS(imp_lscape_MR_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/imp_lscape_MR1")
+saveRDS(imp_lscape_MR_mod2, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/imp_lscape_MR2")
+saveRDS(imp_lscape_MR_mod3, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/imp_lscape_MR3")
+saveRDS(imp_lscape_MR_mod4, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/imp_lscape_MR4")
+saveRDS(imp_lscape_MR_mod5, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/imp_lscape_MR5")
 ```
 
 ```{r}

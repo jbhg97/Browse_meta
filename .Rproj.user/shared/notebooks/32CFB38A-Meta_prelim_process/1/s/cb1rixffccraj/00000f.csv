@@ -1,2 +1,0 @@
-"0","df_SMD_var <- df_SMD_all2 %>% "
-"0","  distinct(Variable)"

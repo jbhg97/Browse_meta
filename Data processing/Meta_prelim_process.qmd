@@ -19,7 +19,7 @@ p_load(tidyverse, readxl, here, writexl, meta, metafor, mice, miceadds, VIM, pat
 Read in
 
 ```{r}
-df <- read_excel(here("/homevol/jbhg/Browse_meta/Data processing", "Lit review data.xlsx"), sheet = "Effects (post responses)")
+df <- read_excel(here("/homevol/jbhg97/Browse_meta/Data processing", "Lit review data.xlsx"), sheet = "Effects (post responses)")
 ```
 
 ### Assign papers ID codes
@@ -601,7 +601,7 @@ df_imp_SMD2 <- lapply(df_imp_SMD1, function(df){
 #### Write out
 
 ```{r}
-saveRDS(df_imp_SMD2, "/homevol/jbhg/Browse_meta/Data processing/SMD_impcase_es")
+saveRDS(df_imp_SMD2, "/homevol/jbhg97/Browse_meta/Data processing/SMD_impcase_es")
 ```
 
 ### Log odds effects
@@ -624,7 +624,7 @@ df_imp_lo2 <- lapply(df_imp_lo1, function(df){
 #### Write out
 
 ```{r}
-saveRDS(df_imp_lo2, "/homevol/jbhg/Browse_meta/Data processing/LO_impcase_es")
+saveRDS(df_imp_lo2, "/homevol/jbhg97/Browse_meta/Data processing/LO_impcase_es")
 ```
 
 ## All effects comparison
@@ -682,35 +682,34 @@ for (i in seq_along(df_imp_all)) { df_imp_all1[[i]] <- bind_rows(df_imp_all[[i]]
 ```
 
 ```{r}
-write_xlsx(df_comp_all, "/homevol/jbhg/Browse_meta/Data processing/All_compcase_es.xlsx")
-saveRDS(df_imp_all1, "/homevol/jbhg/Browse_meta/Data processing/All_impcase_es")
+write_xlsx(df_comp_all, "/homevol/jbhg97/Browse_meta/Data processing/All_compcase_es.xlsx")
+saveRDS(df_imp_all1, "/homevol/jbhg97/Browse_meta/Data processing/All_impcase_es")
 ```
 
 ## Divide data for analysis
 
 ```{r}
 df_comp_plant <- df_comp_all %>% filter(Scale == "Plant")
-write_xlsx(df_comp_plant, "/homevol/jbhg/Browse_meta/Analysis/Comp_all_plant.xlsx")
+write_xlsx(df_comp_plant, "/homevol/jbhg97/Browse_meta/Analysis/Comp_all_plant.xlsx")
   
 df_comp_coupe <- df_comp_all %>% filter(Scale == "Coupe")
-write_xlsx(df_comp_coupe, "/homevol/jbhg/Browse_meta/Analysis/Comp_all_coupe.xlsx")
+write_xlsx(df_comp_coupe, "/homevol/jbhg97/Browse_meta/Analysis/Comp_all_coupe.xlsx")
   
 df_comp_lscape <- df_comp_all %>% filter(Scale == "Landscape")
-write_xlsx(df_comp_lscape, "/homevol/jbhg/Browse_meta/Analysis/Comp_all_lscape.xlsx")
+write_xlsx(df_comp_lscape, "/homevol/jbhg97/Browse_meta/Analysis/Comp_all_lscape.xlsx")
 ```
 
 ```{r}
 df_imp_plant <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Plant") })
-saveRDS(df_imp_plant, "/homevol/jbhg/Browse_meta/Analysis/Imp_all_plant")
+saveRDS(df_imp_plant, "/homevol/jbhg97/Browse_meta/Analysis/Imp_all_plant")
   
 df_imp_coupe <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Coupe") })
-saveRDS(df_imp_coupe, "/homevol/jbhg/Browse_meta/Analysis/Imp_all_coupe")
+saveRDS(df_imp_coupe, "/homevol/jbhg97/Browse_meta/Analysis/Imp_all_coupe")
   
 df_imp_lscape <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Landscape") })
-saveRDS(df_imp_lscape, "/homevol/jbhg/Browse_meta/Analysis/Imp_all_lscape")
+saveRDS(df_imp_lscape, "/homevol/jbhg97/Browse_meta/Analysis/Imp_all_lscape")
 ```
 
 ```{r}
 rm(list = ls())
 ```
-
