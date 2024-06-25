@@ -24,12 +24,21 @@ df <- read_excel(here("/homevol/jbhg97/Browse_meta/Data processing", "Lit review
 
 ### Assign papers ID codes
 
-I need to assign each paper an ID code that can be tied to the effects that were extracted from that paper. This will make downstream processing and modelling easier.
+I need to assign each paper an ID code that can be tied to the effects that were extracted from that paper. This will make downstream processing and modelling easier. 
 
 ```{r}
-df <- df %>% mutate(ref = paste(Authors,`Article Title`, `Source Title`))
+df <- df %>% mutate(ref = paste(Authors, `Article Title`, `Source Title`))
 
 df1 <- df %>% group_by(ref) %>% mutate(Paper_ID = cur_group_id()) %>% ungroup()
+```
+
+I also need to attach publication year to all effects for publication bias tests.
+
+```{r}
+pub_yr <- read_excel("/homevol/jbhg97/Browse_meta/Data processing/Lit review data.xlsx", sheet = "Complete list")
+pub_yr1 <- pub_yr %>% mutate(ref = paste(Authors, `Article Title`, `Source Title`)) %>% select(ref, Year)
+
+df1 <- left_join(df1, pub_yr1, by = "ref")
 ```
 
 ### Standardise time
@@ -289,7 +298,7 @@ df_SMD5 <- df_SMD4 %>%
 
 ```{r}
 df_SMD6 <- df_SMD5 %>% 
-  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
+  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean, Year)
 ```
 
 ### SMD Convert and transform errors
@@ -316,7 +325,7 @@ df_SMD_sdtrans1 <- df_SMD_sdtrans %>% mutate(Con_trans_SD = logit_trans_SD(Con_S
 Write this dataframe out as a record of the Complete case data showing both raw means and sds and transformed means and sds
 
 ```{r}
-write_xlsx(df_SMD_sdtrans1, "/homevol/jbhg/Browse_meta/Data processing/SMD_compcase_raw and transform.xlsx")
+write_xlsx(df_SMD_sdtrans1, "/homevol/jbhg97/Browse_meta/Data processing/SMD_compcase_raw and transform.xlsx")
 ```
 
 ### SMD Quality control 1
@@ -353,7 +362,7 @@ df_lo1 <- df_lo %>%
 
 ```{r}
 df_lo2 <- df_lo1 %>% 
-  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean, Trans)
+  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Trt_N, Trt_mean, Trans, Year)
 ```
 
 ### LO Count data
@@ -392,7 +401,7 @@ Execute and trim
 df_lo3 <- df_lo2 %>% 
   mutate(Con_count = to_count(Units, Con_mean, Con_N),
          Trt_count = to_count(Units, Trt_mean, Trt_N)) %>% 
-  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_count, Trt_N, Trt_count, Trans)
+  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_count, Trt_N, Trt_count, Trans, Year)
 ```
 
 ## Imputation of missing SD and Plot Size
@@ -406,7 +415,7 @@ df_SMD_miss1 <- df_SMD_miss %>%
   rename(Method = `Control method`, Type = `Method sub-type`, Plant_genus = `Plant genus`, Scale = `Scale (plant, coupe, landscape)`, Variable = `Var. measured`, Confounding = `Confounding factors`, Effect_type = `Effect type`, Con_N = `Control sample size`, Con_mean = `Control mean`, Trt_N = `Treatment sample`, Trt_mean = `Treatment mean`, Plot_size = `Plot_size(m2)`) %>% 
   mutate(Con_SD = NA,
          Trt_SD = NA) %>% 
-  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean)
+  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Con_trans_mean, Trt_trans_mean, Year)
   
 ```
 
@@ -423,7 +432,7 @@ df_SMD_all1 <- df_SMD_all %>% mutate(Con_mean = if_else(Trans == "N", Con_mean, 
                               Con_SD = if_else(Trans == "N", Con_SD, Con_trans_SD),
                               Trt_mean = if_else(Trans == "N", Trt_mean, Trt_trans_mean),
                               Trt_SD = if_else(Trans == "N", Trt_SD, Trt_trans_SD)) %>% 
-  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans)
+  select(Paper_ID, Country, Method, Type, Animal, Plant_genus, Scale, Plot_size, Months, Variable, Units, Confounding, Effect_type, Shared_data, Repeat_measures, Con_N, Con_mean, Con_SD, Trt_N, Trt_mean, Trt_SD, Trans, Year)
 ```
 
 #### Quality control
@@ -454,15 +463,15 @@ df_all <- bind_rows(df_SMD_all3, df_lo4)
 ```{r}
 # Make predictor matrix which defines which variables will be used to impute. 
 predmatHg <- make.predictorMatrix(df_all)
-predmatHg[, c(2:5,10:15,22:25)] <- 0
-predmatHg[c(1:17,19,20,22:25), ] <- 0 # these rows deal with SD imputation - using PaperID, plant genus, scale, plot size, time and N, mean and SD 
+predmatHg[, c(2:5,10:15,22:26)] <- 0
+predmatHg[c(1:17,19,20,22:26), ] <- 0 # these rows deal with SD imputation - using PaperID, plant genus, scale, plot size, time and N, mean and SD 
 predmatHg[8, c(1,7,16,19)] <- 1 # this imputes plot size using PaperID, scale and N (smaller plots = higher N and vice versa, Spake et al. (2020))
 ```
 
 ### Multivariate imputation with mice
 
 ```{r}
-impData_all <- mice(df_all, m=20, maxit=50, meth = c("","","","","","","","pmm","","","","","","","","","","pmm","","","pmm","","","",""), pred = predmatHg, seed=500)
+impData_all <- mice(df_all, m=20, maxit=50, meth = c("","","","","","","","pmm","","","","","","","","","","pmm","","","pmm","","","","",""), pred = predmatHg, seed=500)
 summary(impData_all)
 ```
 
@@ -534,7 +543,7 @@ df_comp_SMD2 <- df_comp_SMD1 %>% unnest_wider(Effect_size) %>% mutate(Effect_siz
 #### Write out
 
 ```{r}
-write_xlsx(df_comp_SMD2, "/homevol/jbhg/Browse_meta/Data processing/SMD_compcase_es.xlsx")
+write_xlsx(df_comp_SMD2, "/homevol/jbhg97/Browse_meta/Data processing/SMD_compcase_es.xlsx")
 ```
 
 ### Log odds effects
@@ -575,7 +584,7 @@ df_comp_lo2 <- df_comp_lo1 %>% unnest_wider(Effect_size) %>% mutate(Effect_size 
 #### Write out
 
 ```{r}
-write_xlsx(df_comp_lo2, "/homevol/jbhg/Browse_meta/Data processing/LO_compcase_es.xlsx")
+write_xlsx(df_comp_lo2, "/homevol/jbhg97/Browse_meta/Data processing/LO_compcase_es.xlsx")
 ```
 
 ## Imputed case effects

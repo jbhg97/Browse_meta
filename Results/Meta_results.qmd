@@ -15,7 +15,6 @@ df <- readRDS("/homevol/jbhg/Browse_meta/Data processing/All_impcase_es")
 df1 <- df[[1]] #select one of the imputed case frames to do the summary statistics of literature synthesis.
 ```
 
-
 # Results
 
 ## Literature synthesis

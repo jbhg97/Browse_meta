@@ -80,8 +80,13 @@ bubble_plot(plant_MR5_bub, mod = "Months", group = "Paper_ID", xlab = "Months")
 
 ```{r}
 plant_MR_mod1_rob <- robust(plant_MR_mod1, cluster = df_comp_plant$Paper_ID)
-
 summary(plant_MR_mod1_rob)
+
+plant_MR_mod3_rob <- robust(plant_MR_mod3, cluster = df_comp_plant$Paper_ID)
+summary(plant_MR_mod3_rob)
+
+plant_MR_mod5_rob <- robust(plant_MR_mod5, cluster = df_comp_plant$Paper_ID)
+summary(plant_MR_mod5_rob)
 ```
 
 #### Sensitivity plots
@@ -94,15 +99,61 @@ ggplot(df_comp_plant, aes(Effect_size, Sampling_variance, colour = Trans)) + geo
 ggplot(df_comp_plant, aes(Effect_size, Sampling_variance, colour = Effect_type)) + geom_point() + theme_bw()
 ```
 
+#### Publication bias
+
+##### Funnel plots
+
+Will need to use the effective sample size rather than the precision due to the correlation between sampling variance (used to derive precision) and SMD effect size.
+
+```{r}
+df_comp_plant1 <- df_comp_plant %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N + Trt_N))
+```
+
+```{r}
+funnel(df_comp_plant1$Effect_size, df_comp_plant1$Sampling_variance, ni = df_comp_plant1$Eff_SS, yaxis="ni",
+       ylab = "Effective sample size",
+       xlab = "Effect size (SMD)") 
+```
+
+##### Meta-regression
+
+```{r}
+#centre the publication year
+#calculate sqrt inverse effective sample size
+df_comp_plant2 <- df_comp_plant1 %>% mutate(Year = Year - mean(Year),
+                                            root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
+
+```
+
+```{r}
+plant_MMA_pb1 <- rma.mv(Effect_size, V = VCV_mat_plant, mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant2)
+summary(plant_MMA_pb1)
+```
+
+```{r}
+plant_MR_pb1 <- rma.mv(Effect_size, V = VCV_mat_plant, mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant2)
+summary(plant_MR_pb1)
+
+plant_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_plant, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant2)
+summary(plant_MR_pb3)
+
+plant_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_plant, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant2)
+summary(plant_MR_pb5)
+```
+
 #### Save objects
 
 ```{r}
 saveRDS(plant_MMA_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MMA")
+saveRDS(plant_MMA_pb1, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MMA_pb")
 saveRDS(plant_MR_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR1")
 saveRDS(plant_MR_mod2, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR2")
 saveRDS(plant_MR_mod3, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR3")
 saveRDS(plant_MR_mod4, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR4")
 saveRDS(plant_MR_mod5, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR5")
+saveRDS(plant_MR_pb1, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR1_pb")
+saveRDS(plant_MR_pb3, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR3_pb")
+saveRDS(plant_MR_pb5, "/homevol/jbhg97/Browse_meta/Results/Models/Plant/Plant_MR5_pb")
 ```
 
 ### Coupe scale
@@ -161,15 +212,20 @@ orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "SMD", an
 mod_results(coupe_MR_mod3, mod = "Animal", group = "Paper_ID")
 
 coupe_MR5_bub <- mod_results(coupe_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method")
-bubble_plot(coupe_MR5_bub, mod = "Months", group = "Paper_ID", xlab = "Months", legend.pos = "bottom.right")
+bubble_plot(coupe_MR5_bub, mod = "Months", group = "Paper_ID", xlab = "Months", legend.pos = "bottom.right") 
 ```
 
 #### Non-independence sensitivity
 
 ```{r}
 coupe_MR_mod1_rob <- robust(coupe_MR_mod1, cluster = df_comp_coupe$Paper_ID)
-
 summary(coupe_MR_mod1_rob)
+
+coupe_MR_mod3_rob <- robust(coupe_MR_mod3, cluster = df_comp_coupe$Paper_ID)
+summary(coupe_MR_mod3_rob)
+
+coupe_MR_mod5_rob <- robust(coupe_MR_mod5, cluster = df_comp_coupe$Paper_ID)
+summary(coupe_MR_mod5_rob)
 ```
 
 #### Sensitivity plots
@@ -182,15 +238,61 @@ ggplot(df_comp_coupe, aes(Effect_size, Sampling_variance, colour = Trans)) + geo
 ggplot(df_comp_coupe, aes(Effect_size, Sampling_variance, colour = Effect_type)) + geom_point() + theme_bw()
 ```
 
+#### Publication bias
+
+##### Funnel plots
+
+Will need to use the effective sample size rather than the precision due to the correlation between sampling variance (used to derive precision) and SMD effect size.
+
+```{r}
+df_comp_coupe1 <- df_comp_coupe %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N + Trt_N))
+```
+
+```{r}
+funnel(df_comp_coupe1$Effect_size, df_comp_coupe1$Sampling_variance, ni = df_comp_coupe1$Eff_SS, yaxis="ni",
+       ylab = "Effective sample size",
+       xlab = "Effect size (SMD)") 
+```
+
+##### Meta-regression
+
+```{r}
+#centre the publication year
+#calculate sqrt inverse effective sample size
+df_comp_coupe2 <- df_comp_coupe1 %>% mutate(Year = Year - mean(Year),
+                                            root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
+
+```
+
+```{r}
+coupe_MMA_pb1 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe2)
+summary(coupe_MMA_pb1)
+```
+
+```{r}
+coupe_MR_pb1 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe2)
+summary(coupe_MR_pb1)
+
+coupe_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe2)
+summary(coupe_MR_pb3)
+
+coupe_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe2)
+summary(coupe_MR_pb5)
+```
+
 #### Save objects
 
 ```{r}
 saveRDS(coupe_MMA_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MMA")
+saveRDS(coupe_MMA_pb1, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MMA_pb")
 saveRDS(coupe_MR_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR1")
 saveRDS(coupe_MR_mod2, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR2")
 saveRDS(coupe_MR_mod3, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR3")
 saveRDS(coupe_MR_mod4, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR4")
 saveRDS(coupe_MR_mod5, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR5")
+saveRDS(coupe_MR_pb1, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR1_pb")
+saveRDS(coupe_MR_pb3, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR3_pb")
+saveRDS(coupe_MR_pb5, "/homevol/jbhg97/Browse_meta/Results/Models/Coupe/coupe_MR5_pb")
 ```
 
 ### Landscape scale
@@ -264,8 +366,13 @@ bubble_plot(lscape_MR5_bub, mod = "Months", group = "Paper_ID", xlab = "Months",
 
 ```{r}
 lscape_MR_mod1_rob <- robust(lscape_MR_mod1, cluster = df_comp_lscape$Paper_ID)
-
 summary(lscape_MR_mod1_rob)
+
+lscape_MR_mod3_rob <- robust(lscape_MR_mod3, cluster = df_comp_lscape$Paper_ID)
+summary(lscape_MR_mod3_rob)
+
+lscape_MR_mod5_rob <- robust(lscape_MR_mod5, cluster = df_comp_lscape$Paper_ID)
+summary(lscape_MR_mod5_rob)
 ```
 
 #### Sensitivity plots
@@ -278,15 +385,61 @@ ggplot(df_comp_lscape, aes(Effect_size, Sampling_variance, colour = Trans)) + ge
 ggplot(df_comp_lscape, aes(Effect_size, Sampling_variance, colour = Effect_type)) + geom_point() + theme_bw()
 ```
 
+#### Publication bias
+
+##### Funnel plots
+
+Will need to use the effective sample size rather than the precision due to the correlation between sampling variance (used to derive precision) and SMD effect size.
+
+```{r}
+df_comp_lscape1 <- df_comp_lscape %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N + Trt_N))
+```
+
+```{r}
+funnel(df_comp_lscape1$Effect_size, df_comp_lscape1$Sampling_variance, ni = df_comp_lscape1$Eff_SS, yaxis="ni",
+       ylab = "Effective sample size",
+       xlab = "Effect size (SMD)") 
+```
+
+##### Meta-regression
+
+```{r}
+#centre the publication year
+#calculate sqrt inverse effective sample size
+df_comp_lscape2 <- df_comp_lscape1 %>% mutate(Year = Year - mean(Year),
+                                            root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
+
+```
+
+```{r}
+lscape_MMA_pb1 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape2)
+summary(lscape_MMA_pb1)
+```
+
+```{r}
+lscape_MR_pb1 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape2)
+summary(lscape_MR_pb1)
+
+lscape_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape2)
+summary(lscape_MR_pb3)
+
+lscape_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape2)
+summary(lscape_MR_pb5)
+```
+
 #### Save objects
 
 ```{r}
 saveRDS(lscape_MMA_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MMA")
+saveRDS(lscape_MMA_pb1, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MMA_pb")
 saveRDS(lscape_MR_mod1, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR1")
 saveRDS(lscape_MR_mod2, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR2")
 saveRDS(lscape_MR_mod3, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR3")
 saveRDS(lscape_MR_mod4, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR4")
 saveRDS(lscape_MR_mod5, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR5")
+saveRDS(lscape_MR_pb1, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR1_pb")
+saveRDS(lscape_MR_pb3, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR3_pb")
+saveRDS(lscape_MR_pb5, "/homevol/jbhg97/Browse_meta/Results/Models/Landscape/lscape_MR5_pb")
 ```
 
 ```{r}
@@ -367,6 +520,20 @@ for (i in seq_along(df_imp_plant1)) {
   imp_plant_MR_mod1_rob[[i]] <- robust(imp_plant_MR_mod1[[i]], cluster = df_imp_plant[[i]]$Paper_ID) }
 
 summary(pool(imp_plant_MR_mod1_rob))
+
+imp_plant_MR_mod3_rob <- list()
+
+for (i in seq_along(df_imp_plant1)) {
+  imp_plant_MR_mod3_rob[[i]] <- robust(imp_plant_MR_mod3[[i]], cluster = df_imp_plant[[i]]$Paper_ID) }
+
+summary(pool(imp_plant_MR_mod3_rob))
+
+imp_plant_MR_mod5_rob <- list()
+
+for (i in seq_along(df_imp_plant1)) {
+  imp_plant_MR_mod5_rob[[i]] <- robust(imp_plant_MR_mod5[[i]], cluster = df_imp_plant[[i]]$Paper_ID) }
+
+summary(pool(imp_plant_MR_mod5_rob))
 ```
 
 #### Save objects
@@ -455,6 +622,20 @@ for (i in seq_along(df_imp_coupe1)) {
   imp_coupe_MR_mod1_rob[[i]] <- robust(imp_coupe_MR_mod1[[i]], cluster = df_imp_coupe[[i]]$Paper_ID) }
 
 summary(pool(imp_coupe_MR_mod1_rob))
+
+imp_plant_MR_mod3_rob <- list()
+
+for (i in seq_along(df_imp_coupe1)) {
+  imp_coupe_MR_mod3_rob[[i]] <- robust(imp_coupe_MR_mod3[[i]], cluster = df_imp_coupe[[i]]$Paper_ID) }
+
+summary(pool(imp_coupe_MR_mod3_rob))
+
+imp_coupe_MR_mod5_rob <- list()
+
+for (i in seq_along(df_imp_coupe1)) {
+  imp_coupe_MR_mod5_rob[[i]] <- robust(imp_coupe_MR_mod5[[i]], cluster = df_imp_coupe[[i]]$Paper_ID) }
+
+summary(pool(imp_coupe_MR_mod5_rob))
 ```
 
 #### Save objects
@@ -543,6 +724,20 @@ for (i in seq_along(df_imp_lscape1)) {
   imp_lscape_MR_mod1_rob[[i]] <- robust(imp_lscape_MR_mod1[[i]], cluster = df_imp_lscape[[i]]$Paper_ID) }
 
 summary(pool(imp_lscape_MR_mod1_rob))
+
+imp_lscape_MR_mod3_rob <- list()
+
+for (i in seq_along(df_imp_lscape1)) {
+  imp_lscape_MR_mod3_rob[[i]] <- robust(imp_lscape_MR_mod3[[i]], cluster = df_imp_lscape[[i]]$Paper_ID) }
+
+summary(pool(imp_lscape_MR_mod3_rob))
+
+imp_lscape_MR_mod5_rob <- list()
+
+for (i in seq_along(df_imp_lscape1)) {
+  imp_lscape_MR_mod5_rob[[i]] <- robust(imp_lscape_MR_mod5[[i]], cluster = df_imp_lscape[[i]]$Paper_ID) }
+
+summary(pool(imp_lscape_MR_mod5_rob))
 ```
 
 #### Save objects
@@ -560,4 +755,5 @@ saveRDS(imp_lscape_MR_mod5, "/homevol/jbhg97/Browse_meta/Results/Models/Landscap
 rm(list = ls())
 ```
 
-### Publication bias
+
+
