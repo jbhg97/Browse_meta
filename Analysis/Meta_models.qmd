@@ -533,15 +533,56 @@ for (i in seq_along(df_imp_plant1)) {
 summary(pool(imp_plant_MR_mod5_rob))
 ```
 
+#### Publication bias
+
+##### Meta-regression
+
+```{r}
+#centre the publication year
+#calculate sqrt inverse effective sample size
+
+df_imp_plant2 <- lapply(df_imp_plant1, function(df){ 
+  df %>% mutate(Year = Year - mean(Year), 
+                root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) ) })
+```
+
+```{r}
+imp_plant_MMA_pb1 <- list()
+for (i in seq_along(df_imp_plant2)) {
+  imp_plant_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
+summary(pool(imp_plant_MMA_pb1))
+```
+
+```{r}
+imp_plant_MR_pb1 <- list()
+for (i in seq_along(df_imp_plant2)) {
+  imp_plant_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
+summary(pool(imp_plant_MR_pb1))
+
+imp_plant_MR_pb3 <- list()
+for (i in seq_along(df_imp_plant2)) {
+  imp_plant_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
+summary(pool(imp_plant_MR_pb3))
+
+imp_plant_MR_pb5 <- list()
+for (i in seq_along(df_imp_plant2)) {
+  imp_plant_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
+summary(pool(imp_plant_MR_pb5))
+```
+
 #### Save objects
 
 ```{r}
 saveRDS(imp_plant_MMA_mod1, here("Results", "Models", "Plant", "imp_Plant_MMA.rds"))
+saveRDS(imp_plant_MMA_pb1, here("Results", "Models", "Plant", "imp_Plant_MMA_pb1.rds"))
 saveRDS(imp_plant_MR_mod1, here("Results", "Models", "Plant", "imp_Plant_MR1.rds"))
 saveRDS(imp_plant_MR_mod2, here("Results", "Models", "Plant", "imp_Plant_MR2.rds"))
 saveRDS(imp_plant_MR_mod3, here("Results", "Models", "Plant", "imp_Plant_MR3.rds"))
 saveRDS(imp_plant_MR_mod4, here("Results", "Models", "Plant", "imp_Plant_MR4.rds"))
 saveRDS(imp_plant_MR_mod5, here("Results", "Models", "Plant", "imp_Plant_MR5.rds"))
+saveRDS(imp_plant_MR_pb1, here("Results", "Models", "Plant", "imp_Plant_MR_pb1.rds"))
+saveRDS(imp_plant_MR_pb3, here("Results", "Models", "Plant", "imp_Plant_MR_pb3.rds"))
+saveRDS(imp_plant_MR_pb5, here("Results", "Models", "Plant", "imp_Plant_MR_pb5.rds"))
 ```
 
 ```{r}
@@ -635,15 +676,56 @@ for (i in seq_along(df_imp_coupe1)) {
 summary(pool(imp_coupe_MR_mod5_rob))
 ```
 
+#### Publication bias
+
+##### Meta-regression
+
+```{r}
+#centre the publication year
+#calculate sqrt inverse effective sample size
+
+df_imp_coupe2 <- lapply(df_imp_coupe1, function(df){ 
+  df %>% mutate(Year = Year - mean(Year), 
+                root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) ) })
+```
+
+```{r}
+imp_coupe_MMA_pb1 <- list()
+for (i in seq_along(df_imp_coupe2)) {
+  imp_coupe_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
+summary(pool(imp_coupe_MMA_pb1))
+```
+
+```{r}
+imp_coupe_MR_pb1 <- list()
+for (i in seq_along(df_imp_coupe2)) {
+  imp_coupe_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
+summary(pool(imp_coupe_MR_pb1))
+
+imp_coupe_MR_pb3 <- list()
+for (i in seq_along(df_imp_coupe2)) {
+  imp_coupe_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
+summary(pool(imp_coupe_MR_pb3))
+
+imp_coupe_MR_pb5 <- list()
+for (i in seq_along(df_imp_coupe2)) {
+  imp_coupe_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
+summary(pool(imp_coupe_MR_pb5))
+```
+
 #### Save objects
 
 ```{r}
 saveRDS(imp_coupe_MMA_mod1, here("Results", "Models", "Coupe", "imp_coupe_MMA.rds"))
+saveRDS(imp_coupe_MMA_pb1, here("Results", "Models", "Coupe", "imp_coupe_MMA_pb1.rds"))
 saveRDS(imp_coupe_MR_mod1, here("Results", "Models", "Coupe", "imp_coupe_MR1.rds"))
 saveRDS(imp_coupe_MR_mod2, here("Results", "Models", "Coupe", "imp_coupe_MR2.rds"))
 saveRDS(imp_coupe_MR_mod3, here("Results", "Models", "Coupe", "imp_coupe_MR3.rds"))
 saveRDS(imp_coupe_MR_mod4, here("Results", "Models", "Coupe", "imp_coupe_MR4.rds"))
 saveRDS(imp_coupe_MR_mod5, here("Results", "Models", "Coupe", "imp_coupe_MR5.rds"))
+saveRDS(imp_coupe_MR_pb1, here("Results", "Models", "Coupe", "imp_coupe_MR_pb1.rds"))
+saveRDS(imp_coupe_MR_pb3, here("Results", "Models", "Coupe", "imp_coupe_MR_pb3.rds"))
+saveRDS(imp_coupe_MR_pb5, here("Results", "Models", "Coupe", "imp_coupe_MR_pb5.rds"))
 ```
 
 ```{r}
@@ -737,15 +819,56 @@ for (i in seq_along(df_imp_lscape1)) {
 summary(pool(imp_lscape_MR_mod5_rob))
 ```
 
+#### Publication bias
+
+##### Meta-regression
+
+```{r}
+#centre the publication year
+#calculate sqrt inverse effective sample size
+
+df_imp_lscape2 <- lapply(df_imp_lscape1, function(df){ 
+  df %>% mutate(Year = Year - mean(Year), 
+                root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) ) })
+```
+
+```{r}
+imp_lscape_MMA_pb1 <- list()
+for (i in seq_along(df_imp_lscape2)) {
+  imp_lscape_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape2[[i]], verbose = TRUE) }
+summary(pool(imp_lscape_MMA_pb1))
+```
+
+```{r}
+imp_lscape_MR_pb1 <- list()
+for (i in seq_along(df_imp_lscape2)) {
+  imp_lscape_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape2[[i]], verbose = TRUE) }
+summary(pool(imp_lscape_MR_pb1))
+
+imp_lscape_MR_pb3 <- list()
+for (i in seq_along(df_imp_lscape2)) {
+  imp_lscape_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape2[[i]], verbose = TRUE) }
+summary(pool(imp_lscape_MR_pb3))
+
+imp_lscape_MR_pb5 <- list()
+for (i in seq_along(df_imp_lscape2)) {
+  imp_lscape_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape2[[i]], verbose = TRUE) }
+summary(pool(imp_lscape_MR_pb5))
+```
+
 #### Save objects
 
 ```{r}
 saveRDS(imp_lscape_MMA_mod1, here("Results", "Models", "Landscape", "imp_lscape_MMA.rds"))
+saveRDS(imp_lscape_MMA_pb1, here("Results", "Models", "Landscape", "imp_lscape_MMA_pb.rds"))
 saveRDS(imp_lscape_MR_mod1, here("Results", "Models", "Landscape", "imp_lscape_MR1.rds"))
 saveRDS(imp_lscape_MR_mod2, here("Results", "Models", "Landscape", "imp_lscape_MR2.rds"))
 saveRDS(imp_lscape_MR_mod3, here("Results", "Models", "Landscape", "imp_lscape_MR3.rds"))
 saveRDS(imp_lscape_MR_mod4, here("Results", "Models", "Landscape", "imp_lscape_MR4.rds"))
 saveRDS(imp_lscape_MR_mod5, here("Results", "Models", "Landscape", "imp_lscape_MR5.rds"))
+saveRDS(imp_lscape_MR_pb1, here("Results", "Models", "Landscape", "imp_lscape_MR1_pb.rds"))
+saveRDS(imp_lscape_MR_pb3, here("Results", "Models", "Landscape", "imp_lscape_MR3_pb.rds"))
+saveRDS(imp_lscape_MR_pb5, here("Results", "Models", "Landscape", "imp_lscape_MR5_pb.rds"))
 ```
 
 ```{r}
