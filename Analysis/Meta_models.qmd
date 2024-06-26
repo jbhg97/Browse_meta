@@ -122,7 +122,6 @@ funnel(df_comp_plant1$Effect_size, df_comp_plant1$Sampling_variance, ni = df_com
 #calculate sqrt inverse effective sample size
 df_comp_plant2 <- df_comp_plant1 %>% mutate(Year = Year - mean(Year),
                                             root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
-
 ```
 
 ```{r}
@@ -261,7 +260,6 @@ funnel(df_comp_coupe1$Effect_size, df_comp_coupe1$Sampling_variance, ni = df_com
 #calculate sqrt inverse effective sample size
 df_comp_coupe2 <- df_comp_coupe1 %>% mutate(Year = Year - mean(Year),
                                             root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
-
 ```
 
 ```{r}
@@ -371,7 +369,7 @@ summary(lscape_MR_mod1_rob)
 lscape_MR_mod3_rob <- robust(lscape_MR_mod3, cluster = df_comp_lscape$Paper_ID)
 summary(lscape_MR_mod3_rob)
 
-lscape_MR_mod5_rob <- robust(lscape_MR_mod5, cluster = df_comp_lscape$Paper_ID)
+lscape_MR_mod5_rob <- robust(lscape_MR_mod5, cluster = df_comp_lscape1$Paper_ID)
 summary(lscape_MR_mod5_rob)
 ```
 
@@ -408,7 +406,6 @@ funnel(df_comp_lscape1$Effect_size, df_comp_lscape1$Sampling_variance, ni = df_c
 #calculate sqrt inverse effective sample size
 df_comp_lscape2 <- df_comp_lscape1 %>% mutate(Year = Year - mean(Year),
                                             root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
-
 ```
 
 ```{r}
