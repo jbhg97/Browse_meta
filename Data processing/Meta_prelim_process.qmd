@@ -1,5 +1,5 @@
 ---
-title: "Meta_prelim_test"
+title: "Meta_prelim_process"
 author: "Jamie"
 format: html
 editor: visual
@@ -24,7 +24,7 @@ df <- read_excel(here("Data processing", "Lit review data.xlsx"), sheet = "Effec
 
 ### Assign papers ID codes
 
-I need to assign each paper an ID code that can be tied to the effects that were extracted from that paper. This will make downstream processing and modelling easier. 
+I need to assign each paper an ID code that can be tied to the effects that were extracted from that paper. This will make downstream processing and modelling easier.
 
 ```{r}
 df <- df %>% mutate(ref = paste(Authors, `Article Title`, `Source Title`))
