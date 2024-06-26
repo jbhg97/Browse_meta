@@ -11,7 +11,7 @@ p_load(tidyverse, readxl, writexl, sf, rnaturalearth, rnaturalearthdata)
 ```
 
 ```{r}
-df <- readRDS("/homevol/jbhg/Browse_meta/Data processing/All_impcase_es")
+df <- readRDS(here("Data processing", "All_impcase_es.rds"))
 df1 <- df[[1]] #select one of the imputed case frames to do the summary statistics of literature synthesis.
 ```
 

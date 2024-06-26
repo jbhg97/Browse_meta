@@ -19,7 +19,7 @@ p_load(tidyverse, readxl, here, writexl, meta, metafor, mice, miceadds, VIM, pat
 Read in
 
 ```{r}
-df <- read_excel(here("/homevol/jbhg97/Browse_meta/Data processing", "Lit review data.xlsx"), sheet = "Effects (post responses)")
+df <- read_excel(here("Data processing", "Lit review data.xlsx"), sheet = "Effects (post responses)")
 ```
 
 ### Assign papers ID codes
@@ -35,7 +35,7 @@ df1 <- df %>% group_by(ref) %>% mutate(Paper_ID = cur_group_id()) %>% ungroup()
 I also need to attach publication year to all effects for publication bias tests.
 
 ```{r}
-pub_yr <- read_excel("/homevol/jbhg97/Browse_meta/Data processing/Lit review data.xlsx", sheet = "Complete list")
+pub_yr <- read_excel(here("Data processing", "Lit review data.xlsx"), sheet = "Complete list")
 pub_yr1 <- pub_yr %>% mutate(ref = paste(Authors, `Article Title`, `Source Title`)) %>% select(ref, Year)
 
 df1 <- left_join(df1, pub_yr1, by = "ref")
@@ -325,7 +325,7 @@ df_SMD_sdtrans1 <- df_SMD_sdtrans %>% mutate(Con_trans_SD = logit_trans_SD(Con_S
 Write this dataframe out as a record of the Complete case data showing both raw means and sds and transformed means and sds
 
 ```{r}
-write_xlsx(df_SMD_sdtrans1, "/homevol/jbhg97/Browse_meta/Data processing/SMD_compcase_raw and transform.xlsx")
+write_xlsx(df_SMD_sdtrans1, here("Data processing", "SMD_compcase_raw and transform.xlsx"))
 ```
 
 ### SMD Quality control 1
@@ -543,7 +543,7 @@ df_comp_SMD2 <- df_comp_SMD1 %>% unnest_wider(Effect_size) %>% mutate(Effect_siz
 #### Write out
 
 ```{r}
-write_xlsx(df_comp_SMD2, "/homevol/jbhg97/Browse_meta/Data processing/SMD_compcase_es.xlsx")
+write_xlsx(df_comp_SMD2, here("Data processing", "SMD_compcase_es.xlsx"))
 ```
 
 ### Log odds effects
@@ -584,7 +584,7 @@ df_comp_lo2 <- df_comp_lo1 %>% unnest_wider(Effect_size) %>% mutate(Effect_size 
 #### Write out
 
 ```{r}
-write_xlsx(df_comp_lo2, "/homevol/jbhg97/Browse_meta/Data processing/LO_compcase_es.xlsx")
+write_xlsx(df_comp_lo2, here("Data processing", "LO_compcase_es.xlsx"))
 ```
 
 ## Imputed case effects
@@ -610,7 +610,7 @@ df_imp_SMD2 <- lapply(df_imp_SMD1, function(df){
 #### Write out
 
 ```{r}
-saveRDS(df_imp_SMD2, "/homevol/jbhg97/Browse_meta/Data processing/SMD_impcase_es")
+saveRDS(df_imp_SMD2, here("Data processing", "SMD_impcase_es.rds"))
 ```
 
 ### Log odds effects
@@ -633,7 +633,7 @@ df_imp_lo2 <- lapply(df_imp_lo1, function(df){
 #### Write out
 
 ```{r}
-saveRDS(df_imp_lo2, "/homevol/jbhg97/Browse_meta/Data processing/LO_impcase_es")
+saveRDS(df_imp_lo2, here("Data processing", "LO_impcase_es.rds"))
 ```
 
 ## All effects comparison
@@ -691,32 +691,32 @@ for (i in seq_along(df_imp_all)) { df_imp_all1[[i]] <- bind_rows(df_imp_all[[i]]
 ```
 
 ```{r}
-write_xlsx(df_comp_all, "/homevol/jbhg97/Browse_meta/Data processing/All_compcase_es.xlsx")
-saveRDS(df_imp_all1, "/homevol/jbhg97/Browse_meta/Data processing/All_impcase_es")
+write_xlsx(df_comp_all, here("Data processing", "All_compcase_es.xlsx"))
+saveRDS(df_imp_all1, here("Data processing", "All_impcase_es.rds"))
 ```
 
 ## Divide data for analysis
 
 ```{r}
 df_comp_plant <- df_comp_all %>% filter(Scale == "Plant")
-write_xlsx(df_comp_plant, "/homevol/jbhg97/Browse_meta/Analysis/Comp_all_plant.xlsx")
+write_xlsx(df_comp_plant, here("Analysis", "Comp_all_plant.xlsx"))
   
 df_comp_coupe <- df_comp_all %>% filter(Scale == "Coupe")
-write_xlsx(df_comp_coupe, "/homevol/jbhg97/Browse_meta/Analysis/Comp_all_coupe.xlsx")
+write_xlsx(df_comp_coupe, here("Analysis", "Comp_all_coupe.xlsx"))
   
 df_comp_lscape <- df_comp_all %>% filter(Scale == "Landscape")
-write_xlsx(df_comp_lscape, "/homevol/jbhg97/Browse_meta/Analysis/Comp_all_lscape.xlsx")
+write_xlsx(df_comp_lscape, here("Analysis", "Comp_all_lscape.xlsx"))
 ```
 
 ```{r}
 df_imp_plant <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Plant") })
-saveRDS(df_imp_plant, "/homevol/jbhg97/Browse_meta/Analysis/Imp_all_plant")
+saveRDS(df_imp_plant, here("Analysis", "Imp_all_plant.rds"))
   
 df_imp_coupe <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Coupe") })
-saveRDS(df_imp_coupe, "/homevol/jbhg97/Browse_meta/Analysis/Imp_all_coupe")
+saveRDS(df_imp_coupe, here("Analysis", "Imp_all_coupe.rds"))
   
 df_imp_lscape <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Landscape") })
-saveRDS(df_imp_lscape, "/homevol/jbhg97/Browse_meta/Analysis/Imp_all_lscape")
+saveRDS(df_imp_lscape, here("Analysis", "Imp_all_lscape.rds"))
 ```
 
 ```{r}
