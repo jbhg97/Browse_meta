@@ -390,11 +390,11 @@ ggplot(df_comp_lscape, aes(Effect_size, Sampling_variance, colour = Effect_type)
 Will need to use the effective sample size rather than the precision due to the correlation between sampling variance (used to derive precision) and SMD effect size.
 
 ```{r}
-df_comp_lscape1 <- df_comp_lscape %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N + Trt_N))
+df_comp_lscape_pb <- df_comp_lscape %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N + Trt_N))
 ```
 
 ```{r}
-funnel(df_comp_lscape1$Effect_size, df_comp_lscape1$Sampling_variance, ni = df_comp_lscape1$Eff_SS, yaxis="ni",
+funnel(df_comp_lscape_pb$Effect_size, df_comp_lscape_pb$Sampling_variance, ni = df_comp_lscape_pb$Eff_SS, yaxis="ni",
        ylab = "Effective sample size",
        xlab = "Effect size (SMD)") 
 ```
@@ -404,23 +404,26 @@ funnel(df_comp_lscape1$Effect_size, df_comp_lscape1$Sampling_variance, ni = df_c
 ```{r}
 #centre the publication year
 #calculate sqrt inverse effective sample size
-df_comp_lscape2 <- df_comp_lscape1 %>% mutate(Year = Year - mean(Year),
-                                            root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
+df_comp_lscape_pb1 <- df_comp_lscape %>% mutate(Year = Year - mean(Year), 
+                                                root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
+
+df_comp_lscape_pb2 <- df_comp_lscape1 %>% mutate(Year = Year - mean(Year), 
+                                                 root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
 ```
 
 ```{r}
-lscape_MMA_pb1 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape2)
+lscape_MMA_pb1 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb1)
 summary(lscape_MMA_pb1)
 ```
 
 ```{r}
-lscape_MR_pb1 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape2)
+lscape_MR_pb1 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb1)
 summary(lscape_MR_pb1)
 
-lscape_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape2)
+lscape_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb1)
 summary(lscape_MR_pb3)
 
-lscape_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape2)
+lscape_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_lscape1, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb2)
 summary(lscape_MR_pb5)
 ```
 
