@@ -185,7 +185,7 @@ orchaRd::i2_ml(coupe_MMA_mod1)
 #### Multilevel Meta-regression models
 
 ```{r}
-#subset out guardian animal - too few effects (3) for it to go into models
+#subset out guardian animal - too few effects (3 - same study) for it to go into models
 df_comp_coupe1 <- df_comp_coupe %>% filter(!(Method == "Guardian animal"))
 VCV_mat_coupe1 <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df_comp_coupe1, rho = 0.5, nearpd = TRUE)
 
@@ -271,7 +271,7 @@ df_comp_coupe4 <- df_comp_coupe1 %>% mutate(Year = Year - mean(Year),
 ```
 
 ```{r}
-coupe_MMA_pb1 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe2)
+coupe_MMA_pb1 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe3)
 summary(coupe_MMA_pb1)
 ```
 
@@ -279,7 +279,7 @@ summary(coupe_MMA_pb1)
 coupe_MR_pb1 <- rma.mv(Effect_size, V = VCV_mat_coupe1, mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe4)
 summary(coupe_MR_pb1)
 
-coupe_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe2)
+coupe_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe3)
 summary(coupe_MR_pb3)
 
 coupe_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_coupe1, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe4)

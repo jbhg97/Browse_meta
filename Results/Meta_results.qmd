@@ -204,10 +204,10 @@ mod_table <- coupe_MR5_results$mod_table
 
 mod_table_ef <- mod_table %>% filter(condition == "Exclusion fence")
 mod_table_rep <- mod_table %>% filter(condition == "Repellents")
-mod_table_tg <- mod_table %>% filter(Method == "Tree guards")
-mod_table_of <- mod_table %>% filter(Method == "Other fencing")
-mod_table_nd <- mod_table %>% filter(Method == "Natural debris")
-mod_table_sm <- mod_table %>% filter(Method == "Stock manipulation")
+mod_table_tg <- mod_table %>% filter(condition == "Tree guards")
+mod_table_of <- mod_table %>% filter(condition == "Other fencing")
+mod_table_nd <- mod_table %>% filter(condition == "Natural debris")
+mod_table_sm <- mod_table %>% filter(condition == "Stock manipulation")
 
 c3 <- ggplot(data = df_comp_coupe_ef, aes(x = Months, y = Effect_size)) + 
   geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#88CCEE", fill = "#88CCEE") +
@@ -244,6 +244,7 @@ c4 <- ggplot(data = df_comp_coupe_rep, aes(x = Months, y = Effect_size)) +
                        formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
   ggplot2::geom_smooth(data = mod_table_rep, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                        formula = y ~ x, se = FALSE, colour = "black") + 
+  xlim(0,50) + ylim(-10,10) +
   theme_classic() + theme(title = element_text(size = 32),
                           axis.title  = element_text(size = 27), 
                           axis.text = element_text(size = 25), 
@@ -265,6 +266,7 @@ c5 <- ggplot(data = df_comp_coupe_tg, aes(x = Months, y = Effect_size)) +
                        formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
   ggplot2::geom_smooth(data = mod_table_tg, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                        formula = y ~ x, se = FALSE, colour = "black") + 
+  xlim(0,75) + ylim(-10,10) +
   theme_classic() + theme(title = element_text(size = 32),
                           axis.title  = element_text(size = 27), 
                           axis.text = element_text(size = 25), 
@@ -286,6 +288,7 @@ c6 <- ggplot(data = df_comp_coupe_of, aes(x = Months, y = Effect_size)) +
                        formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
   ggplot2::geom_smooth(data = mod_table_of, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                        formula = y ~ x, se = FALSE, colour = "black") + 
+  xlim(0,50) + ylim(-10,10) +
   theme_classic() + theme(title = element_text(size = 32),
                           axis.title  = element_text(size = 27), 
                           axis.text = element_text(size = 25), 
@@ -307,6 +310,7 @@ c7 <- ggplot(data = df_comp_coupe_nd, aes(x = Months, y = Effect_size)) +
                        formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
   ggplot2::geom_smooth(data = mod_table_nd, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                        formula = y ~ x, se = FALSE, colour = "black") + 
+  xlim(0,75) + ylim(-10,10) +
   theme_classic() + theme(title = element_text(size = 32),
                           axis.title  = element_text(size = 27), 
                           axis.text = element_text(size = 25), 
@@ -327,13 +331,17 @@ c8 <- ggplot(data = df_comp_coupe_sm, aes(x = Months, y = Effect_size)) +
   ggplot2::geom_smooth(data = mod_table_sm, ggplot2::aes(x = moderator, y = upperCL), method = "loess", 
                        formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
   ggplot2::geom_smooth(data = mod_table_sm, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
-                       formula = y ~ x, se = FALSE, colour = "black") + 
+                       formula = y ~ x, se = FALSE, colour = "black") +
+  xlim(0,75) + ylim(-10,10) +
   theme_classic() + theme(title = element_text(size = 32),
                           axis.title  = element_text(size = 27), 
                           axis.text = element_text(size = 25), 
                           axis.text.y = element_text(size = 25),
                           legend.text = element_text(size = 22), 
                           legend.title = element_text(size = 24))
+
+plot4 <- (c3+c5+c4)/(c7+c8+c6) + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
+print(plot4)
 ```
 
 
