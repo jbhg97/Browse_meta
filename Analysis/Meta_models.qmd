@@ -185,10 +185,14 @@ orchaRd::i2_ml(coupe_MMA_mod1)
 #### Multilevel Meta-regression models
 
 ```{r}
-coupe_MR_mod1 <- rma.mv(Effect_size ~ Method + Plot_size, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
+#subset out guardian animal - too few effects (3) for it to go into models
+df_comp_coupe1 <- df_comp_coupe %>% filter(!(Method == "Guardian animal"))
+VCV_mat_coupe1 <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df_comp_coupe1, rho = 0.5, nearpd = TRUE)
+
+coupe_MR_mod1 <- rma.mv(Effect_size ~ Method + Plot_size, V = VCV_mat_coupe1, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe1)
 summary(coupe_MR_mod1)
 
-coupe_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Plot_size, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe) #suppressed intercept
+coupe_MR_mod2 <- rma.mv(Effect_size ~ -1 + Method + Plot_size, V = VCV_mat_coupe1, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe1) #suppressed intercept
 summary(coupe_MR_mod2)
 
 coupe_MR_mod3 <- rma.mv(Effect_size ~ Animal + Plot_size, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
@@ -197,7 +201,7 @@ summary(coupe_MR_mod3)
 coupe_MR_mod4 <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
 summary(coupe_MR_mod4)
 
-coupe_MR_mod5<- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_coupe, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe)
+coupe_MR_mod5<- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_coupe1, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe1)
 summary(coupe_MR_mod5)
 ```
 
@@ -217,13 +221,13 @@ bubble_plot(coupe_MR5_bub, mod = "Months", group = "Paper_ID", xlab = "Months", 
 #### Non-independence sensitivity
 
 ```{r}
-coupe_MR_mod1_rob <- robust(coupe_MR_mod1, cluster = df_comp_coupe$Paper_ID)
+coupe_MR_mod1_rob <- robust(coupe_MR_mod1, cluster = df_comp_coupe1$Paper_ID)
 summary(coupe_MR_mod1_rob)
 
 coupe_MR_mod3_rob <- robust(coupe_MR_mod3, cluster = df_comp_coupe$Paper_ID)
 summary(coupe_MR_mod3_rob)
 
-coupe_MR_mod5_rob <- robust(coupe_MR_mod5, cluster = df_comp_coupe$Paper_ID)
+coupe_MR_mod5_rob <- robust(coupe_MR_mod5, cluster = df_comp_coupe1$Paper_ID)
 summary(coupe_MR_mod5_rob)
 ```
 
@@ -244,11 +248,11 @@ ggplot(df_comp_coupe, aes(Effect_size, Sampling_variance, colour = Effect_type))
 Will need to use the effective sample size rather than the precision due to the correlation between sampling variance (used to derive precision) and SMD effect size.
 
 ```{r}
-df_comp_coupe1 <- df_comp_coupe %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N + Trt_N))
+df_comp_coupe2 <- df_comp_coupe %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N + Trt_N))
 ```
 
 ```{r}
-funnel(df_comp_coupe1$Effect_size, df_comp_coupe1$Sampling_variance, ni = df_comp_coupe1$Eff_SS, yaxis="ni",
+funnel(df_comp_coupe2$Effect_size, df_comp_coupe2$Sampling_variance, ni = df_comp_coupe2$Eff_SS, yaxis="ni",
        ylab = "Effective sample size",
        xlab = "Effect size (SMD)") 
 ```
@@ -258,7 +262,11 @@ funnel(df_comp_coupe1$Effect_size, df_comp_coupe1$Sampling_variance, ni = df_com
 ```{r}
 #centre the publication year
 #calculate sqrt inverse effective sample size
-df_comp_coupe2 <- df_comp_coupe1 %>% mutate(Year = Year - mean(Year),
+df_comp_coupe3 <- df_comp_coupe2 %>% mutate(Year = Year - mean(Year),
+                                            root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
+
+#subset version for some models
+df_comp_coupe4 <- df_comp_coupe1 %>% mutate(Year = Year - mean(Year),
                                             root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
 ```
 
@@ -268,13 +276,13 @@ summary(coupe_MMA_pb1)
 ```
 
 ```{r}
-coupe_MR_pb1 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe2)
+coupe_MR_pb1 <- rma.mv(Effect_size, V = VCV_mat_coupe1, mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe4)
 summary(coupe_MR_pb1)
 
 coupe_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe2)
 summary(coupe_MR_pb3)
 
-coupe_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_coupe, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe2)
+coupe_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_coupe1, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_coupe4)
 summary(coupe_MR_pb5)
 ```
 
@@ -404,26 +412,27 @@ funnel(df_comp_lscape_pb$Effect_size, df_comp_lscape_pb$Sampling_variance, ni = 
 ```{r}
 #centre the publication year
 #calculate sqrt inverse effective sample size
-df_comp_lscape_pb1 <- df_comp_lscape %>% mutate(Year = Year - mean(Year), 
+df_comp_lscape_pb2 <- df_comp_lscape %>% mutate(Year = Year - mean(Year), 
                                                 root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
 
-df_comp_lscape_pb2 <- df_comp_lscape1 %>% mutate(Year = Year - mean(Year), 
+#subset version for MR mod 5
+df_comp_lscape_pb3 <- df_comp_lscape1 %>% mutate(Year = Year - mean(Year), 
                                                  root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
 ```
 
 ```{r}
-lscape_MMA_pb1 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb1)
+lscape_MMA_pb1 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb2)
 summary(lscape_MMA_pb1)
 ```
 
 ```{r}
-lscape_MR_pb1 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb1)
+lscape_MR_pb1 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb2)
 summary(lscape_MR_pb1)
 
-lscape_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb1)
+lscape_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb2)
 summary(lscape_MR_pb3)
 
-lscape_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_lscape1, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb2)
+lscape_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_lscape1, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb3)
 summary(lscape_MR_pb5)
 ```
 

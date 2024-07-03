@@ -101,8 +101,8 @@ df_comp_plant <- read_xlsx(here("Analysis", "Comp_all_plant.xlsx"))
 plant_MR_mod1 <- readRDS(here("Results", "Models", "Plant", "Plant_MR1.rds"))
 plant_MR_mod3 <- readRDS(here("Results", "Models", "Plant", "Plant_MR3.rds"))
 
-p1 <- orchard_plot(plant_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Standardised mean difference (SMD)", legend.pos = "bottom.left")
-p2 <- orchard_plot(plant_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Standardised mean difference (SMD)", legend.pos = "bottom.left")
+p1 <- orchard_plot(plant_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Standardised mean difference (SMD)", legend.pos = "bottom.left", angle = 0)
+p2 <- orchard_plot(plant_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Standardised mean difference (SMD)", legend.pos = "bottom.left", angle = 0)
 
 plot1 <- p1/p2 + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'plant' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
 print(plot1)
@@ -168,6 +168,186 @@ p4 <- ggplot(data = df_comp_plant_rep, aes(x = Months, y = Effect_size)) +
                           legend.title = element_text(size = 24))
 
 plot2 <- p3/p4 + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'plant' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
-print(plot2) # need to fix the caption position
+print(plot2) # need to fix the caption position - look rubbish when viewed in qmd but much better when viewed in plots window and zoomed out
+```
+
+```{r}
+# coupe scale orchard plots - tweak caption position and wrap as needed
+
+df_comp_coupe <- read_xlsx(here("Analysis", "Comp_all_coupe.xlsx"))
+coupe_MR_mod1 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR1.rds"))
+coupe_MR_mod3 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR3.rds"))
+
+c1 <- orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Standardised mean difference (SMD)", legend.pos = "top.left", angle = 0)
+c2 <- orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Standardised mean difference (SMD)", legend.pos = "bottom.left", angle = 0)
+
+plot3 <- c1/c2 + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'coupe' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
+print(plot3)
+```
+
+```{r}
+# coupe scale bubble plot - tweak caption position and axes limits as needed
+
+colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
+
+coupe_MR_mod5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5.rds"))
+
+df_comp_coupe_ef <- df_comp_coupe %>% filter(Method == "Exclusion fence")
+df_comp_coupe_rep <- df_comp_coupe %>% filter(Method == "Repellents")
+df_comp_coupe_tg <- df_comp_coupe %>% filter(Method == "Tree guards")
+df_comp_coupe_of <- df_comp_coupe %>% filter(Method == "Other fencing")
+df_comp_coupe_nd <- df_comp_coupe %>% filter(Method == "Natural debris")
+df_comp_coupe_sm <- df_comp_coupe %>% filter(Method == "Stock manipulation")
+
+coupe_MR5_results <- mod_results(coupe_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method") 
+mod_table <- coupe_MR5_results$mod_table
+
+mod_table_ef <- mod_table %>% filter(condition == "Exclusion fence")
+mod_table_rep <- mod_table %>% filter(condition == "Repellents")
+mod_table_tg <- mod_table %>% filter(Method == "Tree guards")
+mod_table_of <- mod_table %>% filter(Method == "Other fencing")
+mod_table_nd <- mod_table %>% filter(Method == "Natural debris")
+mod_table_sm <- mod_table %>% filter(Method == "Stock manipulation")
+
+c3 <- ggplot(data = df_comp_coupe_ef, aes(x = Months, y = Effect_size)) + 
+  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#88CCEE", fill = "#88CCEE") +
+  labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Exclusion fence") + 
+  ggplot2::geom_smooth(data = mod_table_ef, 
+                       ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_ef, ggplot2::aes(x = moderator, y = upperPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_ef, ggplot2::aes(x = moderator, y = lowerCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_ef, ggplot2::aes(x = moderator, y = upperCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_ef, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
+                       formula = y ~ x, se = FALSE, colour = "black") + 
+  theme_classic() + theme(title = element_text(size = 32),
+                          axis.title  = element_text(size = 27), 
+                          axis.text = element_text(size = 25), 
+                          axis.text.y = element_text(size = 25),
+                          legend.text = element_text(size = 22), 
+                          legend.title = element_text(size = 24))
+
+c4 <- ggplot(data = df_comp_coupe_rep, aes(x = Months, y = Effect_size)) + 
+  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#117733", fill = "#117733") +
+  labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Repellents") + 
+  ggplot2::geom_smooth(data = mod_table_rep, 
+                       ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_rep, ggplot2::aes(x = moderator, y = upperPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_rep, ggplot2::aes(x = moderator, y = lowerCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_rep, ggplot2::aes(x = moderator, y = upperCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_rep, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
+                       formula = y ~ x, se = FALSE, colour = "black") + 
+  theme_classic() + theme(title = element_text(size = 32),
+                          axis.title  = element_text(size = 27), 
+                          axis.text = element_text(size = 25), 
+                          axis.text.y = element_text(size = 25),
+                          legend.text = element_text(size = 22), 
+                          legend.title = element_text(size = 24))
+
+c5 <- ggplot(data = df_comp_coupe_tg, aes(x = Months, y = Effect_size)) + 
+  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#AA4499", fill = "#AA4499") +
+  labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Tree guards") + 
+  ggplot2::geom_smooth(data = mod_table_tg, 
+                       ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_tg, ggplot2::aes(x = moderator, y = upperPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_tg, ggplot2::aes(x = moderator, y = lowerCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_tg, ggplot2::aes(x = moderator, y = upperCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_tg, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
+                       formula = y ~ x, se = FALSE, colour = "black") + 
+  theme_classic() + theme(title = element_text(size = 32),
+                          axis.title  = element_text(size = 27), 
+                          axis.text = element_text(size = 25), 
+                          axis.text.y = element_text(size = 25),
+                          legend.text = element_text(size = 22), 
+                          legend.title = element_text(size = 24))
+
+c6 <- ggplot(data = df_comp_coupe_of, aes(x = Months, y = Effect_size)) + 
+  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#DDCC77", fill = "#DDCC77") +
+  labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Other fencing") + 
+  ggplot2::geom_smooth(data = mod_table_of, 
+                       ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_of, ggplot2::aes(x = moderator, y = upperPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_of, ggplot2::aes(x = moderator, y = lowerCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_of, ggplot2::aes(x = moderator, y = upperCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_of, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
+                       formula = y ~ x, se = FALSE, colour = "black") + 
+  theme_classic() + theme(title = element_text(size = 32),
+                          axis.title  = element_text(size = 27), 
+                          axis.text = element_text(size = 25), 
+                          axis.text.y = element_text(size = 25),
+                          legend.text = element_text(size = 22), 
+                          legend.title = element_text(size = 24))
+
+c7 <- ggplot(data = df_comp_coupe_nd, aes(x = Months, y = Effect_size)) + 
+  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#CC6677", fill = "#CC6677") +
+  labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Natural debris") + 
+  ggplot2::geom_smooth(data = mod_table_nd, 
+                       ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_nd, ggplot2::aes(x = moderator, y = upperPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_nd, ggplot2::aes(x = moderator, y = lowerCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_nd, ggplot2::aes(x = moderator, y = upperCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_nd, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
+                       formula = y ~ x, se = FALSE, colour = "black") + 
+  theme_classic() + theme(title = element_text(size = 32),
+                          axis.title  = element_text(size = 27), 
+                          axis.text = element_text(size = 25), 
+                          axis.text.y = element_text(size = 25),
+                          legend.text = element_text(size = 22), 
+                          legend.title = element_text(size = 24))
+
+c8 <- ggplot(data = df_comp_coupe_sm, aes(x = Months, y = Effect_size)) + 
+  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#332288", fill = "#332288") +
+  labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Stock manipulation") + 
+  ggplot2::geom_smooth(data = mod_table_sm, 
+                       ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_sm, ggplot2::aes(x = moderator, y = upperPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_sm, ggplot2::aes(x = moderator, y = lowerCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_sm, ggplot2::aes(x = moderator, y = upperCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_sm, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
+                       formula = y ~ x, se = FALSE, colour = "black") + 
+  theme_classic() + theme(title = element_text(size = 32),
+                          axis.title  = element_text(size = 27), 
+                          axis.text = element_text(size = 25), 
+                          axis.text.y = element_text(size = 25),
+                          legend.text = element_text(size = 22), 
+                          legend.title = element_text(size = 24))
+```
+
+
+```{r}
+# Landscape scale orchard plots - tweak caption position and wrap as needed
+
+df_comp_lscape <- read_xlsx(here("Analysis", "Comp_all_lscape.xlsx"))
+lscape_MR_mod1 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR1.rds"))
+lscape_MR_mod3 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR3.rds"))
+
+l1 <- orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Standardised mean difference (SMD)", legend.pos = "bottom.left", angle = 0)
+l2 <- orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Standardised mean difference (SMD)", legend.pos = "top.left", angle = 0)
+
+plot5 <- l1/l2 + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'landscape' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
+print(plot5)
 ```
 
