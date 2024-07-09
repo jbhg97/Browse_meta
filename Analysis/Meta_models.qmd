@@ -44,6 +44,13 @@ summary(plant_MMA_mod1)
 orchaRd::i2_ml(plant_MMA_mod1)
 ```
 
+Visualise the overall effect
+
+```{r}
+orchard_plot(plant_MMA_mod1, group = "Paper_ID", xlab = "SMD")
+```
+
+
 #### Multilevel Meta-regression models
 
 ```{r}
@@ -180,6 +187,12 @@ coupe_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_coupe, test = "t", dfs = "
 summary(coupe_MMA_mod1)
 
 orchaRd::i2_ml(coupe_MMA_mod1)
+```
+
+Visualise the overall effect
+
+```{r}
+orchard_plot(coupe_MMA_mod1, group = "Paper_ID", xlab = "SMD")
 ```
 
 #### Multilevel Meta-regression models
@@ -326,6 +339,12 @@ lscape_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_lscape, test = "t", dfs =
 summary(lscape_MMA_mod1)
 
 orchaRd::i2_ml(lscape_MMA_mod1)
+```
+
+Visualise the overall effect
+
+```{r}
+orchard_plot(lscape_MMA_mod1, group = "Paper_ID", xlab = "SMD")
 ```
 
 #### Multilevel Meta-regression models
