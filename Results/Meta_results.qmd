@@ -21,7 +21,6 @@ df1 <- df[[1]] #select one of the imputed case frames to do the summary statisti
 
 ```{r}
 #code to do the average effects per paper
-#Run code chunks from prelim_process to add Paper IDs to dataframe - take df1
 
 df_avg <- df1 %>% group_by(Paper_ID) %>% 
   summarise(count = n())
