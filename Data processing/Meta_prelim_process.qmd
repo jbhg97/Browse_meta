@@ -170,9 +170,9 @@ I need to filter out the problem rows. Apply the transformations and then join t
 
 df_SMD_trans <- df_SMD %>% mutate(Var_unit = paste(`Var. measured`, Units, sep = "_"))
 
-df_SMD_trans_y <- df_SMD_trans %>% filter(Var_unit == "Cover_Percent"|Var_unit == "Browsing_Percent"|Var_unit == "Plants browsed_Percent"|Var_unit == "Survival_Percent"|Var_unit == "Prop. bottom consumed_Percent"|Var_unit == "Prop. top consumed_Percent"|Var_unit == "Stems damaged_Proportion"|Var_unit == "Mortality_Percent"|Var_unit == "Plants browsed_Proportion"|Var_unit == "Survival_Proportion"|Var_unit == "Browse intensity_Percent"|Var_unit == "Lateral shoot browsing_Percent"|Var_unit == "Leader browsing_Percent"|Var_unit == "Establishment_Percent"|Var_unit == "Browsing damage_Percent"|Var_unit == "Deformed base_Percent"|Var_unit == "Deformed stem_Percent"|Var_unit == "Multi stem plants_Percent"|Var_unit == "Foliage removed_Percent"|Var_unit == "Consumption_Percent/day"|Var_unit == "Branches browsed_Percent"|Var_unit == "Juveniles browsed_Proportion"|Var_unit == "Suckers browsed_Proportion"|Var_unit == "Plants browsed_Probability"|Var_unit == "Leader browsing_Probability"|Var_unit == "Shoots browsed_Percent"|Var_unit == "Browsing_score_Score")
+df_SMD_trans_y <- df_SMD_trans %>% filter(Var_unit == "Cover_Percent"|Var_unit == "Browsing_Percent"|Var_unit == "Plants browsed_Percent"|Var_unit == "Survival_Percent"|Var_unit == "Prop. bottom consumed_Percent"|Var_unit == "Prop. top consumed_Percent"|Var_unit == "Stems damaged_Proportion"|Var_unit == "Mortality_Percent"|Var_unit == "Plants browsed_Proportion"|Var_unit == "Survival_Proportion"|Var_unit == "Browse intensity_Percent"|Var_unit == "Lateral shoot browsing_Percent"|Var_unit == "Leader browsing_Percent"|Var_unit == "Establishment_Percent"|Var_unit == "Browsing damage_Percent"|Var_unit == "Deformed base_Percent"|Var_unit == "Deformed stem_Percent"|Var_unit == "Multi stem plants_Percent"|Var_unit == "Foliage removed_Percent"|Var_unit == "Consumption_Percent/day"|Var_unit == "Branches browsed_Percent"|Var_unit == "Juveniles browsed_Proportion"|Var_unit == "Suckers browsed_Proportion"|Var_unit == "Plants browsed_Probability"|Var_unit == "Leader browsing_Probability"|Var_unit == "Shoots browsed_Percent")
 
-df_SMD_trans_n <- df_SMD_trans %>% filter(!(Var_unit == "Cover_Percent"|Var_unit == "Browsing_Percent"|Var_unit == "Plants browsed_Percent"|Var_unit == "Survival_Percent"|Var_unit == "Prop. bottom consumed_Percent"|Var_unit == "Prop. top consumed_Percent"|Var_unit == "Stems damaged_Proportion"|Var_unit == "Mortality_Percent"|Var_unit == "Plants browsed_Proportion"|Var_unit == "Survival_Proportion"|Var_unit == "Browse intensity_Percent"|Var_unit == "Lateral shoot browsing_Percent"|Var_unit == "Leader browsing_Percent"|Var_unit == "Establishment_Percent"|Var_unit == "Browsing damage_Percent"|Var_unit == "Deformed base_Percent"|Var_unit == "Deformed stem_Percent"|Var_unit == "Multi stem plants_Percent"|Var_unit == "Foliage removed_Percent"|Var_unit == "Consumption_Percent/day"|Var_unit == "Branches browsed_Percent"|Var_unit == "Juveniles browsed_Proportion"|Var_unit == "Suckers browsed_Proportion"|Var_unit == "Plants browsed_Probability"|Var_unit == "Leader browsing_Probability"|Var_unit == "Shoots browsed_Percent"|Var_unit == "Browsing_score_Score"))
+df_SMD_trans_n <- df_SMD_trans %>% filter(!(Var_unit == "Cover_Percent"|Var_unit == "Browsing_Percent"|Var_unit == "Plants browsed_Percent"|Var_unit == "Survival_Percent"|Var_unit == "Prop. bottom consumed_Percent"|Var_unit == "Prop. top consumed_Percent"|Var_unit == "Stems damaged_Proportion"|Var_unit == "Mortality_Percent"|Var_unit == "Plants browsed_Proportion"|Var_unit == "Survival_Proportion"|Var_unit == "Browse intensity_Percent"|Var_unit == "Lateral shoot browsing_Percent"|Var_unit == "Leader browsing_Percent"|Var_unit == "Establishment_Percent"|Var_unit == "Browsing damage_Percent"|Var_unit == "Deformed base_Percent"|Var_unit == "Deformed stem_Percent"|Var_unit == "Multi stem plants_Percent"|Var_unit == "Foliage removed_Percent"|Var_unit == "Consumption_Percent/day"|Var_unit == "Branches browsed_Percent"|Var_unit == "Juveniles browsed_Proportion"|Var_unit == "Suckers browsed_Proportion"|Var_unit == "Plants browsed_Probability"|Var_unit == "Leader browsing_Probability"|Var_unit == "Shoots browsed_Percent"))
 ```
 
 Only convert and transform the means here - will convert and transform the errors after the missing cases have been cut out and the errors converted to SD.
@@ -463,7 +463,7 @@ df_all <- bind_rows(df_SMD_all3, df_lo4)
 ```{r}
 # Make predictor matrix which defines which variables will be used to impute. 
 predmatHg <- make.predictorMatrix(df_all)
-predmatHg[, c(2:5,10:15,22:26)] <- 0
+predmatHg[, c(2:5,9:15,22:26)] <- 0
 predmatHg[c(1:17,19,20,22:26), ] <- 0 # these rows deal with SD imputation - using PaperID, plant genus, scale, plot size, time and N, mean and SD 
 predmatHg[8, c(1,7,16,19)] <- 1 # this imputes plot size using PaperID, scale and N (smaller plots = higher N and vice versa, Spake et al. (2020))
 ```
@@ -471,7 +471,6 @@ predmatHg[8, c(1,7,16,19)] <- 1 # this imputes plot size using PaperID, scale an
 ### Multivariate imputation with mice
 
 ```{r}
-set.seed(123) #set random seed for imputation for reproducibility
 impData_all <- mice(df_all, m=20, maxit=50, meth = c("","","","","","","","pmm","","","","","","","","","","pmm","","","pmm","","","","",""), pred = predmatHg, seed=500)
 summary(impData_all)
 ```
@@ -480,8 +479,6 @@ summary(impData_all)
 # Looking at these there are 2 papers with very large means and errors that are making the plots difficult to interpret (Kuiters et al and Leonardsson et al) - these data are accurate, add limits to view the bulk of the imputed data.
 mice::xyplot(impData_all, Con_SD ~ Con_mean)
 mice::xyplot(impData_all, Trt_SD ~ Trt_mean, xlim = c(0,20000), ylim = c(0,20000))
-
-# need to work out a plot for the plot size data so I can see the quality of the imputation
 
 # Get all imputed datasets
 df_imp_all <- complete(impData_all, "all")
@@ -692,8 +689,8 @@ for (i in seq_along(df_imp_all)) { df_imp_all1[[i]] <- bind_rows(df_imp_all[[i]]
 ```
 
 ```{r}
-write_xlsx(df_comp_all, here("Analysis", "All_compcase_es.xlsx")) #add to meta_full_data - Complete case effects sheet
-saveRDS(df_imp_all1, here("Analysis", "All_impcase_es.rds")) #add iteration of this to meta_full_data - Imputed case effects sheet
+write_xlsx(df_comp_all, here("Analysis", "All_compcase_es.xlsx")) # add to meta_full_data - Complete case effects sheet
+saveRDS(df_imp_all1, here("Analysis", "All_impcase_es.rds")) # add iteration of this to meta_full_data - Imputed case effects sheet
 ```
 
 ```{r}

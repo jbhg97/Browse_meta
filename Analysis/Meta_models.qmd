@@ -18,7 +18,7 @@ p_load(tidyverse, readxl, writexl, kableExtra, orchaRd, clubSandwich, metafor, m
 ### Divide data
 
 ```{r}
-df_comp_all <- read_xlsx(here("Analysis", "All_compcase_es.xlsx"))
+df_comp_all <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") # reading in from here rather than file in Analysis folder as for an unnknown reason read in from All_compcase_es.xlsx converts Count columns to Boolean.
 
 df_comp_plant <- df_comp_all %>% filter(Scale == "Plant")
   
@@ -364,9 +364,7 @@ summary(lscape_MR_mod3)
 lscape_MR_mod4 <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_lscape, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape)
 summary(lscape_MR_mod4)
 
-# last model spits warnings and then errors later due to coolinearity - other fencing has no variation when months NAs are removed. Removing it removes the warnings of dropping redundant predictors. Need to make a new VCV matrix with the reduced sample size.
-
-# will probably need to drop this after the inclusion of the follow up search effects
+# other fencing has no variation when months NAs are removed. Stock manipulation and neighbour effects have too few effects to reliably draw a slope (k<15). Need to make a new VCV matrix with the reduced sample size.
 
 df_comp_lscape1 <- df_comp_lscape %>% filter(!(Method == "Other fencing" | Method == "Neighbour effects" | Method == "Stock manipulation"))
 
@@ -484,11 +482,11 @@ rm(list = ls())
 ```{r}
 df_imp_all <- readRDS(here("Analysis", "All_impcase_es.rds"))
 
-df_imp_plant <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Plant") })
+df_imp_plant <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Plant") })
   
-df_imp_coupe <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Coupe") })
+df_imp_coupe <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Coupe") })
   
-df_imp_lscape <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Landscape") })
+df_imp_lscape <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Landscape") })
 ```
 
 ### Plant scale
