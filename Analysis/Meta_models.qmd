@@ -15,14 +15,23 @@ p_load(tidyverse, readxl, writexl, kableExtra, orchaRd, clubSandwich, metafor, m
 
 ## Complete case analysis
 
-### Plant scale
-
-Read in
+### Divide data
 
 ```{r}
-df_comp_plant <- read_xlsx(here("Analysis", "Comp_all_plant.xlsx"))
+df_comp_all <- read_xlsx(here("Analysis", "All_compcase_es.xlsx"))
 
-#add an observation level factor
+df_comp_plant <- df_comp_all %>% filter(Scale == "Plant")
+  
+df_comp_coupe <- df_comp_all %>% filter(Scale == "Coupe")
+  
+df_comp_lscape <- df_comp_all %>% filter(Scale == "Landscape")
+```
+
+### Plant scale
+
+Observation level random effect (OLRE)
+
+```{r}
 df_comp_plant <- df_comp_plant %>% mutate(OLRE = row_number())
 ```
 
@@ -49,7 +58,6 @@ Visualise the overall effect
 ```{r}
 orchard_plot(plant_MMA_mod1, group = "Paper_ID", xlab = "SMD")
 ```
-
 
 #### Multilevel Meta-regression models
 
@@ -164,12 +172,9 @@ saveRDS(plant_MR_pb5, here("Results", "Models", "Plant", "Plant_MR5_pb.rds"))
 
 ### Coupe scale
 
-Read in
+Observation level random effect
 
 ```{r}
-df_comp_coupe <- read_xlsx(here("Analysis", "Comp_all_coupe.xlsx")) 
-
-#add an observation level factor
 df_comp_coupe <- df_comp_coupe %>% mutate(OLRE = row_number())
 ```
 
@@ -316,12 +321,9 @@ saveRDS(coupe_MR_pb5, here("Results", "Models", "Coupe", "coupe_MR5_pb.rds"))
 
 ### Landscape scale
 
-Read in
+Observation level random effect
 
 ```{r}
-df_comp_lscape <- read_xlsx(here("Analysis", "Comp_all_lscape.xlsx")) 
-
-#add an observation level factor
 df_comp_lscape <- df_comp_lscape %>% mutate(OLRE = row_number())
 ```
 
@@ -477,14 +479,23 @@ rm(list = ls())
 
 ## Imputed case analysis
 
-### Plant scale
-
-Read in
+### Divide data
 
 ```{r}
-df_imp_plant <- readRDS(here("Analysis", "Imp_all_plant.rds"))
+df_imp_all <- readRDS(here("Analysis", "All_impcase_es.rds"))
 
-# Add an observation level random effect
+df_imp_plant <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Plant") })
+  
+df_imp_coupe <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Coupe") })
+  
+df_imp_lscape <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Landscape") })
+```
+
+### Plant scale
+
+OLRE
+
+```{r}
 df_imp_plant1 <- lapply(df_imp_plant, function(df){ 
   df %>% mutate(OLRE = row_number()) })
 ```
@@ -622,12 +633,9 @@ rm(list = ls())
 
 ### Coupe scale
 
-Read in
+OLRE
 
 ```{r}
-df_imp_coupe <- readRDS(here("Analysis", "Imp_all_coupe.rds"))
-
-# Add an observation level random effect
 df_imp_coupe1 <- lapply(df_imp_coupe, function(df){ 
   df %>% mutate(OLRE = row_number()) })
 ```
@@ -772,12 +780,9 @@ rm(list = ls())
 
 ### Landscape scale
 
-Read in
+OLRE
 
 ```{r}
-df_imp_lscape <- readRDS(here("Analysis", "Imp_all_lscape.rds"))
-
-# Add an observation level random effect
 df_imp_lscape1 <- lapply(df_imp_lscape, function(df){ 
   df %>% mutate(OLRE = row_number()) })
 ```

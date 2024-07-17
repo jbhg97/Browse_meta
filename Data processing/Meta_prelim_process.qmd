@@ -19,7 +19,7 @@ p_load(tidyverse, readxl, here, writexl, meta, metafor, mice, miceadds, VIM, pat
 Read in
 
 ```{r}
-df <- read_excel(here("Data processing", "Lit review data.xlsx"), sheet = "Effects (post responses)")
+df <- read_excel(here("Data processing", "Meta_full_data.xlsx"), sheet = "Effects (post responses)")
 ```
 
 ### Assign papers ID codes
@@ -35,7 +35,7 @@ df1 <- df %>% group_by(ref) %>% mutate(Paper_ID = cur_group_id()) %>% ungroup()
 I need to attach publication year to all effects for publication bias tests.
 
 ```{r}
-pub_yr <- read_excel(here("Data processing", "Lit review data.xlsx"), sheet = "Complete list")
+pub_yr <- read_excel(here("Data processing", "Meta_full_data.xlsx"), sheet = "Data extraction")
 pub_yr1 <- pub_yr %>% mutate(ref = paste(Authors, `Article Title`, `Source Title`)) %>% select(ref, Year)
 
 df1 <- left_join(df1, pub_yr1, by = "ref")
@@ -692,32 +692,8 @@ for (i in seq_along(df_imp_all)) { df_imp_all1[[i]] <- bind_rows(df_imp_all[[i]]
 ```
 
 ```{r}
-write_xlsx(df_comp_all, here("Data processing", "All_compcase_es.xlsx"))
-saveRDS(df_imp_all1, here("Data processing", "All_impcase_es.rds"))
-```
-
-## Divide data for analysis
-
-```{r}
-df_comp_plant <- df_comp_all %>% filter(Scale == "Plant")
-write_xlsx(df_comp_plant, here("Analysis", "Comp_all_plant.xlsx"))
-  
-df_comp_coupe <- df_comp_all %>% filter(Scale == "Coupe")
-write_xlsx(df_comp_coupe, here("Analysis", "Comp_all_coupe.xlsx"))
-  
-df_comp_lscape <- df_comp_all %>% filter(Scale == "Landscape")
-write_xlsx(df_comp_lscape, here("Analysis", "Comp_all_lscape.xlsx"))
-```
-
-```{r}
-df_imp_plant <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Plant") })
-saveRDS(df_imp_plant, here("Analysis", "Imp_all_plant.rds"))
-  
-df_imp_coupe <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Coupe") })
-saveRDS(df_imp_coupe, here("Analysis", "Imp_all_coupe.rds"))
-  
-df_imp_lscape <- lapply(df_imp_all1, function(df){ df %>% filter(Scale == "Landscape") })
-saveRDS(df_imp_lscape, here("Analysis", "Imp_all_lscape.rds"))
+write_xlsx(df_comp_all, here("Analysis", "All_compcase_es.xlsx")) #add to meta_full_data - Complete case effects sheet
+saveRDS(df_imp_all1, here("Analysis", "All_impcase_es.rds")) #add iteration of this to meta_full_data - Imputed case effects sheet
 ```
 
 ```{r}
