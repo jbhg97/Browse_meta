@@ -483,10 +483,6 @@ rm(list = ls())
 df_imp_all <- readRDS(here("Analysis", "All_impcase_es.rds"))
 
 df_imp_plant <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Plant") })
-  
-df_imp_coupe <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Coupe") })
-  
-df_imp_lscape <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Landscape") })
 ```
 
 ### Plant scale
@@ -601,12 +597,12 @@ summary(pool(imp_plant_MR_pb1))
 
 imp_plant_MR_pb3 <- list()
 for (i in seq_along(df_imp_plant2)) {
-  imp_plant_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
+  imp_plant_MR_pb3[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_pb3))
 
 imp_plant_MR_pb5 <- list()
 for (i in seq_along(df_imp_plant2)) {
-  imp_plant_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
+  imp_plant_MR_pb5[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_pb5))
 ```
 
@@ -630,6 +626,14 @@ rm(list = ls())
 ```
 
 ### Coupe scale
+
+### Divide data
+
+```{r}
+df_imp_all <- readRDS(here("Analysis", "All_impcase_es.rds"))
+  
+df_imp_coupe <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Coupe") })
+```
 
 OLRE
 
@@ -701,21 +705,21 @@ summary(pool(imp_coupe_MR_mod5))
 imp_coupe_MR_mod1_rob <- list()
 
 for (i in seq_along(df_imp_coupe1)) {
-  imp_coupe_MR_mod1_rob[[i]] <- robust(imp_coupe_MR_mod1[[i]], cluster = df_imp_coupe[[i]]$Paper_ID) }
+  imp_coupe_MR_mod1_rob[[i]] <- robust(imp_coupe_MR_mod1[[i]], cluster = df_imp_coupe2[[i]]$Paper_ID) }
 
 summary(pool(imp_coupe_MR_mod1_rob))
 
 imp_plant_MR_mod3_rob <- list()
 
 for (i in seq_along(df_imp_coupe1)) {
-  imp_coupe_MR_mod3_rob[[i]] <- robust(imp_coupe_MR_mod3[[i]], cluster = df_imp_coupe[[i]]$Paper_ID) }
+  imp_coupe_MR_mod3_rob[[i]] <- robust(imp_coupe_MR_mod3[[i]], cluster = df_imp_coupe1[[i]]$Paper_ID) }
 
 summary(pool(imp_coupe_MR_mod3_rob))
 
 imp_coupe_MR_mod5_rob <- list()
 
 for (i in seq_along(df_imp_coupe1)) {
-  imp_coupe_MR_mod5_rob[[i]] <- robust(imp_coupe_MR_mod5[[i]], cluster = df_imp_coupe[[i]]$Paper_ID) }
+  imp_coupe_MR_mod5_rob[[i]] <- robust(imp_coupe_MR_mod5[[i]], cluster = df_imp_coupe2[[i]]$Paper_ID) }
 
 summary(pool(imp_coupe_MR_mod5_rob))
 ```
@@ -728,7 +732,11 @@ summary(pool(imp_coupe_MR_mod5_rob))
 #centre the publication year
 #calculate sqrt inverse effective sample size
 
-df_imp_coupe2 <- lapply(df_imp_coupe1, function(df){ 
+df_imp_coupe3 <- lapply(df_imp_coupe1, function(df){ 
+  df %>% mutate(Year = Year - mean(Year), 
+                root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) ) })
+
+df_imp_coupe4 <- lapply(df_imp_coupe2, function(df){ 
   df %>% mutate(Year = Year - mean(Year), 
                 root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) ) })
 ```
@@ -736,24 +744,24 @@ df_imp_coupe2 <- lapply(df_imp_coupe1, function(df){
 ```{r}
 imp_coupe_MMA_pb1 <- list()
 for (i in seq_along(df_imp_coupe2)) {
-  imp_coupe_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
+  imp_coupe_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe3[[i]], verbose = TRUE) }
 summary(pool(imp_coupe_MMA_pb1))
 ```
 
 ```{r}
 imp_coupe_MR_pb1 <- list()
-for (i in seq_along(df_imp_coupe2)) {
-  imp_coupe_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_coupe4)) {
+  imp_coupe_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp1[[i]], mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe4[[i]], verbose = TRUE) }
 summary(pool(imp_coupe_MR_pb1))
 
 imp_coupe_MR_pb3 <- list()
-for (i in seq_along(df_imp_coupe2)) {
-  imp_coupe_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_coupe3)) {
+  imp_coupe_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe3[[i]], verbose = TRUE) }
 summary(pool(imp_coupe_MR_pb3))
 
 imp_coupe_MR_pb5 <- list()
-for (i in seq_along(df_imp_coupe2)) {
-  imp_coupe_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_coupe4)) {
+  imp_coupe_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp1[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe4[[i]], verbose = TRUE) }
 summary(pool(imp_coupe_MR_pb5))
 ```
 
@@ -777,6 +785,14 @@ rm(list = ls())
 ```
 
 ### Landscape scale
+
+### Divide data
+
+```{r}
+df_imp_all <- readRDS(here("Analysis", "All_impcase_es.rds"))
+
+df_imp_lscape <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Landscape") })
+```
 
 OLRE
 
@@ -829,9 +845,17 @@ for (i in seq_along(df_imp_lscape1)) {
   imp_lscape_MR_mod4[[i]] <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_lscape_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape1[[i]], verbose = TRUE) }
 summary(pool(imp_lscape_MR_mod4))
 
+# subset out methods with fewer than k=15
+
+df_imp_lscape2 <- lapply(df_imp_lscape1, function(df){
+  df %>% filter(!(Method == "Other fencing" | Method == "Stock manipulation")) })
+
+VCV_mat_lscape_imp1 <- lapply(df_imp_lscape2, function(df){
+  vcalc(vi = Sampling_variance, cluster = Shared_data, data = df, rho = 0.5, nearpd = TRUE) })
+
 imp_lscape_MR_mod5 <- list()
 for (i in seq_along(df_imp_lscape1)) {
-  imp_lscape_MR_mod5[[i]] <- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_lscape_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape1[[i]], verbose = TRUE) }
+  imp_lscape_MR_mod5[[i]] <- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_lscape_imp1[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape2[[i]], verbose = TRUE) }
 summary(pool(imp_lscape_MR_mod5))
 ```
 
@@ -841,21 +865,21 @@ summary(pool(imp_lscape_MR_mod5))
 imp_lscape_MR_mod1_rob <- list()
 
 for (i in seq_along(df_imp_lscape1)) {
-  imp_lscape_MR_mod1_rob[[i]] <- robust(imp_lscape_MR_mod1[[i]], cluster = df_imp_lscape[[i]]$Paper_ID) }
+  imp_lscape_MR_mod1_rob[[i]] <- robust(imp_lscape_MR_mod1[[i]], cluster = df_imp_lscape1[[i]]$Paper_ID) }
 
 summary(pool(imp_lscape_MR_mod1_rob))
 
 imp_lscape_MR_mod3_rob <- list()
 
 for (i in seq_along(df_imp_lscape1)) {
-  imp_lscape_MR_mod3_rob[[i]] <- robust(imp_lscape_MR_mod3[[i]], cluster = df_imp_lscape[[i]]$Paper_ID) }
+  imp_lscape_MR_mod3_rob[[i]] <- robust(imp_lscape_MR_mod3[[i]], cluster = df_imp_lscape1[[i]]$Paper_ID) }
 
 summary(pool(imp_lscape_MR_mod3_rob))
 
 imp_lscape_MR_mod5_rob <- list()
 
 for (i in seq_along(df_imp_lscape1)) {
-  imp_lscape_MR_mod5_rob[[i]] <- robust(imp_lscape_MR_mod5[[i]], cluster = df_imp_lscape[[i]]$Paper_ID) }
+  imp_lscape_MR_mod5_rob[[i]] <- robust(imp_lscape_MR_mod5[[i]], cluster = df_imp_lscape2[[i]]$Paper_ID) }
 
 summary(pool(imp_lscape_MR_mod5_rob))
 ```
@@ -868,32 +892,36 @@ summary(pool(imp_lscape_MR_mod5_rob))
 #centre the publication year
 #calculate sqrt inverse effective sample size
 
-df_imp_lscape2 <- lapply(df_imp_lscape1, function(df){ 
+df_imp_lscape3 <- lapply(df_imp_lscape1, function(df){ 
+  df %>% mutate(Year = Year - mean(Year), 
+                root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) ) })
+
+df_imp_lscape4 <- lapply(df_imp_lscape2, function(df){ 
   df %>% mutate(Year = Year - mean(Year), 
                 root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) ) })
 ```
 
 ```{r}
 imp_lscape_MMA_pb1 <- list()
-for (i in seq_along(df_imp_lscape2)) {
-  imp_lscape_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_lscape3)) {
+  imp_lscape_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape3[[i]], verbose = TRUE) }
 summary(pool(imp_lscape_MMA_pb1))
 ```
 
 ```{r}
 imp_lscape_MR_pb1 <- list()
-for (i in seq_along(df_imp_lscape2)) {
-  imp_lscape_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_lscape3)) {
+  imp_lscape_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape3[[i]], verbose = TRUE) }
 summary(pool(imp_lscape_MR_pb1))
 
 imp_lscape_MR_pb3 <- list()
-for (i in seq_along(df_imp_lscape2)) {
-  imp_lscape_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_lscape3)) {
+  imp_lscape_MR_pb3[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape3[[i]], verbose = TRUE) }
 summary(pool(imp_lscape_MR_pb3))
 
 imp_lscape_MR_pb5 <- list()
-for (i in seq_along(df_imp_lscape2)) {
-  imp_lscape_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_lscape4)) {
+  imp_lscape_MR_pb5[[i]] <- rma.mv(Effect_size, V = VCV_mat_lscape_imp1[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape4[[i]], verbose = TRUE) }
 summary(pool(imp_lscape_MR_pb5))
 ```
 
