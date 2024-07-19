@@ -674,7 +674,7 @@ VCV_mat_coupe_imp1 <- lapply(df_imp_coupe2, function(df){
   vcalc(vi = Sampling_variance, cluster = Shared_data, data = df, rho = 0.5, nearpd = TRUE) })
 
 imp_coupe_MR_mod1 <- list()
-for (i in seq_along(df_imp_coupe1)) {
+for (i in seq_along(df_imp_coupe2)) {
   imp_coupe_MR_mod1[[i]] <- rma.mv(Effect_size ~ Method + Plot_size, V = VCV_mat_coupe_imp1[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
 summary(pool(imp_coupe_MR_mod1))
 
