@@ -667,7 +667,7 @@ print(imp_coupe_MMA_pool1)
 
 ```{r}
 #subset to remove guardian animal - too few effects to model reliably
-df_imp_coupe2 <- lapply(df_imp_coupe, function(df){ 
+df_imp_coupe2 <- lapply(df_imp_coupe1, function(df){ 
   df %>% filter(!(Method == "Guardian animal")) })
 
 VCV_mat_coupe_imp1 <- lapply(df_imp_coupe2, function(df){
