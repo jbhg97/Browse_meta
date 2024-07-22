@@ -1,6 +1,6 @@
 ---
-title: "Mammal browsing control meta-analysis results"
-author: "Jamie and Dan"
+title: "Mammal browsing control meta-analysis modelling"
+author: "James Grimsdale and Dan Noble"
 format: html
 editor: visual
 ---
@@ -507,7 +507,7 @@ VCV_mat_plant_imp <- lapply(df_imp_plant1, function(df){
 imp_plant_MMA_mod1 <- list()
 
 for (i in seq_along(df_imp_plant1)) { 
-  imp_plant_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]]) }
+  imp_plant_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 
 imp_plant_MMA_pool1 <- summary(pool(imp_plant_MMA_mod1))
 print(imp_plant_MMA_pool1)
@@ -520,27 +520,27 @@ print(imp_plant_MMA_pool1)
 ```{r}
 imp_plant_MR_mod1 <- list()
 for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod1[[i]] <- rma.mv(Effect_size ~ Method + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]]) }
+  imp_plant_MR_mod1[[i]] <- rma.mv(Effect_size ~ Method + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod1))
 
 imp_plant_MR_mod2 <- list()
 for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]]) }
+  imp_plant_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod2))
 
 imp_plant_MR_mod3 <- list()
 for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod3[[i]] <- rma.mv(Effect_size ~ Animal + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]]) }
+  imp_plant_MR_mod3[[i]] <- rma.mv(Effect_size ~ Animal + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod3))
 
 imp_plant_MR_mod4 <- list()
 for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod4[[i]] <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]]) }
+  imp_plant_MR_mod4[[i]] <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod4))
 
 imp_plant_MR_mod5 <- list()
 for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod5[[i]] <- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]]) }
+  imp_plant_MR_mod5[[i]] <- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod5))
 ```
 
