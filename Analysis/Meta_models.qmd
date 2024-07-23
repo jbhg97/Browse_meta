@@ -680,7 +680,7 @@ summary(pool(imp_coupe_MR_mod1))
 
 imp_coupe_MR_mod2 <- list()
 for (i in seq_along(df_imp_coupe2)) {
-  imp_coupe_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Plot_size, V = VCV_mat_coupe_imp1[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe1[[i]], verbose = TRUE) }
+  imp_coupe_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Plot_size, V = VCV_mat_coupe_imp1[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
 summary(pool(imp_coupe_MR_mod2))
 
 imp_coupe_MR_mod3 <- list()
@@ -694,7 +694,7 @@ for (i in seq_along(df_imp_coupe1)) {
 summary(pool(imp_coupe_MR_mod4))
 
 imp_coupe_MR_mod5 <- list()
-for (i in seq_along(df_imp_coupe1)) {
+for (i in seq_along(df_imp_coupe2)) {
   imp_coupe_MR_mod5[[i]] <- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_coupe_imp1[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe2[[i]], verbose = TRUE) }
 summary(pool(imp_coupe_MR_mod5))
 ```
@@ -704,7 +704,7 @@ summary(pool(imp_coupe_MR_mod5))
 ```{r}
 imp_coupe_MR_mod1_rob <- list()
 
-for (i in seq_along(df_imp_coupe1)) {
+for (i in seq_along(df_imp_coupe2)) {
   imp_coupe_MR_mod1_rob[[i]] <- robust(imp_coupe_MR_mod1[[i]], cluster = df_imp_coupe2[[i]]$Paper_ID) }
 
 summary(pool(imp_coupe_MR_mod1_rob))
@@ -718,7 +718,7 @@ summary(pool(imp_coupe_MR_mod3_rob))
 
 imp_coupe_MR_mod5_rob <- list()
 
-for (i in seq_along(df_imp_coupe1)) {
+for (i in seq_along(df_imp_coupe2)) {
   imp_coupe_MR_mod5_rob[[i]] <- robust(imp_coupe_MR_mod5[[i]], cluster = df_imp_coupe2[[i]]$Paper_ID) }
 
 summary(pool(imp_coupe_MR_mod5_rob))
@@ -743,7 +743,7 @@ df_imp_coupe4 <- lapply(df_imp_coupe2, function(df){
 
 ```{r}
 imp_coupe_MMA_pb1 <- list()
-for (i in seq_along(df_imp_coupe2)) {
+for (i in seq_along(df_imp_coupe3)) {
   imp_coupe_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_coupe_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_coupe3[[i]], verbose = TRUE) }
 summary(pool(imp_coupe_MMA_pb1))
 ```
@@ -854,7 +854,7 @@ VCV_mat_lscape_imp1 <- lapply(df_imp_lscape2, function(df){
   vcalc(vi = Sampling_variance, cluster = Shared_data, data = df, rho = 0.5, nearpd = TRUE) })
 
 imp_lscape_MR_mod5 <- list()
-for (i in seq_along(df_imp_lscape1)) {
+for (i in seq_along(df_imp_lscape2)) {
   imp_lscape_MR_mod5[[i]] <- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_lscape_imp1[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_lscape2[[i]], verbose = TRUE) }
 summary(pool(imp_lscape_MR_mod5))
 ```
@@ -878,7 +878,7 @@ summary(pool(imp_lscape_MR_mod3_rob))
 
 imp_lscape_MR_mod5_rob <- list()
 
-for (i in seq_along(df_imp_lscape1)) {
+for (i in seq_along(df_imp_lscape2)) {
   imp_lscape_MR_mod5_rob[[i]] <- robust(imp_lscape_MR_mod5[[i]], cluster = df_imp_lscape2[[i]]$Paper_ID) }
 
 summary(pool(imp_lscape_MR_mod5_rob))
