@@ -10,7 +10,7 @@ editor: visual
 ```{r}
 library(pacman)
 devtools::install_github("daniel1noble/orchaRd", ref = "main", force = TRUE)
-p_load(tidyverse, readxl, writexl, kableExtra, orchaRd, clubSandwich, metafor, mice, orchaRd, here, doParallel)
+p_load(tidyverse, readxl, writexl, kableExtra, orchaRd, clubSandwich, metafor, mice, orchaRd, here, parallel, doParallel)
 ```
 
 ## Complete case analysis
@@ -575,16 +575,15 @@ MR5_pb <- function(data, VCV_mat, i) {
 num_cores <- 20 # 20 iterations of the data therefore 20 cores to be used - set to an appropriate number based on your own computational power
 ```
 
-### Divide data
+### Plant scale
+
+#### Divide data
 
 ```{r}
 df_imp_all <- readRDS(here("Analysis", "All_impcase_es.rds"))
 
 df_imp_plant <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Plant") })
 ```
-
-### Plant scale
-
 OLRE
 
 ```{r}
@@ -604,39 +603,40 @@ VCV_mat_plant_imp <- lapply(df_imp_plant1, function(df){
 ```{r}
 imp_plant_MMA_mod1 <- list()
 
-imp_plant_MMA_mod1 <- mclapply(seq_along(df_imp_plant1), 
-                               function(i) MMA(df_imp_plant1[[i]], VCV_mat_plant_imp[[i]], i), mc.cores = num_cores)
+for (i in seq_along(df_imp_plant1)) { 
+  imp_plant_MMA_mod1[[i]] <- rma.mv(Effect_size ~ 1, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 
 imp_plant_MMA_pool1 <- summary(pool(imp_plant_MMA_mod1))
 print(imp_plant_MMA_pool1)
+#orchaRd::i2_ml(imp_plant_MMA_pool1) #this will work on any of the frames in the imp_plant_MMA_mod1 list but not on the pooled
 ```
 
 #### Multilevel Meta-regression models
 
 ```{r}
 imp_plant_MR_mod1 <- list()
-imp_plant_MR_mod1 <- mclapply(seq_along(df_imp_plant1), 
-                              function(i) MR1(df_imp_plant1[[i]], VCV_mat_plant_imp[[i]], i), mc.cores = num_cores)
+for (i in seq_along(df_imp_plant1)) {
+  imp_plant_MR_mod1[[i]] <- rma.mv(Effect_size ~ Method + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod1))
 
 imp_plant_MR_mod2 <- list()
-imp_plant_MR_mod2 <- mclapply(seq_along(df_imp_plant1), 
-                              function(i) MR2(df_imp_plant1[[i]], VCV_mat_plant_imp[[i]], i), mc.cores = num_cores)
+for (i in seq_along(df_imp_plant1)) {
+  imp_plant_MR_mod2[[i]] <- rma.mv(Effect_size ~ -1 + Method + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod2))
 
 imp_plant_MR_mod3 <- list()
-imp_plant_MR_mod3 <- mclapply(seq_along(df_imp_plant1), 
-                              function(i) MR3(df_imp_plant1[[i]], VCV_mat_plant_imp[[i]], i), mc.cores = num_cores)
+for (i in seq_along(df_imp_plant1)) {
+  imp_plant_MR_mod3[[i]] <- rma.mv(Effect_size ~ Animal + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod3))
 
 imp_plant_MR_mod4 <- list()
-imp_plant_MR_mod4 <- mclapply(seq_along(df_imp_plant1), 
-                              function(i) MR4(df_imp_plant1[[i]], VCV_mat_plant_imp[[i]], i), mc.cores = num_cores)
+for (i in seq_along(df_imp_plant1)) {
+  imp_plant_MR_mod4[[i]] <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod4))
 
 imp_plant_MR_mod5 <- list()
-imp_plant_MR_mod5 <- mclapply(seq_along(df_imp_plant1), 
-                              function(i) MR5(df_imp_plant1[[i]], VCV_mat_plant_imp[[i]], i), mc.cores = num_cores)
+for (i in seq_along(df_imp_plant1)) {
+  imp_plant_MR_mod5[[i]] <- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod5))
 ```
 
@@ -644,24 +644,18 @@ summary(pool(imp_plant_MR_mod5))
 
 ```{r}
 imp_plant_MR_mod1_rob <- list()
-
 for (i in seq_along(df_imp_plant1)) {
   imp_plant_MR_mod1_rob[[i]] <- robust(imp_plant_MR_mod1[[i]], cluster = df_imp_plant[[i]]$Paper_ID) }
-
 summary(pool(imp_plant_MR_mod1_rob))
 
 imp_plant_MR_mod3_rob <- list()
-
 for (i in seq_along(df_imp_plant1)) {
   imp_plant_MR_mod3_rob[[i]] <- robust(imp_plant_MR_mod3[[i]], cluster = df_imp_plant[[i]]$Paper_ID) }
-
 summary(pool(imp_plant_MR_mod3_rob))
 
 imp_plant_MR_mod5_rob <- list()
-
 for (i in seq_along(df_imp_plant1)) {
   imp_plant_MR_mod5_rob[[i]] <- robust(imp_plant_MR_mod5[[i]], cluster = df_imp_plant[[i]]$Paper_ID) }
-
 summary(pool(imp_plant_MR_mod5_rob))
 ```
 
@@ -672,7 +666,6 @@ summary(pool(imp_plant_MR_mod5_rob))
 ```{r}
 #centre the publication year
 #calculate sqrt inverse effective sample size
-
 df_imp_plant2 <- lapply(df_imp_plant1, function(df){ 
   df %>% mutate(Year = Year - mean(Year), 
                 root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) ) })
@@ -680,25 +673,23 @@ df_imp_plant2 <- lapply(df_imp_plant1, function(df){
 
 ```{r}
 imp_plant_MMA_pb1 <- list()
-imp_plant_MMA_pb1 <- mclapply(seq_along(df_imp_plant1), 
-                              function(i) MMA_pb(df_imp_plant1[[i]], VCV_mat_plant_imp[[i]], i), mc.cores = num_cores)
+for (i in seq_along(df_imp_plant2)) {
+  imp_plant_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MMA_pb1))
 ```
 
 ```{r}
 imp_plant_MR_pb1 <- list()
-imp_plant_MR_pb1 <- mclapply(seq_along(df_imp_plant1), 
-                             function(i) MR1_pb(df_imp_plant1[[i]], VCV_mat_plant_imp[[i]], i), mc.cores = num_cores)
+for (i in seq_along(df_imp_plant2)) {
+  imp_plant_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_pb1))
-
 imp_plant_MR_pb3 <- list()
-imp_plant_MR_pb3 <- mclapply(seq_along(df_imp_plant1), 
-                             function(i) MR3_pb(df_imp_plant1[[i]], VCV_mat_plant_imp[[i]], i), mc.cores = num_cores)
+for (i in seq_along(df_imp_plant2)) {
+  imp_plant_MR_pb3[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_pb3))
-
 imp_plant_MR_pb5 <- list()
-imp_plant_MR_pb5 <- mclapply(seq_along(df_imp_plant1), 
-                             function(i) MR5_pb(df_imp_plant1[[i]], VCV_mat_plant_imp[[i]], i), mc.cores = num_cores)
+for (i in seq_along(df_imp_plant2)) {
+  imp_plant_MR_pb5[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_pb5))
 ```
 
@@ -723,7 +714,7 @@ rm(list = ls())
 
 ### Coupe scale
 
-### Divide data
+#### Divide data
 
 ```{r}
 df_imp_all <- readRDS(here("Analysis", "All_impcase_es.rds"))
@@ -881,7 +872,7 @@ rm(list = ls())
 
 ### Landscape scale
 
-### Divide data
+#### Divide data
 
 ```{r}
 df_imp_all <- readRDS(here("Analysis", "All_impcase_es.rds"))
