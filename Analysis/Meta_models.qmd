@@ -584,6 +584,7 @@ df_imp_all <- readRDS(here("Analysis", "All_impcase_es.rds"))
 
 df_imp_plant <- lapply(df_imp_all, function(df){ df %>% filter(Scale == "Plant") })
 ```
+
 OLRE
 
 ```{r}
