@@ -753,9 +753,10 @@ VCV_mat_coupe_imp <- lapply(df_imp_coupe1, function(df){
 
 ```{r}
 imp_coupe_MMA_mod1 <- list()
-imp_coupe_MMA_mod1 <- mclapply(seq_along(df_imp_coupe1), 
-                               function(i) MMA(df_imp_coupe1[[i]], VCV_mat_coupe_imp[[i]], i), mc.cores = num_cores)
+imp_coupe_MMA_mod1 <- lapply(seq_along(df_imp_coupe1), 
+                               function(i) MMA(df_imp_coupe1[[i]], VCV_mat_coupe_imp[[i]], i))
 
+summary(pool(imp_coupe_MMA_mod1))
 saveRDS(imp_coupe_MMA_mod1, here("Results", "Models", "Coupe", "imp_coupe_MMA.rds"))
 
 rm(imp_coupe_MMA_mod1)
@@ -772,8 +773,8 @@ VCV_mat_coupe_imp1 <- lapply(df_imp_coupe2, function(df){
   vcalc(vi = Sampling_variance, cluster = Shared_data, data = df, rho = 0.5, nearpd = TRUE) })
 
 imp_coupe_MR_mod1 <- list()
-imp_coupe_MR_mod1 <- mclapply(seq_along(df_imp_coupe2), 
-                              function(i) MR1(df_imp_coupe2[[i]], VCV_mat_coupe_imp1[[i]], i), mc.cores = num_cores)
+imp_coupe_MR_mod1 <- lapply(seq_along(df_imp_coupe2), 
+                              function(i) MR1(df_imp_coupe2[[i]], VCV_mat_coupe_imp1[[i]], i))
 summary(pool(imp_coupe_MR_mod1))
 saveRDS(imp_coupe_MR_mod1, here("Results", "Models", "Coupe", "imp_coupe_MR1.rds"))
 rm(imp_coupe_MR_mod1)
@@ -781,8 +782,8 @@ rm(imp_coupe_MR_mod1)
 
 ```{r}
 imp_coupe_MR_mod2 <- list()
-imp_coupe_MR_mod2 <- mclapply(seq_along(df_imp_coupe2), 
-                              function(i) MR2(df_imp_coupe2[[i]], VCV_mat_coupe_imp1[[i]], i), mc.cores = num_cores)
+imp_coupe_MR_mod2 <- lapply(seq_along(df_imp_coupe2), 
+                              function(i) MR2(df_imp_coupe2[[i]], VCV_mat_coupe_imp1[[i]], i))
 summary(pool(imp_coupe_MR_mod2))
 saveRDS(imp_coupe_MR_mod2, here("Results", "Models", "Coupe", "imp_coupe_MR2.rds"))
 rm(imp_coupe_MR_mod2)
@@ -790,8 +791,8 @@ rm(imp_coupe_MR_mod2)
 
 ```{r}
 imp_coupe_MR_mod3 <- list()
-imp_coupe_MR_mod3 <- mclapply(seq_along(df_imp_coupe1), 
-                              function(i) MR3(df_imp_coupe1[[i]], VCV_mat_coupe_imp[[i]], i), mc.cores = num_cores)
+imp_coupe_MR_mod3 <- lapply(seq_along(df_imp_coupe1), 
+                              function(i) MR3(df_imp_coupe1[[i]], VCV_mat_coupe_imp[[i]], i))
 summary(pool(imp_coupe_MR_mod3))
 saveRDS(imp_coupe_MR_mod3, here("Results", "Models", "Coupe", "imp_coupe_MR3.rds"))
 rm(imp_coupe_MR_mod3)
@@ -799,8 +800,8 @@ rm(imp_coupe_MR_mod3)
 
 ```{r}
 imp_coupe_MR_mod4 <- list()
-imp_coupe_MR_mod4 <- mclapply(seq_along(df_imp_coupe1), 
-                              function(i) MR4(df_imp_coupe1[[i]], VCV_mat_coupe_imp[[i]], i), mc.cores = num_cores)
+imp_coupe_MR_mod4 <- lapply(seq_along(df_imp_coupe1), 
+                              function(i) MR4(df_imp_coupe1[[i]], VCV_mat_coupe_imp[[i]], i))
 summary(pool(imp_coupe_MR_mod4))
 saveRDS(imp_coupe_MR_mod4, here("Results", "Models", "Coupe", "imp_coupe_MR4.rds"))
 rm(imp_coupe_MR_mod4)
@@ -808,8 +809,8 @@ rm(imp_coupe_MR_mod4)
 
 ```{r}
 imp_coupe_MR_mod5 <- list()
-imp_coupe_MR_mod5 <- mclapply(seq_along(df_imp_coupe2), 
-                              function(i) MR5(df_imp_coupe2[[i]], VCV_mat_coupe_imp1[[i]], i), mc.cores = num_cores)
+imp_coupe_MR_mod5 <- lapply(seq_along(df_imp_coupe2), 
+                              function(i) MR5(df_imp_coupe2[[i]], VCV_mat_coupe_imp1[[i]], i))
 summary(pool(imp_coupe_MR_mod5))
 saveRDS(imp_coupe_MR_mod5, here("Results", "Models", "Coupe", "imp_coupe_MR5.rds"))
 rm(imp_coupe_MR_mod5)
@@ -869,8 +870,8 @@ df_imp_coupe4 <- lapply(df_imp_coupe2, function(df){
 
 ```{r}
 imp_coupe_MMA_pb1 <- list()
-imp_coupe_MMA_pb1 <- mclapply(seq_along(df_imp_coupe3), 
-                              function(i) MMA(df_imp_coupe3[[i]], VCV_mat_coupe_imp[[i]], i), mc.cores = num_cores)
+imp_coupe_MMA_pb1 <- lapply(seq_along(df_imp_coupe3), 
+                              function(i) MMA(df_imp_coupe3[[i]], VCV_mat_coupe_imp[[i]], i))
 summary(pool(imp_coupe_MMA_pb1))
 saveRDS(imp_coupe_MMA_pb1, here("Results", "Models", "Coupe", "imp_coupe_MMA_pb1.rds"))
 rm(imp_coupe_MMA_pb1)
@@ -878,8 +879,8 @@ rm(imp_coupe_MMA_pb1)
 
 ```{r}
 imp_coupe_MR_pb1 <- list()
-imp_coupe_MR_pb1 <- mclapply(seq_along(df_imp_coupe4), 
-                             function(i) MMA(df_imp_coupe4[[i]], VCV_mat_coupe_imp1[[i]], i), mc.cores = num_cores)
+imp_coupe_MR_pb1 <- lapply(seq_along(df_imp_coupe4), 
+                             function(i) MMA(df_imp_coupe4[[i]], VCV_mat_coupe_imp1[[i]], i))
 summary(pool(imp_coupe_MR_pb1))
 saveRDS(imp_coupe_MR_pb1, here("Results", "Models", "Coupe", "imp_coupe_MR_pb1.rds"))
 rm(imp_coupe_MR_pb1)
@@ -887,8 +888,8 @@ rm(imp_coupe_MR_pb1)
 
 ```{r}
 imp_coupe_MR_pb3 <- list()
-imp_coupe_MR_pb3 <- mclapply(seq_along(df_imp_coupe3), 
-                             function(i) MMA(df_imp_coupe3[[i]], VCV_mat_coupe_imp[[i]], i), mc.cores = num_cores)
+imp_coupe_MR_pb3 <- lapply(seq_along(df_imp_coupe3), 
+                             function(i) MMA(df_imp_coupe3[[i]], VCV_mat_coupe_imp[[i]], i))
 summary(pool(imp_coupe_MR_pb3))
 saveRDS(imp_coupe_MR_pb3, here("Results", "Models", "Coupe", "imp_coupe_MR_pb3.rds"))
 rm(imp_coupe_MR_pb3)
@@ -896,8 +897,8 @@ rm(imp_coupe_MR_pb3)
 
 ```{r}
 imp_coupe_MR_pb5 <- list()
-imp_coupe_MR_pb5 <- mclapply(seq_along(df_imp_coupe4), 
-                             function(i) MMA(df_imp_coupe4[[i]], VCV_mat_coupe_imp1[[i]], i), mc.cores = num_cores)
+imp_coupe_MR_pb5 <- lapply(seq_along(df_imp_coupe4), 
+                             function(i) MMA(df_imp_coupe4[[i]], VCV_mat_coupe_imp1[[i]], i))
 summary(pool(imp_coupe_MR_pb5))
 saveRDS(imp_coupe_MR_pb5, here("Results", "Models", "Coupe", "imp_coupe_MR_pb5.rds"))
 rm(imp_coupe_MR_pb5)
