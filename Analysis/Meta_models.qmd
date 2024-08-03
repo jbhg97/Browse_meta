@@ -779,7 +779,6 @@ imp_coupe_MR_mod1 <- lapply(seq_along(df_imp_coupe2),
                               function(i) MR1(df_imp_coupe2[[i]], VCV_mat_coupe_imp1[[i]], i))
 summary(pool(imp_coupe_MR_mod1))
 saveRDS(imp_coupe_MR_mod1, here("Results", "Models", "Coupe", "imp_coupe_MR1.rds"))
-rm(imp_coupe_MR_mod1)
 ```
 
 ```{r}
@@ -797,7 +796,6 @@ imp_coupe_MR_mod3 <- mclapply(seq_along(df_imp_coupe1),
                               function(i) MR3(df_imp_coupe1[[i]], VCV_mat_coupe_imp[[i]], i), mc.cores= num_cores)
 summary(pool(imp_coupe_MR_mod3))
 saveRDS(imp_coupe_MR_mod3, here("Results", "Models", "Coupe", "imp_coupe_MR3.rds"))
-rm(imp_coupe_MR_mod3)
 ```
 
 ```{r}
@@ -815,7 +813,6 @@ imp_coupe_MR_mod5 <- mclapply(seq_along(df_imp_coupe2),
                               function(i) MR5(df_imp_coupe2[[i]], VCV_mat_coupe_imp1[[i]], i), mc.cores = num_cores)
 summary(pool(imp_coupe_MR_mod5))
 saveRDS(imp_coupe_MR_mod5, here("Results", "Models", "Coupe", "imp_coupe_MR5.rds"))
-rm(imp_coupe_MR_mod5)
 ```
 
 #### Non-independence sensitivity
@@ -828,7 +825,7 @@ for (i in seq_along(df_imp_coupe2)) {
 
 summary(pool(imp_coupe_MR_mod1_rob))
 saveRDS(imp_coupe_MR_mod1_rob, here("Results", "Models", "Coupe", "imp_coupe_MR1_rob.rds"))
-rm(imp_coupe_MR_mod1_rob)
+rm(imp_coupe_MR_mod1_rob, imp_coupe_MR_mod1)
 ```
 
 ```{r}
@@ -839,7 +836,7 @@ for (i in seq_along(df_imp_coupe1)) {
 
 summary(pool(imp_coupe_MR_mod3_rob))
 saveRDS(imp_coupe_MR_mod3_rob, here("Results", "Models", "Coupe", "imp_coupe_MR3_rob.rds"))
-rm(imp_coupe_MR_mod3_rob)
+rm(imp_coupe_MR_mod3_rob, imp_coupe_MR_mod3)
 ```
 
 ```{r}
@@ -850,7 +847,7 @@ for (i in seq_along(df_imp_coupe2)) {
 
 summary(pool(imp_coupe_MR_mod5_rob))
 saveRDS(imp_coupe_MR_mod5_rob, here("Results", "Models", "Coupe", "imp_coupe_MR5_rob.rds"))
-rm(imp_coupe_MR_mod5_rob)
+rm(imp_coupe_MR_mod5_rob, imp_coupe_MR_mod5)
 ```
 
 #### Publication bias
@@ -954,7 +951,6 @@ imp_lscape_MR_mod1 <- mclapply(seq_along(df_imp_lscape1),
                                function(i) MR1(df_imp_lscape1[[i]], VCV_mat_lscape_imp[[i]], i), mc.cores = num_cores)
 summary(pool(imp_lscape_MR_mod1))
 saveRDS(imp_lscape_MR_mod1, here("Results", "Models", "Landscape", "imp_lscape_MR1.rds"))
-rm(imp_lscape_MR_mod1)
 ```
 
 ```{r}
@@ -972,7 +968,6 @@ imp_lscape_MR_mod3 <- mclapply(seq_along(df_imp_lscape1),
                                function(i) MR3(df_imp_lscape1[[i]], VCV_mat_lscape_imp[[i]], i), mc.cores = num_cores)
 summary(pool(imp_lscape_MR_mod3))
 saveRDS(imp_lscape_MR_mod3, here("Results", "Models", "Landscape", "imp_lscape_MR3.rds"))
-rm(imp_lscape_MR_mod3)
 ```
 
 ```{r}
@@ -991,13 +986,14 @@ df_imp_lscape2 <- lapply(df_imp_lscape1, function(df){
 
 VCV_mat_lscape_imp1 <- lapply(df_imp_lscape2, function(df){
   vcalc(vi = Sampling_variance, cluster = Shared_data, data = df, rho = 0.5, nearpd = TRUE) })
+```
 
+```{r}
 imp_lscape_MR_mod5 <- list()
 imp_lscape_MR_mod5 <- mclapply(seq_along(df_imp_lscape2), 
                                function(i) MR5(df_imp_lscape2[[i]], VCV_mat_lscape_imp1[[i]], i), mc.cores = num_cores)
 summary(pool(imp_lscape_MR_mod5))
 saveRDS(imp_lscape_MR_mod5, here("Results", "Models", "Landscape", "imp_lscape_MR5.rds"))
-rm(imp_lscape_MR_mod5)
 ```
 
 #### Non-independence sensitivity
@@ -1010,7 +1006,7 @@ for (i in seq_along(df_imp_lscape1)) {
 
 summary(pool(imp_lscape_MR_mod1_rob))
 saveRDS(imp_lscape_MR_mod1_rob, here("Results", "Models", "Landscape", "imp_lscape_MR1_rob.rds"))
-rm(imp_lscape_MR_mod1_rob)
+rm(imp_lscape_MR_mod1_rob, imp_lscape_MR_mod1)
 ```
 
 ```{r}
@@ -1021,7 +1017,7 @@ for (i in seq_along(df_imp_lscape1)) {
 
 summary(pool(imp_lscape_MR_mod3_rob))
 saveRDS(imp_lscape_MR_mod3_rob, here("Results", "Models", "Landscape", "imp_lscape_MR3_rob.rds"))
-rm(imp_lscape_MR_mod3_rob)
+rm(imp_lscape_MR_mod3_rob, imp_lscape_MR_mod3)
 ```
 
 ```{r}
@@ -1032,7 +1028,7 @@ for (i in seq_along(df_imp_lscape2)) {
 
 summary(pool(imp_lscape_MR_mod5_rob))
 saveRDS(imp_lscape_MR_mod5_rob, here("Results", "Models", "Landscape", "imp_lscape_MR5_rob.rds"))
-rm(imp_lscape_MR_mod5_rob)
+rm(imp_lscape_MR_mod5_rob, imp_lscape_MR_mod5)
 ```
 
 #### Publication bias
