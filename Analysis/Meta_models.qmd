@@ -829,7 +829,7 @@ rm(imp_coupe_MR_mod1_rob, imp_coupe_MR_mod1)
 ```
 
 ```{r}
-imp_plant_MR_mod3_rob <- list()
+imp_coupe_MR_mod3_rob <- list()
 
 for (i in seq_along(df_imp_coupe1)) {
   imp_coupe_MR_mod3_rob[[i]] <- robust(imp_coupe_MR_mod3[[i]], cluster = df_imp_coupe1[[i]]$Paper_ID) }
