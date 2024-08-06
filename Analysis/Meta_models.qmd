@@ -869,8 +869,8 @@ df_imp_coupe4 <- lapply(df_imp_coupe2, function(df){
 
 ```{r}
 imp_coupe_MMA_pb1 <- list()
-imp_coupe_MMA_pb1 <- mclapply(seq_along(df_imp_coupe3), 
-                              function(i) MMA(df_imp_coupe3[[i]], VCV_mat_coupe_imp[[i]], i), mc.cores = num_cores)
+imp_coupe_MMA_pb1 <- lapply(seq_along(df_imp_coupe3), 
+                              function(i) MMA_pb(df_imp_coupe3[[i]], VCV_mat_coupe_imp[[i]], i))
 summary(pool(imp_coupe_MMA_pb1))
 saveRDS(imp_coupe_MMA_pb1, here("Results", "Models", "Coupe", "imp_coupe_MMA_pb1.rds"))
 rm(imp_coupe_MMA_pb1)
@@ -1051,7 +1051,7 @@ df_imp_lscape4 <- lapply(df_imp_lscape2, function(df){
 ```{r}
 imp_lscape_MMA_pb1 <- list()
 imp_lscape_MMA_pb1 <- mclapply(seq_along(df_imp_lscape3), 
-                               function(i) MMA(df_imp_lscape3[[i]], VCV_mat_lscape_imp[[i]], i), mc.cores = num_cores)
+                               function(i) MMA_pb(df_imp_lscape3[[i]], VCV_mat_lscape_imp[[i]], i), mc.cores = num_cores)
 summary(pool(imp_lscape_MMA_pb1))
 saveRDS(imp_lscape_MMA_pb1, here("Results", "Models", "Landscape", "imp_lscape_MMA_pb1.rds"))
 rm(imp_lscape_MMA_pb1)
