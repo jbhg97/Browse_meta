@@ -936,8 +936,8 @@ VCV_mat_lscape_imp <- lapply(df_imp_lscape1, function(df){
 ```{r}
 imp_lscape_MMA_mod1 <- list()
 
-imp_lscape_MMA_mod1 <- mclapply(seq_along(df_imp_lscape1), 
-                                function(i) MMA(df_imp_lscape1[[i]], VCV_mat_lscape_imp[[i]], i), mc.cores = num_cores)
+imp_lscape_MMA_mod1 <- lapply(seq_along(df_imp_lscape1), 
+                                function(i) MMA(df_imp_lscape1[[i]], VCV_mat_lscape_imp[[i]], i))
 
 saveRDS(imp_lscape_MMA_mod1, here("Results", "Models", "Landscape", "imp_lscape_MMA.rds"))
 rm(imp_lscape_MMA_mod1)
