@@ -118,10 +118,10 @@ plant_MR_mod5 <- readRDS(here("Results", "Models", "Plant", "Plant_MR5.rds"))
 
 df_comp_plant_rep <- df_comp_plant %>% filter(Method == "Repellents")
 
-plant_MR5_results <- mod_results(plant_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method") 
+plant_MR5_results <- mod_results(plant_MR_mod5, mod = "Months", group = "Paper_ID") 
 mod_table <- plant_MR5_results$mod_table
 
-mod_table_rep <- mod_table %>% filter(condition == "Repellents")
+mod_table_rep <- mod_table
 
 p3 <- ggplot(data = df_comp_plant_rep, aes(x = Months, y = Effect_size)) + 
   geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#CC6677", fill = "#CC6677") +
@@ -176,6 +176,7 @@ df_comp_coupe_tg <- df_comp_coupe %>% filter(Method == "Tree guards")
 df_comp_coupe_of <- df_comp_coupe %>% filter(Method == "Other fencing")
 df_comp_coupe_nd <- df_comp_coupe %>% filter(Method == "Natural debris")
 df_comp_coupe_sm <- df_comp_coupe %>% filter(Method == "Stock manipulation")
+df_comp_coupe_ne <- df_comp_coupe %>% filter(Method == "Neighbour effects")
 
 coupe_MR5_results <- mod_results(coupe_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method") 
 mod_table <- coupe_MR5_results$mod_table
@@ -186,6 +187,7 @@ mod_table_tg <- mod_table %>% filter(condition == "Tree guards")
 mod_table_of <- mod_table %>% filter(condition == "Other fencing")
 mod_table_nd <- mod_table %>% filter(condition == "Natural debris")
 mod_table_sm <- mod_table %>% filter(condition == "Stock manipulation")
+mod_table_ne <- mod_table %>% filter(condition == "Neighbour effects")
 
 c3 <- ggplot(data = df_comp_coupe_ef, aes(x = Months, y = Effect_size)) + 
   geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#88CCEE", fill = "#88CCEE") +
@@ -202,14 +204,14 @@ c3 <- ggplot(data = df_comp_coupe_ef, aes(x = Months, y = Effect_size)) +
   ggplot2::geom_smooth(data = mod_table_ef, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                        formula = y ~ x, se = FALSE, colour = "black") + 
   theme_bw() + theme(title = element_text(size = 29),
-                          axis.title  = element_text(size = 27), 
-                          axis.text = element_text(size = 25), 
-                          axis.text.y = element_text(size = 25),
-                          legend.text = element_text(size = 22), 
-                          legend.title = element_text(size = 24))
+                          axis.title  = element_text(size = 22), 
+                          axis.text = element_text(size = 15), 
+                          axis.text.y = element_text(size = 15),
+                          legend.text = element_text(size = 20), 
+                          legend.title = element_text(size = 22))
 
 c4 <- ggplot(data = df_comp_coupe_rep, aes(x = Months, y = Effect_size)) + 
-  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#117733", fill = "#117733") +
+  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#332288", fill = "#332288") +
   labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Repellents") + 
   ggplot2::geom_smooth(data = mod_table_rep, 
                        ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
@@ -222,13 +224,13 @@ c4 <- ggplot(data = df_comp_coupe_rep, aes(x = Months, y = Effect_size)) +
                        formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
   ggplot2::geom_smooth(data = mod_table_rep, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                        formula = y ~ x, se = FALSE, colour = "black") + 
-  xlim(0,50) + ylim(-10,10) +
+  xlim(0,50) + ylim(-5,7.5) +
   theme_bw() + theme(title = element_text(size = 29),
-                          axis.title  = element_text(size = 27), 
-                          axis.text = element_text(size = 25), 
-                          axis.text.y = element_text(size = 25),
-                          legend.text = element_text(size = 22), 
-                          legend.title = element_text(size = 24))
+                          axis.title  = element_text(size = 22), 
+                          axis.text = element_text(size = 15), 
+                          axis.text.y = element_text(size = 15),
+                          legend.text = element_text(size = 20), 
+                          legend.title = element_text(size = 22))
 
 c5 <- ggplot(data = df_comp_coupe_tg, aes(x = Months, y = Effect_size)) + 
   geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#AA4499", fill = "#AA4499") +
@@ -244,16 +246,16 @@ c5 <- ggplot(data = df_comp_coupe_tg, aes(x = Months, y = Effect_size)) +
                        formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
   ggplot2::geom_smooth(data = mod_table_tg, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                        formula = y ~ x, se = FALSE, colour = "black") + 
-  xlim(0,75) + ylim(-10,10) +
+  xlim(0,75) + ylim(-5,10) +
   theme_bw() + theme(title = element_text(size = 29),
-                          axis.title  = element_text(size = 27), 
-                          axis.text = element_text(size = 25), 
-                          axis.text.y = element_text(size = 25),
-                          legend.text = element_text(size = 22), 
-                          legend.title = element_text(size = 24))
+                          axis.title  = element_text(size = 22), 
+                          axis.text = element_text(size = 15), 
+                          axis.text.y = element_text(size = 15),
+                          legend.text = element_text(size = 20), 
+                          legend.title = element_text(size = 22))
 
 c6 <- ggplot(data = df_comp_coupe_of, aes(x = Months, y = Effect_size)) + 
-  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#DDCC77", fill = "#DDCC77") +
+  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#117733", fill = "#117733") +
   labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Other fencing") + 
   ggplot2::geom_smooth(data = mod_table_of, 
                        ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
@@ -266,13 +268,13 @@ c6 <- ggplot(data = df_comp_coupe_of, aes(x = Months, y = Effect_size)) +
                        formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
   ggplot2::geom_smooth(data = mod_table_of, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                        formula = y ~ x, se = FALSE, colour = "black") + 
-  xlim(0,50) + ylim(-10,10) +
+  xlim(0,50) + ylim(-5,5) +
   theme_bw() + theme(title = element_text(size = 29),
-                          axis.title  = element_text(size = 27), 
-                          axis.text = element_text(size = 25), 
-                          axis.text.y = element_text(size = 25),
-                          legend.text = element_text(size = 22), 
-                          legend.title = element_text(size = 24))
+                          axis.title  = element_text(size = 22), 
+                          axis.text = element_text(size = 15), 
+                          axis.text.y = element_text(size = 15),
+                          legend.text = element_text(size = 20), 
+                          legend.title = element_text(size = 22))
 
 c7 <- ggplot(data = df_comp_coupe_nd, aes(x = Months, y = Effect_size)) + 
   geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#CC6677", fill = "#CC6677") +
@@ -288,16 +290,16 @@ c7 <- ggplot(data = df_comp_coupe_nd, aes(x = Months, y = Effect_size)) +
                        formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
   ggplot2::geom_smooth(data = mod_table_nd, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                        formula = y ~ x, se = FALSE, colour = "black") + 
-  xlim(0,75) + ylim(-10,10) +
+  xlim(0,75) + ylim(-5,5) +
   theme_bw() + theme(title = element_text(size = 29),
-                          axis.title  = element_text(size = 27), 
-                          axis.text = element_text(size = 25), 
-                          axis.text.y = element_text(size = 25),
-                          legend.text = element_text(size = 22), 
-                          legend.title = element_text(size = 24))
+                          axis.title  = element_text(size = 22), 
+                          axis.text = element_text(size = 15), 
+                          axis.text.y = element_text(size = 15),
+                          legend.text = element_text(size = 20), 
+                          legend.title = element_text(size = 22))
 
 c8 <- ggplot(data = df_comp_coupe_sm, aes(x = Months, y = Effect_size)) + 
-  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#332288", fill = "#332288") +
+  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#AA4499", fill = "#AA4499") +
   labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Stock manipulation") + 
   ggplot2::geom_smooth(data = mod_table_sm, 
                        ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
@@ -310,15 +312,37 @@ c8 <- ggplot(data = df_comp_coupe_sm, aes(x = Months, y = Effect_size)) +
                        formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
   ggplot2::geom_smooth(data = mod_table_sm, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                        formula = y ~ x, se = FALSE, colour = "black") +
-  xlim(0,75) + ylim(-10,10) +
+  xlim(0,75) + ylim(-5,5) +
   theme_bw() + theme(title = element_text(size = 29),
-                          axis.title  = element_text(size = 27), 
-                          axis.text = element_text(size = 25), 
-                          axis.text.y = element_text(size = 25),
-                          legend.text = element_text(size = 22), 
-                          legend.title = element_text(size = 24))
+                          axis.title  = element_text(size = 22), 
+                          axis.text = element_text(size = 15), 
+                          axis.text.y = element_text(size = 15),
+                          legend.text = element_text(size = 20), 
+                          legend.title = element_text(size = 22))
 
-plot4 <- (c3+c5+c4)/(c7+c8+c6) + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
+c9 <- ggplot(data = df_comp_coupe_ne, aes(x = Months, y = Effect_size)) + 
+  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#DDCC77", fill = "#DDCC77") +
+  labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Neighbour effects") + 
+  ggplot2::geom_smooth(data = mod_table_ne, 
+                       ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_ne, ggplot2::aes(x = moderator, y = upperPR), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_ne, ggplot2::aes(x = moderator, y = lowerCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_ne, ggplot2::aes(x = moderator, y = upperCL), method = "loess", 
+                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
+  ggplot2::geom_smooth(data = mod_table_ne, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
+                       formula = y ~ x, se = FALSE, colour = "black") +
+  xlim(0,50) + ylim(-5,5) +
+  theme_bw() + theme(title = element_text(size = 29),
+                          axis.title  = element_text(size = 22), 
+                          axis.text = element_text(size = 15), 
+                          axis.text.y = element_text(size = 15),
+                          legend.text = element_text(size = 20), 
+                          legend.title = element_text(size = 22))
+
+plot4 <- (c5+c4)/(c7+c9)/(c8+c6)/c3 + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes and the different sizes of the bubbles between control methods.", width = 100), theme = theme(plot.caption = element_text(size = 18)))
 print(plot4)
 ```
 
