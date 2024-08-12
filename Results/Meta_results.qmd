@@ -7,11 +7,11 @@ editor: visual
 
 ```{r}
 library(pacman)
-p_load(tidyverse, readxl, writexl, sf, rnaturalearth, rnaturalearthdata, patchwork, ggtext, scales, gridExtra)
+p_load(tidyverse, readxl, writexl, sf, rnaturalearth, rnaturalearthdata, patchwork, ggtext, scales, gridExtra, orchaRd, here)
 ```
 
 ```{r}
-df <- readRDS(here("Data processing", "All_impcase_es.rds"))
+df <- readRDS(here("Analysis", "All_impcase_es.rds"))
 df1 <- df[[1]] #select one of the imputed case frames to do the summary statistics of literature synthesis.
 ```
 
@@ -98,7 +98,7 @@ Results presented here are complete case analysis of XX effects.... detailed imp
 ```{r}
 # plant scale orchard plots - tweak caption position and wrap as needed
 
-df_comp_plant <- read_xlsx(here("Analysis", "Comp_all_plant.xlsx"))
+df_comp_plant <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") %>% filter(Scale == "Plant")
 plant_MR_mod1 <- readRDS(here("Results", "Models", "Plant", "Plant_MR1.rds"))
 plant_MR_mod3 <- readRDS(here("Results", "Models", "Plant", "Plant_MR3.rds"))
 
@@ -116,37 +116,14 @@ colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4
 
 plant_MR_mod5 <- readRDS(here("Results", "Models", "Plant", "Plant_MR5.rds"))
 
-df_comp_plant_ef <- df_comp_plant %>% filter(Method == "Exclusion fence")
 df_comp_plant_rep <- df_comp_plant %>% filter(Method == "Repellents")
 
 plant_MR5_results <- mod_results(plant_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method") 
 mod_table <- plant_MR5_results$mod_table
 
-mod_table_ef <- mod_table %>% filter(condition == "Exclusion fence")
 mod_table_rep <- mod_table %>% filter(condition == "Repellents")
 
-p3 <- ggplot(data = df_comp_plant_ef, aes(x = Months, y = Effect_size)) + 
-  geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#88CCEE", fill = "#88CCEE") +
-  labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Exclusion fence") + 
-  ggplot2::geom_smooth(data = mod_table_ef, 
-                       ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
-                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
-  ggplot2::geom_smooth(data = mod_table_ef, ggplot2::aes(x = moderator, y = upperPR), method = "loess", 
-                       formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
-  ggplot2::geom_smooth(data = mod_table_ef, ggplot2::aes(x = moderator, y = lowerCL), method = "loess", 
-                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
-  ggplot2::geom_smooth(data = mod_table_ef, ggplot2::aes(x = moderator, y = upperCL), method = "loess", 
-                       formula = y ~ x, se = FALSE, lty = "dashed", colour = "black") + 
-  ggplot2::geom_smooth(data = mod_table_ef, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
-                       formula = y ~ x, se = FALSE, colour = "black") + 
-  theme_bw() + theme(title = element_text(size = 29),
-                          axis.title  = element_text(size = 27), 
-                          axis.text = element_text(size = 25), 
-                          axis.text.y = element_text(size = 25),
-                          legend.text = element_text(size = 22), 
-                          legend.title = element_text(size = 24))
-
-p4 <- ggplot(data = df_comp_plant_rep, aes(x = Months, y = Effect_size)) + 
+p3 <- ggplot(data = df_comp_plant_rep, aes(x = Months, y = Effect_size)) + 
   geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = "#CC6677", fill = "#CC6677") +
   labs(x = "Time / months", y = "Effect size", size = "Precision (1/SE)", title = "Repellents") + 
   ggplot2::geom_smooth(data = mod_table_rep, 
@@ -168,14 +145,14 @@ p4 <- ggplot(data = df_comp_plant_rep, aes(x = Months, y = Effect_size)) +
                           legend.text = element_text(size = 22), 
                           legend.title = element_text(size = 24))
 
-plot2 <- p3/p4 + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'plant' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
+plot2 <- p3 + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'plant' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
 print(plot2) # need to fix the caption position - look rubbish when viewed in qmd but much better when viewed in plots window and zoomed out
 ```
 
 ```{r}
 # coupe scale orchard plots - tweak caption position and wrap as needed
 
-df_comp_coupe <- read_xlsx(here("Analysis", "Comp_all_coupe.xlsx"))
+df_comp_coupe <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") %>% filter(Scale == "Coupe")
 coupe_MR_mod1 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR1.rds"))
 coupe_MR_mod3 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR3.rds"))
 
@@ -348,7 +325,7 @@ print(plot4)
 ```{r}
 # Landscape scale orchard plots - tweak caption position and wrap as needed
 
-df_comp_lscape <- read_xlsx(here("Analysis", "Comp_all_lscape.xlsx"))
+df_comp_lscape <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") %>% filter(Scale == "Landscape")
 lscape_MR_mod1 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR1.rds"))
 lscape_MR_mod3 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR3.rds"))
 

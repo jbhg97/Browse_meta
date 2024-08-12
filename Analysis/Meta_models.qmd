@@ -74,7 +74,10 @@ summary(plant_MR_mod3)
 plant_MR_mod4 <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
 summary(plant_MR_mod4)
 
-plant_MR_mod5<- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_plant, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant)
+df_comp_plant1 <- df_comp_plant %>% filter(!Method == "Exclusion fence") # not enough effects to model slope
+VCV_mat_plant1 <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df_comp_plant1, rho = 0.5, nearpd = TRUE)
+
+plant_MR_mod5<- rma.mv(Effect_size ~ Months + Plot_size, V = VCV_mat_plant1, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant1) #method removed from model as all observations are repellents
 summary(plant_MR_mod5)
 ```
 
@@ -87,7 +90,7 @@ mod_results(plant_MR_mod1, mod = "Method", group = "Paper_ID")
 orchard_plot(plant_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "SMD")
 mod_results(plant_MR_mod3, mod = "Animal", group = "Paper_ID")
 
-plant_MR5_bub <- mod_results(plant_MR_mod5, mod = "Months", group = "Paper_ID", by = "Method")
+plant_MR5_bub <- mod_results(plant_MR_mod5, mod = "Months", group = "Paper_ID")
 bubble_plot(plant_MR5_bub, mod = "Months", group = "Paper_ID", xlab = "Months")
 ```
 
@@ -100,7 +103,7 @@ summary(plant_MR_mod1_rob)
 plant_MR_mod3_rob <- robust(plant_MR_mod3, cluster = df_comp_plant$Paper_ID)
 summary(plant_MR_mod3_rob)
 
-plant_MR_mod5_rob <- robust(plant_MR_mod5, cluster = df_comp_plant$Paper_ID)
+plant_MR_mod5_rob <- robust(plant_MR_mod5, cluster = df_comp_plant1$Paper_ID)
 summary(plant_MR_mod5_rob)
 ```
 
@@ -121,11 +124,11 @@ ggplot(df_comp_plant, aes(Effect_size, Sampling_variance, colour = Effect_type))
 Will need to use the effective sample size rather than the precision due to the correlation between sampling variance (used to derive precision) and SMD effect size.
 
 ```{r}
-df_comp_plant1 <- df_comp_plant %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N + Trt_N))
+df_comp_plant2 <- df_comp_plant %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N + Trt_N))
 ```
 
 ```{r}
-funnel(df_comp_plant1$Effect_size, df_comp_plant1$Sampling_variance, ni = df_comp_plant1$Eff_SS, yaxis="ni",
+funnel(df_comp_plant2$Effect_size, df_comp_plant2$Sampling_variance, ni = df_comp_plant2$Eff_SS, yaxis="ni",
        ylab = "Effective sample size",
        xlab = "Effect size (SMD)") 
 ```
@@ -135,7 +138,10 @@ funnel(df_comp_plant1$Effect_size, df_comp_plant1$Sampling_variance, ni = df_com
 ```{r}
 #centre the publication year
 #calculate sqrt inverse effective sample size
-df_comp_plant2 <- df_comp_plant1 %>% mutate(Year = Year - mean(Year),
+df_comp_plant3 <- df_comp_plant2 %>% mutate(Year = Year - mean(Year),
+                                            root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
+
+df_comp_plant4 <- df_comp_plant1 %>% mutate(Year = Year - mean(Year),
                                             root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) )
 ```
 
@@ -151,7 +157,7 @@ summary(plant_MR_pb1)
 plant_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_plant, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant2)
 summary(plant_MR_pb3)
 
-plant_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_plant, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant2)
+plant_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_plant1, mods = ~ Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_plant4)
 summary(plant_MR_pb5)
 ```
 
@@ -644,9 +650,15 @@ for (i in seq_along(df_imp_plant1)) {
   imp_plant_MR_mod4[[i]] <- rma.mv(Effect_size ~ -1 + Animal + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod4))
 
+df_imp_plant2 <- lapply(df_imp_plant1, function(df){ 
+  df %>% filter(!(Method == "Exclusion fence")) })
+
+VCV_mat_plant_imp1 <- lapply(df_imp_plant2, function(df){
+  vcalc(vi = Sampling_variance, cluster = Shared_data, data = df, rho = 0.5, nearpd = TRUE) })
+
 imp_plant_MR_mod5 <- list()
-for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod5[[i]] <- rma.mv(Effect_size ~ Method * Months + Plot_size, V = VCV_mat_plant_imp[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant1[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_plant2)) {
+  imp_plant_MR_mod5[[i]] <- rma.mv(Effect_size ~ Months + Plot_size, V = VCV_mat_plant_imp1[[i]], test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_mod5))
 ```
 
@@ -655,17 +667,17 @@ summary(pool(imp_plant_MR_mod5))
 ```{r}
 imp_plant_MR_mod1_rob <- list()
 for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod1_rob[[i]] <- robust(imp_plant_MR_mod1[[i]], cluster = df_imp_plant[[i]]$Paper_ID) }
+  imp_plant_MR_mod1_rob[[i]] <- robust(imp_plant_MR_mod1[[i]], cluster = df_imp_plant1[[i]]$Paper_ID) }
 summary(pool(imp_plant_MR_mod1_rob))
 
 imp_plant_MR_mod3_rob <- list()
 for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod3_rob[[i]] <- robust(imp_plant_MR_mod3[[i]], cluster = df_imp_plant[[i]]$Paper_ID) }
+  imp_plant_MR_mod3_rob[[i]] <- robust(imp_plant_MR_mod3[[i]], cluster = df_imp_plant1[[i]]$Paper_ID) }
 summary(pool(imp_plant_MR_mod3_rob))
 
 imp_plant_MR_mod5_rob <- list()
-for (i in seq_along(df_imp_plant1)) {
-  imp_plant_MR_mod5_rob[[i]] <- robust(imp_plant_MR_mod5[[i]], cluster = df_imp_plant[[i]]$Paper_ID) }
+for (i in seq_along(df_imp_plant2)) {
+  imp_plant_MR_mod5_rob[[i]] <- robust(imp_plant_MR_mod5[[i]], cluster = df_imp_plant2[[i]]$Paper_ID) }
 summary(pool(imp_plant_MR_mod5_rob))
 ```
 
@@ -676,30 +688,36 @@ summary(pool(imp_plant_MR_mod5_rob))
 ```{r}
 #centre the publication year
 #calculate sqrt inverse effective sample size
-df_imp_plant2 <- lapply(df_imp_plant1, function(df){ 
+df_imp_plant3 <- lapply(df_imp_plant1, function(df){ 
+  df %>% mutate(Year = Year - mean(Year), 
+                root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) ) })
+
+df_imp_plant4 <- lapply(df_imp_plant2, function(df){ 
   df %>% mutate(Year = Year - mean(Year), 
                 root_inv_ESS = sqrt((Con_N + Trt_N)/(Con_N*Trt_N)) ) })
 ```
 
 ```{r}
 imp_plant_MMA_pb1 <- list()
-for (i in seq_along(df_imp_plant2)) {
-  imp_plant_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_plant3)) {
+  imp_plant_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant3[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MMA_pb1))
 ```
 
 ```{r}
 imp_plant_MR_pb1 <- list()
-for (i in seq_along(df_imp_plant2)) {
-  imp_plant_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_plant3)) {
+  imp_plant_MR_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant3[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_pb1))
+
 imp_plant_MR_pb3 <- list()
-for (i in seq_along(df_imp_plant2)) {
-  imp_plant_MR_pb3[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_plant3)) {
+  imp_plant_MR_pb3[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant3[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_pb3))
+
 imp_plant_MR_pb5 <- list()
-for (i in seq_along(df_imp_plant2)) {
-  imp_plant_MR_pb5[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant2[[i]], verbose = TRUE) }
+for (i in seq_along(df_imp_plant4)) {
+  imp_plant_MR_pb5[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp1[[i]], mods = ~ Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant4[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MR_pb5))
 ```
 
