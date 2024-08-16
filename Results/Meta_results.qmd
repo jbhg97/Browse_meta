@@ -7,7 +7,7 @@ editor: visual
 
 ```{r}
 library(pacman)
-p_load(tidyverse, readxl, writexl, sf, rnaturalearth, rnaturalearthdata, patchwork, ggtext, scales, gridExtra, orchaRd, here)
+p_load(tidyverse, readxl, writexl, sf, rnaturalearth, rnaturalearthdata, patchwork, ggtext, scales, gridExtra, orchaRd, here, flextable)
 ```
 
 ```{r}
@@ -33,7 +33,7 @@ df_avg <- df_avg %>%
             max = max(df_avg$count))
 ```
 
-Data were extracted from XXX papers, resulting in XXXX pairwise effect sizes (XXX SMD effects and XXX Log odds effects). Papers contributed an average of XXX +- XXX (mean +- SD) effect sizes to the data set (range: X-X). Experiments were distributed globally across XX countries, see Fig XXX (map of distribution of studies). One study conducted experiments in two countries (Barrere et al., 2021): France and Sweden, hence why N = number of papers + 1.
+Data were extracted from 156 papers, resulting in 2795 pairwise effect sizes (1908 complete case effects and 887 additional imputed case effects). Papers contributed an average of 17.9 +/- 42.3 (mean +/- SD) effect sizes to the data set. Experiments were distributed globally across 23 countries, see Fig XXX (map of distribution of studies). One study conducted experiments in two countries (Barrere et al., 2021): France and Sweden, hence why N = number of papers + 1.
 
 ```{r}
 #edit strings for map making packages
@@ -84,12 +84,6 @@ Next tasks - write results for breakdown of the effects into broad categories. P
 
 ```{r}
 #Table for supp info 
-
-```
-
-```{r}
-#Table for main text
-
 
 ```
 
