@@ -1,0 +1,32 @@
+---
+title: "Results Summary"
+author: "Jamie"
+format: html
+editor: visual
+---
+
+# Results Summary Document
+
+Quarto for building summary tables for the meta-analysis results.
+
+```{r}
+library(pacman)
+p_load(tidyverse, readxl, writexl, here, flextable, orchaRd, patchwork)
+```
+
+
+## Plant scale
+
+### Multilevel meta-analytic model (MMA)
+
+Read in
+
+```{r}
+coupeMR5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5.rds"))
+coupeMR5_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_rob.rds"))
+imp_coupeMR5 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR5.rds"))
+imp_coupeMR5_rob <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR5_rob.rds"))
+coupepb5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_pb.rds"))
+imp_coupepb5 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR_pb5.rds"))
+```
+
