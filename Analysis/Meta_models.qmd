@@ -193,7 +193,6 @@ plant_MR_pb4_rob <- robust(plant_MR_pb4, cluster = df_comp_plant_pb2$Paper_ID)
 plant_MR_pb5_rob <- robust(plant_MR_pb5, cluster = df_comp_plant_pb3$Paper_ID)
 ```
 
-
 #### Save objects
 
 ```{r}
@@ -546,7 +545,7 @@ df_comp_lscape_pb3 <- df_comp_lscape1 %>% mutate(Year = Year - mean(Year),
 
 ```{r}
 lscape_MMA_pb <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb2)
-summary(lscape_MMA_pb1)
+summary(lscape_MMA_pb)
 
 lscape_MMA_pb_rob <- robust(lscape_MMA_pb, cluster = df_comp_lscape_pb2$Paper_ID)
 ```
