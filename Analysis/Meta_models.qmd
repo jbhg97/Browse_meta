@@ -855,7 +855,7 @@ df_imp_plant_pb2 <- lapply(df_imp_plant2, function(df){
 ```{r}
 imp_plant_MMA_pb <- list()
 for (i in seq_along(df_imp_plant_pb1)) {
-  imp_plant_MMA_pb1[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant_pb1[[i]], verbose = TRUE) }
+  imp_plant_MMA_pb[[i]] <- rma.mv(Effect_size, V = VCV_mat_plant_imp[[i]], mods = ~ 1 + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_imp_plant_pb1[[i]], verbose = TRUE) }
 summary(pool(imp_plant_MMA_pb))
 
 imp_plant_MMA_pb_rob <- list()
