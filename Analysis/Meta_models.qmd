@@ -1112,20 +1112,20 @@ df_imp_coupe_pb2 <- lapply(df_imp_coupe2, function(df){
 ```
 
 ```{r}
-imp_coupe_MMA_pb1 <- list()
-imp_coupe_MMA_pb1 <- lapply(seq_along(df_imp_coupe_pb1), 
+imp_coupe_MMA_pb <- list()
+imp_coupe_MMA_pb <- lapply(seq_along(df_imp_coupe_pb1), 
                               function(i) MMA_pb(df_imp_coupe_pb1[[i]], VCV_mat_coupe_imp[[i]], i))
-summary(pool(imp_coupe_MMA_pb1))
-saveRDS(imp_coupe_MMA_pb1, here("Results", "Models", "Coupe", "imp_coupe_MMA_pb.rds"))
+summary(pool(imp_coupe_MMA_pb))
+saveRDS(imp_coupe_MMA_pb, here("Results", "Models", "Coupe", "imp_coupe_MMA_pb.rds"))
 
 
-imp_coupe_MMA_rob <- list()
+imp_coupe_MMA_pb_rob <- list()
 for (i in seq_along(df_imp_coupe_pb1)) {
-  imp_coupe_MMA_rob[[i]] <- robust(imp_coupe_MMA_pb1[[i]], cluster = df_imp_coupe_pb1[[i]]$Paper_ID) }
+  imp_coupe_MMA_pb_rob[[i]] <- robust(imp_coupe_MMA_pb1[[i]], cluster = df_imp_coupe_pb1[[i]]$Paper_ID) }
 
 saveRDS(imp_coupe_MMA_pb_rob, here("Results", "Models", "Coupe", "imp_coupe_MMA_pb_rob.rds"))
 
-rm(imp_coupe_MMA_pb1, imp_coupe_MMA_rob)
+rm(imp_coupe_MMA_pb, imp_coupe_MMA_pb_rob)
 ```
 
 ```{r}
