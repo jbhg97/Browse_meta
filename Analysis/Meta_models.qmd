@@ -1121,7 +1121,7 @@ saveRDS(imp_coupe_MMA_pb, here("Results", "Models", "Coupe", "imp_coupe_MMA_pb.r
 
 imp_coupe_MMA_pb_rob <- list()
 for (i in seq_along(df_imp_coupe_pb1)) {
-  imp_coupe_MMA_pb_rob[[i]] <- robust(imp_coupe_MMA_pb1[[i]], cluster = df_imp_coupe_pb1[[i]]$Paper_ID) }
+  imp_coupe_MMA_pb_rob[[i]] <- robust(imp_coupe_MMA_pb[[i]], cluster = df_imp_coupe_pb1[[i]]$Paper_ID) }
 
 saveRDS(imp_coupe_MMA_pb_rob, here("Results", "Models", "Coupe", "imp_coupe_MMA_pb_rob.rds"))
 
