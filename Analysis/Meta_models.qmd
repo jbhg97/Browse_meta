@@ -1319,7 +1319,7 @@ imp_lscape_MR_mod2_rob <- list()
 for (i in seq_along(df_imp_lscape1)) {
   imp_lscape_MR_mod2_rob[[i]] <- robust(imp_lscape_MR_mod2[[i]], cluster = df_imp_lscape1[[i]]$Paper_ID) }
 
-summary(pool(imp_lscape_MR_mod1_rob))
+summary(pool(imp_lscape_MR_mod2_rob))
 saveRDS(imp_lscape_MR_mod2_rob, here("Results", "Models", "Landscape", "imp_lscape_MR2_rob.rds"))
 rm(imp_lscape_MR_mod2_rob, imp_lscape_MR_mod2)
 ```
