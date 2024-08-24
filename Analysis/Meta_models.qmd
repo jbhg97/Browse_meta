@@ -1236,8 +1236,8 @@ VCV_mat_lscape_imp <- lapply(df_imp_lscape1, function(df){
 ```{r}
 imp_lscape_MMA_mod1 <- list()
 
-imp_lscape_MMA_mod1 <- lapply(seq_along(df_imp_lscape1), 
-                                function(i) MMA(df_imp_lscape1[[i]], VCV_mat_lscape_imp[[i]], i))
+imp_lscape_MMA_mod1 <- mclapply(seq_along(df_imp_lscape1), 
+                                function(i) MMA(df_imp_lscape1[[i]], VCV_mat_lscape_imp[[i]], i), mc.cores = num_cores)
 
 saveRDS(imp_lscape_MMA_mod1, here("Results", "Models", "Landscape", "imp_lscape_MMA.rds"))
 
@@ -1375,19 +1375,19 @@ df_imp_lscape_pb2 <- lapply(df_imp_lscape2, function(df){
 ```
 
 ```{r}
-imp_lscape_MMA_pb1 <- list()
-imp_lscape_MMA_pb1 <- mclapply(seq_along(df_imp_lscape_pb1), 
-                               function(i) MMA_pb(df_imp_lscape_pb1[[i]], VCV_mat_lscape_imp[[i]], i), mc.cores = num_cores)
-summary(pool(imp_lscape_MMA_pb1))
-saveRDS(imp_lscape_MMA_pb1, here("Results", "Models", "Landscape", "imp_lscape_MMA_pb.rds"))
+imp_lscape_MMA_pb <- list()
+imp_lscape_MMA_pb <- lapply(seq_along(df_imp_lscape_pb1), 
+                               function(i) MMA_pb(df_imp_lscape_pb1[[i]], VCV_mat_lscape_imp[[i]], i))
+summary(pool(imp_lscape_MMA_pb))
+saveRDS(imp_lscape_MMA_pb, here("Results", "Models", "Landscape", "imp_lscape_MMA_pb.rds"))
 
 imp_lscape_MMA_pb_rob <- list()
 
 for (i in seq_along(df_imp_lscape_pb1)) {
-  imp_lscape_MMA_pb_rob[[i]] <- robust(imp_lscape_MMA_pb1[[i]], cluster = df_imp_lscape_pb1[[i]]$Paper_ID) }
+  imp_lscape_MMA_pb_rob[[i]] <- robust(imp_lscape_MMA_pb[[i]], cluster = df_imp_lscape_pb1[[i]]$Paper_ID) }
 
 saveRDS(imp_lscape_MMA_pb_rob, here("Results", "Models", "Landscape", "imp_lscape_MMA_pb_rob.rds"))
-rm(imp_lscape_MMA_pb1, imp_lscape_MMA_pb_rob)
+rm(imp_lscape_MMA_pb, imp_lscape_MMA_pb_rob)
 ```
 
 ```{r}
