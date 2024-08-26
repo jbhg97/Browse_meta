@@ -560,7 +560,7 @@ summary(lscape_MR_pb2)
 lscape_MR_pb3 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb2)
 summary(lscape_MR_pb3)
 
-lscape_MR_pb4 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ -1 + Method + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb2)
+lscape_MR_pb4 <- rma.mv(Effect_size, V = VCV_mat_lscape, mods = ~ -1 + Animal + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb2)
 summary(lscape_MR_pb4)
 
 lscape_MR_pb5 <- rma.mv(Effect_size, V = VCV_mat_lscape1, mods = ~ Method * Months + Plot_size + Year + root_inv_ESS, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_lscape_pb3)
