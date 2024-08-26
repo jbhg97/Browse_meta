@@ -14,6 +14,77 @@ library(pacman)
 p_load(tidyverse, readxl, writexl, here, flextable, orchaRd, patchwork)
 ```
 
+## Functions
+
+```{r}
+mod_extract <- function(model){
+  mod_summary <- summary(model)
+  
+  fix.eff <- rownames(mod_summary$beta)
+  estimate <- mod_summary$beta
+  ci.lower <- mod_summary$ci.lb
+  ci.upper <- mod_summary$ci.ub
+  std.e <- mod_summary$se
+  test.stat <- mod_summary$zval
+  p.val <- mod_summary$pval
+  
+  results <- tibble(term = fix.eff,
+                    est = estimate,
+                    ci.lb = ci.lower,
+                    ci.ub = ci.upper,
+                    std.err = std.e,
+                    stat = test.stat,
+                    p.val = p.val)
+  
+  return(results) }
+
+rob_mod_extract <- function(model){
+  mod_summary <- summary(model)
+  
+  fix.eff <- rownames(mod_summary$beta)
+  estimate <- mod_summary$beta
+  ci.lower <- mod_summary$ci.lb
+  ci.upper <- mod_summary$ci.ub
+  std.e <- mod_summary$se
+  test.stat <- mod_summary$zval
+  p.val <- mod_summary$pval
+  
+  results <- tibble(term = fix.eff,
+                    est = estimate,
+                    ci.lb = ci.lower,
+                    ci.ub = ci.upper,
+                    se = std.e,
+                    stat = test.stat,
+                    p.val = p.val)
+  
+  results1 <- results %>% rename_with(~ paste0("rob_",.))
+  
+  return(results1) }
+
+imp_mod_extract <- function(model){
+  mod_summary <- summary(pool(model)) %>% as_tibble(.)
+  
+  results <- mod_summary %>% rename_with(~ paste0("imp_",.)) %>% 
+    rename(imp_est = imp_estimate,
+           imp_se = imp_std.error,
+           imp_p.val = imp_p.value)
+  
+  return(results) }
+
+build_tab <- function(df1, df2, df3){
+  set_flextable_defaults(font.family = "Calibri", font.size = 10)
+  
+  table <- cbind(df1, df2, df3) %>% select(-c(rob_term, imp_term, rob_ci.lb, rob_ci.ub, imp_statistic, rob_stat, imp_df))
+  
+  flex <- flextable(table) %>%
+    align(align = "center", part = "all") %>% 
+    padding(., padding.left = 0, padding.right = 0) %>% 
+    colformat_double(., digits = 5) %>% 
+    autofit(.) 
+    
+  
+  return(flex) }
+```
 
 ## Plant scale
 
@@ -22,11 +93,131 @@ p_load(tidyverse, readxl, writexl, here, flextable, orchaRd, patchwork)
 Read in
 
 ```{r}
-coupeMR5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5.rds"))
-coupeMR5_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_rob.rds"))
-imp_coupeMR5 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR5.rds"))
-imp_coupeMR5_rob <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR5_rob.rds"))
-coupepb5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_pb.rds"))
-imp_coupepb5 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR_pb5.rds"))
+MMA <- readRDS(here("Results", "Models", "Plant", "Plant_MMA.rds"))
+MMA_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MMA_rob.rds"))
+imp_MMA <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MMA.rds"))
+MMA_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MMA_pb.rds"))
+MMA_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MMA_pb_rob.rds"))
+imp_MMA_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MMA_pb.rds"))
+```
+
+Extract the relevant information using above functions.
+
+```{r}
+MMA_res <- mod_extract(MMA)
+MMA_pb_res <- mod_extract(MMA_pb)
+
+MMA_rob_res <- rob_mod_extract(MMA_rob) 
+MMA_pb_rob_res <- rob_mod_extract(MMA_pb_rob) 
+
+imp_MMA_res <- imp_mod_extract(imp_MMA)
+imp_MMA_pb_res <- imp_mod_extract(imp_MMA_pb)
+```
+
+Build tables
+
+```{r}
+MMA_flex <- build_tab(MMA_res, MMA_rob_res, imp_MMA_res)
+MMA_pb_flex <- build_tab(MMA_pb_res, MMA_pb_rob_res, imp_MMA_pb_res)
+```
+
+### Meta-regression (MR) - model 2
+
+Model 2 is the suppressed intercept model investigating control method efficacy.
+
+```{r}
+MR2 <- readRDS(here("Results", "Models", "Plant", "Plant_MR2.rds"))
+MR2_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR2_rob.rds"))
+imp_MR2 <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR2.rds"))
+MR2_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MR2_pb.rds"))
+MR2_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR2_pb_rob.rds"))
+imp_MR2_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR_pb2.rds"))
+```
+
+```{r}
+MR2_res <- mod_extract(MR2)
+MR2_pb_res <- mod_extract(MR2_pb)
+
+MR2_rob_res <- rob_mod_extract(MR2_rob) 
+MR2_pb_rob_res <- rob_mod_extract(MR2_pb_rob) 
+
+imp_MR2_res <- imp_mod_extract(imp_MR2)
+imp_MR2_pb_res <- imp_mod_extract(imp_MR2_pb)
+```
+
+Build tables
+
+```{r}
+MR2_flex <- build_tab(MR2_res, MR2_rob_res, imp_MR2_res)
+MR2_pb_flex <- build_tab(MR2_pb_res, MR2_pb_rob_res, imp_MR2_pb_res)
+```
+
+### MR - model 4
+
+Model 4 is the suppressed intercept model investigating control of different browsing taxa
+
+```{r}
+MR4 <- readRDS(here("Results", "Models", "Plant", "Plant_MR4.rds"))
+MR4_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_rob.rds"))
+imp_MR4 <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR4.rds"))
+MR4_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_pb.rds"))
+MR4_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_pb_rob.rds"))
+imp_MR4_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR_pb4.rds"))
+```
+
+```{r}
+MR4_res <- mod_extract(MR4)
+MR4_pb_res <- mod_extract(MR4_pb)
+
+MR4_rob_res <- rob_mod_extract(MR4_rob) 
+MR4_pb_rob_res <- rob_mod_extract(MR4_pb_rob) 
+
+imp_MR4_res <- imp_mod_extract(imp_MR4)
+imp_MR4_pb_res <- imp_mod_extract(imp_MR4_pb)
+```
+
+Build tables
+
+```{r}
+MR4_flex <- build_tab(MR4_res, MR4_rob_res, imp_MR4_res)
+MR4_pb_flex <- build_tab(MR4_pb_res, MR4_pb_rob_res, imp_MR4_pb_res)
+```
+
+### MR - model 5
+
+Model 5 investigated the retention of efficacy over time for different control methods.
+
+
+```{r}
+MR5 <- readRDS(here("Results", "Models", "Plant", "Plant_MR5.rds"))
+MR5_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_rob.rds"))
+imp_MR5 <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR5.rds"))
+MR5_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_pb.rds"))
+MR5_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_pb_rob.rds"))
+imp_MR5_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR_pb5.rds"))
+```
+
+```{r}
+MR5_res <- mod_extract(MR5)
+MR5_pb_res <- mod_extract(MR5_pb)
+
+MR5_rob_res <- rob_mod_extract(MR5_rob) 
+MR5_pb_rob_res <- rob_mod_extract(MR5_pb_rob) 
+
+imp_MR5_res <- imp_mod_extract(imp_MR5)
+imp_MR5_pb_res <- imp_mod_extract(imp_MR5_pb)
+```
+
+Build tables
+
+```{r}
+MR5_flex <- build_tab(MR5_res, MR5_rob_res, imp_MR5_res)
+MR5_pb_flex <- build_tab(MR5_pb_res, MR5_pb_rob_res, imp_MR5_pb_res)
+```
+
+### Save the document
+
+```{r}
+save_as_docx("Plant MMA" = MMA_flex, "Plant MMA pub bias" = MMA_pb_flex, "Plant MR2 - suppressed intercept, control method" = MR2_flex, "Plant MR2 pub bias" = MR2_pb_flex, "Plant MR4 - suppressed intercept, browsing taxa" = MR4_flex, "Plant MR4 pub bias" = MR4_pb_flex, "Plant MR5 - control method efficacy through time" = MR5_flex, "Plant MR5 pub bias" = MR5_pb_flex, path = here("Results", "Tables", "Plant_scale_summary.docx"))
 ```
 
