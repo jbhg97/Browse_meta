@@ -200,8 +200,8 @@ df_comp_coupe <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet
 coupe_MR_mod1 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR1.rds"))
 coupe_MR_mod3 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR3.rds"))
 
-c1 <- orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "top.left", angle = 0)
-c2 <- orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.left", angle = 0)
+c1 <- orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.right", angle = 0) + ylim(c(-5,10))
+c2 <- orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "top.right", angle = 0) + ylim(c(-5,10))
 
 plot3 <- c1/c2 + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'coupe' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
 print(plot3)
@@ -234,8 +234,8 @@ df_comp_lscape <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), shee
 lscape_MR_mod1 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR1.rds"))
 lscape_MR_mod3 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR3.rds"))
 
-l1 <- orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.left", angle = 0)
-l2 <- orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "top.left", angle = 0)
+l1 <- orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.right", angle = 0) + ylim(c(-5,5))
+l2 <- orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "top.right", angle = 0) + ylim(c(-5,5))
 
 plot5 <- l1/l2 + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'landscape' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
 print(plot5)
