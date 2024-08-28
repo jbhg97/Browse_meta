@@ -84,6 +84,10 @@ month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax){
   
   return(plot)
 }
+
+save_plot <- function(plot, filename, height ){
+  ggsave(here("Results", "Figures", filename), plot = plot, width = 16, height = height, units = "cm" , dpi = 320)
+}
 ```
 
 
@@ -173,11 +177,13 @@ df_comp_plant <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet
 plant_MR_mod1 <- readRDS(here("Results", "Models", "Plant", "Plant_MR1.rds"))
 plant_MR_mod3 <- readRDS(here("Results", "Models", "Plant", "Plant_MR3.rds"))
 
-p1 <- orchard_plot(plant_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.left", angle = 0)
-p2 <- orchard_plot(plant_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.left", angle = 0)
+p1 <- orchard_plot(plant_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.out", angle = 0, k = F, g = F)
+p2 <- orchard_plot(plant_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "none", angle = 0, k = F, g = F)
 
-plot1 <- p1/p2 + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'plant' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
+plot1 <- p1/p2 + plot_annotation(tag_levels = "A") # plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'plant' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
 print(plot1)
+
+save_plot(plot1, "plant_orchard.png", 16)
 ```
 
 ```{r}
@@ -189,7 +195,7 @@ plant_MR_mod5 <- readRDS(here("Results", "Models", "Plant", "Plant_MR5.rds"))
 
 p3 <- plant_month_bubble(df_comp_plant, plant_MR_mod5, method = "Repellents", colour = "#CC6677", xmin = 0, xmax = 1.25, ymin = -4, ymax = 6)
 
-plot2 <- p3 + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'plant' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
+plot2 <- p3 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'plant' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
 print(plot2) # need to fix the caption position - look rubbish when viewed in qmd but much better when viewed in plots window and zoomed out
 ```
 
@@ -200,11 +206,13 @@ df_comp_coupe <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet
 coupe_MR_mod1 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR1.rds"))
 coupe_MR_mod3 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR3.rds"))
 
-c1 <- orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.right", angle = 0) + ylim(c(-5,10))
-c2 <- orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "top.right", angle = 0) + ylim(c(-5,10))
+c1 <- orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.out", angle = 0) + ylim(c(-5,10))
+c2 <- orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "none", angle = 0) + ylim(c(-5,10))
 
-plot3 <- c1/c2 + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'coupe' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
+plot3 <- c1/c2 + plot_annotation(tag_levels = "A") # + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'coupe' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
 print(plot3)
+
+save_plot(plot3, "coupe_orchard.png", 20)
 ```
 
 ```{r}
@@ -222,7 +230,7 @@ c7 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Natural debris", "#CC6677", 0,
 c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 75, -5, 5)
 c9 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Neighbour effects", "#DDCC77", 0, 50, -5, 5)
 
-plot4 <- (c5+c4)/(c7+c9)/(c8+c6) + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods. The Y axis of the exclusion fence sub-plot has been limited to enhance viewing of confidence and prediction limits", width = 100), theme = theme(plot.caption = element_text(size = 18)))
+plot4 <- (c5+c4)/(c7+c9)/(c8+c6) # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods. The Y axis of the exclusion fence sub-plot has been limited to enhance viewing of confidence and prediction limits", width = 100), theme = theme(plot.caption = element_text(size = 18)))
 plot4.1 <- c3 # 7 plots don't fit into one pane well and the exclusion fence time range is way bigger
 print(plot4)
 ```
@@ -234,11 +242,13 @@ df_comp_lscape <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), shee
 lscape_MR_mod1 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR1.rds"))
 lscape_MR_mod3 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR3.rds"))
 
-l1 <- orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.right", angle = 0) + ylim(c(-5,5))
-l2 <- orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "top.right", angle = 0) + ylim(c(-5,5))
+l1 <- orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.out", angle = 0) + ylim(c(-5,5))
+l2 <- orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "none", angle = 0) + ylim(c(-5,5))
 
-plot5 <- l1/l2 + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'landscape' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
+plot5 <- l1/l2 + plot_annotation(tag_levels = "A") # + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'landscape' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
 print(plot5)
+
+save_plot(plot5, "lscape_orchard.png", 20)
 ```
 
 ```{r}
@@ -253,6 +263,6 @@ l4 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Repellents", "#332288", 0, 7
 l5 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Tree guards", "#44AA99", 0, 75, -5, 5)
 l6 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Natural debris", "#CC6677", 0, 25, -5, 5)
 
-plot6 <- (l3+l4)/(l6+l5) + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'landscape' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
+plot6 <- (l3+l4)/(l6+l5)  # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'landscape' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
 print(plot6)
 ```
