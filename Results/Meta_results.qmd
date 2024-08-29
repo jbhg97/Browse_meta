@@ -39,12 +39,12 @@ plant_month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax
     ggplot2::geom_smooth(data = mod_table_method, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                          formula = y ~ x, se = FALSE, colour = "black") + 
     xlim(xmin,xmax) + ylim(ymin,ymax) +
-    theme_bw() + theme(title = element_text(size = 25),
-                       axis.title  = element_text(size = 22), 
-                       axis.text = element_text(size = 15), 
-                       axis.text.y = element_text(size = 15),
-                       legend.text = element_text(size = 20), 
-                       legend.title = element_text(size = 22))
+    theme_bw() + theme(title = element_text(size = 10),
+                       axis.title  = element_text(size = 10), 
+                       axis.text = element_text(size = 8), 
+                       axis.text.y = element_text(size = 8),
+                       legend.text = element_text(size = 8), 
+                       legend.title = element_text(size = 10))
   
   return(plot)
 }
@@ -75,12 +75,12 @@ month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax){
     ggplot2::geom_smooth(data = mod_table_method, ggplot2::aes(x = moderator, y = estimate), method = "loess", 
                          formula = y ~ x, se = FALSE, colour = "black") + 
     xlim(xmin,xmax) + ylim(ymin,ymax) +
-    theme_bw() + theme(title = element_text(size = 25),
-                       axis.title  = element_text(size = 22), 
-                       axis.text = element_text(size = 15), 
-                       axis.text.y = element_text(size = 15),
-                       legend.text = element_text(size = 20), 
-                       legend.title = element_text(size = 22))
+    theme_bw() + theme(title = element_text(size = 10),
+                       axis.title  = element_text(size = 10), 
+                       axis.text = element_text(size = 8), 
+                       axis.text.y = element_text(size = 8),
+                       legend.text = element_text(size = 8), 
+                       legend.title = element_text(size = 10))
   
   return(plot)
 }
@@ -197,6 +197,8 @@ p3 <- plant_month_bubble(df_comp_plant, plant_MR_mod5, method = "Repellents", co
 
 plot2 <- p3 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'plant' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
 print(plot2) # need to fix the caption position - look rubbish when viewed in qmd but much better when viewed in plots window and zoomed out
+
+save_plot(plot2, "plant_bubble.png", 6)
 ```
 
 ```{r}
@@ -223,16 +225,19 @@ colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4
 coupe_MR_mod5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5.rds"))
 
 c3 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Exclusion fence", "#88CCEE", 0, 140, -5, 10)
-c4 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Repellents", "#332288", 0, 50, -5, 7.5)
-c5 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Tree guards", "#009E73", 0, 75, -5, 10)
-c6 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Other fencing", "#117733", 0, 50, -5, 5)
-c7 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Natural debris", "#CC6677", 0, 75, -5, 5)
-c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 75, -5, 5)
-c9 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Neighbour effects", "#DDCC77", 0, 50, -5, 5)
+c4 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Repellents", "#332288", 0, 50, -4, 6)
+c5 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Tree guards", "#009E73", 0, 65, -5, 10)
+c6 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Other fencing", "#117733", 0, 30, -5, 5)
+c7 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Natural debris", "#CC6677", 0, 65, -3, 5)
+c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 65, -3, 3)
+c9 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Neighbour effects", "#DDCC77", 0, 50, -4, 3)
 
-plot4 <- (c5+c4)/(c7+c9)/(c8+c6) # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods. The Y axis of the exclusion fence sub-plot has been limited to enhance viewing of confidence and prediction limits", width = 100), theme = theme(plot.caption = element_text(size = 18)))
-plot4.1 <- c3 # 7 plots don't fit into one pane well and the exclusion fence time range is way bigger
+plot4 <- c3/c6/c9/c4 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods. The Y axis of the exclusion fence sub-plot has been limited to enhance viewing of confidence and prediction limits", width = 100), theme = theme(plot.caption = element_text(size = 18)))
+plot4.1 <- c5/c7/c8 # 7 plots don't fit into one pane well and the exclusion fence time range is way bigger
 print(plot4)
+
+save_plot(plot4, "coupe_bubble.png", 20)
+save_plot(plot4.1, "coupe_bubblea.png", 15)
 ```
 
 ```{r}
@@ -259,10 +264,12 @@ colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4
 lscape_MR_mod5 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5.rds"))
 
 l3 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Exclusion fence", "#88CCEE", 0, 250, -2, 9)
-l4 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Repellents", "#332288", 0, 75, -5, 5)
-l5 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Tree guards", "#44AA99", 0, 75, -5, 5)
-l6 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Natural debris", "#CC6677", 0, 25, -5, 5)
+l4 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Repellents", "#332288", 0, 65, -2, 4)
+l5 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Tree guards", "#44AA99", 0, 65, -2, 4)
+l6 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Natural debris", "#CC6677", 0, 20, -3, 3.5)
 
-plot6 <- (l3+l4)/(l6+l5)  # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'landscape' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
+plot6 <- l3/l4/l5/l6 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'landscape' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
 print(plot6)
+
+save_plot(plot6, "lscape_bubble.png", 20)
 ```
