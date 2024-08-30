@@ -187,7 +187,6 @@ MR4_pb_flex <- build_tab(MR4_pb_res, MR4_pb_rob_res, imp_MR4_pb_res)
 
 Model 5 investigated the retention of efficacy over time for different control methods.
 
-
 ```{r}
 MR5 <- readRDS(here("Results", "Models", "Plant", "Plant_MR5.rds"))
 MR5_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_rob.rds"))
@@ -322,7 +321,6 @@ MR4_pb_flex <- build_tab(MR4_pb_res, MR4_pb_rob_res, imp_MR4_pb_res)
 
 Model 5 investigated the retention of efficacy over time for different control methods.
 
-
 ```{r}
 MR5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5.rds"))
 MR5_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_rob.rds"))
@@ -456,7 +454,6 @@ MR4_pb_flex <- build_tab(MR4_pb_res, MR4_pb_rob_res, imp_MR4_pb_res)
 ### MR - model 5
 
 Model 5 investigated the retention of efficacy over time for different control methods.
-
 
 ```{r}
 MR5 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5.rds"))

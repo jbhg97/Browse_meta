@@ -132,7 +132,8 @@ df_map1 <- df_map %>%
 df_map_inset <- df_map1 %>% 
   count(Country, name = "N") %>% 
   arrange(desc(N))
-inset <- tableGrob(df_map_inset)
+map_table <- flextable(df_map_inset) %>% align(align = "center", part = "all") %>% autofit(.)
+save_as_docx(map_table, path = here("Results", "Tables", "Map_table.docx"))
 
 #map
 world <- ne_countries(scale = "small", returnclass = "sf")
@@ -153,10 +154,7 @@ map <- ggplot() +
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank())
 
-map_grob <- grid.arrange(inset, ggplotGrob(map), ncol = 2, widths = c(1,4))
-
-map_plot <- wrap_elements(map_grob) + 
-  plot_annotation(caption = str_wrap("Fig XX. A map showing the distribution of experimental locations globally. Grey denotes N = 0. Table shows the number of papers that conducted experiments in given countries; note that N = No. of papers + 1 as Barrere et al. (2021) conducted experiments in both France and Sweden.", width = 180), theme = theme(plot.caption = element_text(hjust = 0.5, size = 14), plot.caption.position = "plot"))
+map_plot <- map # + plot_annotation(caption = str_wrap("Fig XX. A map showing the distribution of experimental locations globally. Grey denotes N = 0. Table shows the number of papers that conducted experiments in given countries; note that N = No. of papers + 1 as Barrere et al. (2021) conducted experiments in both France and Sweden.", width = 180), theme = theme(plot.caption = element_text(hjust = 0.5, size = 14), plot.caption.position = "plot"))
 
 #still want to add an inset table - it will increase the clarity of the figure as some of the small numbers are not easy to discern based solely on colour or make USA single colour then the others will be spread better?
 ```
