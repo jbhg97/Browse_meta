@@ -90,7 +90,6 @@ save_plot <- function(plot, filename, height ){
 }
 ```
 
-
 ```{r}
 df <- readRDS(here("Analysis", "All_impcase_es.rds"))
 df1 <- df[[1]] #select one of the imputed case frames to do the summary statistics of literature synthesis.

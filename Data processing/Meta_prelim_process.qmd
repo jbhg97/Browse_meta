@@ -1,6 +1,6 @@
 ---
 title: "Meta_prelim_process"
-author: "Jamie"
+author: "James Grimsdale"
 format: html
 editor: visual
 ---
