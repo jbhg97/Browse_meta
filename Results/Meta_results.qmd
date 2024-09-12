@@ -7,7 +7,7 @@ editor: visual
 
 ```{r}
 library(pacman)
-p_load(tidyverse, readxl, writexl, sf, rnaturalearth, rnaturalearthdata, patchwork, ggtext, scales, gridExtra, orchaRd, here, flextable)
+p_load(tidyverse, readxl, writexl, sf, rnaturalearth, rnaturalearthdata, patchwork, ggtext, scales, gridExtra, orchaRd, here, flextable, officer)
 ```
 
 ```{r}
@@ -115,6 +115,8 @@ df_avg <- df_avg %>%
 
 Data were extracted from 156 papers, resulting in 2795 pairwise effect sizes (1908 complete case effects and 887 additional imputed case effects). Papers contributed an average of 17.9 +/- 42.3 (mean +/- SD) effect sizes to the data set. Experiments were distributed globally across 23 countries, see Fig XXX (map of distribution of studies). One study conducted experiments in two countries (Barrere et al., 2021): France and Sweden, hence why N = number of papers + 1.
 
+## Map plot
+
 ```{r}
 #edit strings for map making packages
 df_map <- df1 %>% 
@@ -158,19 +160,12 @@ map_plot <- map # + plot_annotation(caption = str_wrap("Fig XX. A map showing th
 #still want to add an inset table - it will increase the clarity of the figure as some of the small numbers are not easy to discern based solely on colour or make USA single colour then the others will be spread better?
 ```
 
-Next tasks - write results for breakdown of the effects into broad categories. Produce tables for N \>25? and then a full table for supp info. Table will include avg effect size with SD/SE.
-
-```{r}
-#Table for supp info 
-
-```
-
-Results presented here are complete case analysis of XX effects.... detailed imputed case results are in sup info.....
+## Orchard plot Figures
 
 ```{r}
 # plant scale orchard plots - tweak caption position and wrap as needed
 
-df_comp_plant <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") %>% filter(Scale == "Plant")
+df_comp_plant <- read_excel(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") %>% filter(Scale == "Plant")
 plant_MR_mod1 <- readRDS(here("Results", "Models", "Plant", "Plant_MR1.rds"))
 plant_MR_mod3 <- readRDS(here("Results", "Models", "Plant", "Plant_MR3.rds"))
 
@@ -201,7 +196,7 @@ save_plot(plot2, "plant_bubble.png", 6)
 ```{r}
 # coupe scale orchard plots - tweak caption position and wrap as needed
 
-df_comp_coupe <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") %>% filter(Scale == "Coupe")
+df_comp_coupe <- read_excel(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") %>% filter(Scale == "Coupe")
 coupe_MR_mod1 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR1.rds"))
 coupe_MR_mod3 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR3.rds"))
 
@@ -240,7 +235,7 @@ save_plot(plot4.1, "coupe_bubblea.png", 15)
 ```{r}
 # Landscape scale orchard plots - tweak caption position and wrap as needed
 
-df_comp_lscape <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") %>% filter(Scale == "Landscape")
+df_comp_lscape <- read_excel(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") %>% filter(Scale == "Landscape")
 lscape_MR_mod1 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR1.rds"))
 lscape_MR_mod3 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR3.rds"))
 
@@ -269,4 +264,547 @@ plot6 <- l3/l4/l5/l6 # + plot_annotation(caption = str_wrap("Figure X. Orchard p
 print(plot6)
 
 save_plot(plot6, "lscape_bubble.png", 20)
+```
+
+## Tables
+
+Tables to be used in the supplementary information - will summarise all three tests at each scale and each model including publication bias. 
+
+### Functions
+
+Pull functions from table summary qmd.
+
+```{r}
+mod_extract <- function(model){
+  mod_summary <- summary(model)
+  
+  fix.eff <- rownames(mod_summary$beta)
+  estimate <- mod_summary$beta
+  ci.lower <- mod_summary$ci.lb
+  ci.upper <- mod_summary$ci.ub
+  std.e <- mod_summary$se
+  test.stat <- mod_summary$zval
+  p.val <- mod_summary$pval
+  
+  results <- tibble(term = fix.eff,
+                    est = estimate,
+                    ci.lb = ci.lower,
+                    ci.ub = ci.upper,
+                    se = std.e,
+                    stat = test.stat,
+                    p.val = p.val)
+  
+  return(results) }
+
+rob_mod_extract <- function(model){
+  mod_summary <- summary(model)
+  
+  fix.eff <- rownames(mod_summary$beta)
+  estimate <- mod_summary$beta
+  ci.lower <- mod_summary$ci.lb
+  ci.upper <- mod_summary$ci.ub
+  std.e <- mod_summary$se
+  test.stat <- mod_summary$zval
+  p.val <- mod_summary$pval
+  
+  results <- tibble(term = fix.eff,
+                    est = estimate,
+                    ci.lb = ci.lower,
+                    ci.ub = ci.upper,
+                    se = std.e,
+                    stat = test.stat,
+                    p.val = p.val)
+  
+  results1 <- results %>% rename_with(~ paste0("rob_",.))
+  
+  return(results1) }
+
+imp_mod_extract <- function(model){
+  mod_summary <- summary(pool(model)) %>% as_tibble(.)
+  
+  results <- mod_summary %>% rename_with(~ paste0("imp_",.)) %>% 
+    rename(imp_est = imp_estimate,
+           imp_se = imp_std.error,
+           imp_stat = imp_statistic,
+           imp_p.val = imp_p.value)
+  
+  return(results) }
+
+build_tab <- function(df1, df2, df3){
+  set_flextable_defaults(font.family = "Calibri", font.size = 10)
+  border_style <- fp_border(color = "black", width = 1)
+  
+  table <- cbind(df1, df2, df3) %>% select(-c(rob_term, imp_term, rob_ci.lb, rob_ci.ub, imp_df))
+  
+  flex <- flextable(table) %>%
+    align(align = "center", part = "all") %>% 
+    padding(., padding.left = 0, padding.right = 0) %>% 
+    add_header_row(values = c("", "Complete case", "Robust", "Imputed case"), colwidths = c(1,6,4,4)) %>% 
+    vline(i = NULL, j = 1 + 6, border = border_style, part = "all") %>% 
+    vline(i = NULL, j = 1 + 10, border = border_style, part = "all") %>% 
+    colformat_double(., digits = 5) %>% 
+    autofit(.) # edit this one to add in extra header rows and generally neaten up
+    
+  
+  return(flex) }
+```
+
+## Plant scale
+
+### Multilevel meta-analytic model (MMA)
+
+Read in
+
+```{r}
+MMA <- readRDS(here("Results", "Models", "Plant", "Plant_MMA.rds"))
+MMA_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MMA_rob.rds"))
+imp_MMA <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MMA.rds"))
+MMA_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MMA_pb.rds"))
+MMA_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MMA_pb_rob.rds"))
+imp_MMA_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MMA_pb.rds"))
+```
+
+Extract the relevant information using above functions.
+
+```{r}
+MMA_res <- mod_extract(MMA)
+MMA_pb_res <- mod_extract(MMA_pb)
+
+MMA_rob_res <- rob_mod_extract(MMA_rob) 
+MMA_pb_rob_res <- rob_mod_extract(MMA_pb_rob) 
+
+imp_MMA_res <- imp_mod_extract(imp_MMA)
+imp_MMA_pb_res <- imp_mod_extract(imp_MMA_pb)
+```
+
+Build tables
+
+```{r}
+MMA_flex <- build_tab(MMA_res, MMA_rob_res, imp_MMA_res)
+MMA_pb_flex <- build_tab(MMA_pb_res, MMA_pb_rob_res, imp_MMA_pb_res)
+```
+
+### Meta-regression (MR) - model 2
+
+Model 2 is the suppressed intercept model investigating control method efficacy.
+
+```{r}
+MR2 <- readRDS(here("Results", "Models", "Plant", "Plant_MR2.rds"))
+MR2_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR2_rob.rds"))
+imp_MR2 <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR2.rds"))
+MR2_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MR2_pb.rds"))
+MR2_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR2_pb_rob.rds"))
+imp_MR2_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR_pb2.rds"))
+```
+
+```{r}
+MR2_res <- mod_extract(MR2)
+MR2_pb_res <- mod_extract(MR2_pb)
+
+MR2_rob_res <- rob_mod_extract(MR2_rob) 
+MR2_pb_rob_res <- rob_mod_extract(MR2_pb_rob) 
+
+imp_MR2_res <- imp_mod_extract(imp_MR2)
+imp_MR2_pb_res <- imp_mod_extract(imp_MR2_pb)
+```
+
+Build tables
+
+```{r}
+MR2_flex <- build_tab(MR2_res, MR2_rob_res, imp_MR2_res)
+MR2_pb_flex <- build_tab(MR2_pb_res, MR2_pb_rob_res, imp_MR2_pb_res)
+```
+
+### MR - model 4
+
+Model 4 is the suppressed intercept model investigating control of different browsing taxa
+
+```{r}
+MR4 <- readRDS(here("Results", "Models", "Plant", "Plant_MR4.rds"))
+MR4_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_rob.rds"))
+imp_MR4 <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR4.rds"))
+MR4_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_pb.rds"))
+MR4_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_pb_rob.rds"))
+imp_MR4_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR_pb4.rds"))
+```
+
+```{r}
+MR4_res <- mod_extract(MR4)
+MR4_pb_res <- mod_extract(MR4_pb)
+
+MR4_rob_res <- rob_mod_extract(MR4_rob) 
+MR4_pb_rob_res <- rob_mod_extract(MR4_pb_rob) 
+
+imp_MR4_res <- imp_mod_extract(imp_MR4)
+imp_MR4_pb_res <- imp_mod_extract(imp_MR4_pb)
+```
+
+Build tables
+
+```{r}
+MR4_flex <- build_tab(MR4_res, MR4_rob_res, imp_MR4_res)
+MR4_pb_flex <- build_tab(MR4_pb_res, MR4_pb_rob_res, imp_MR4_pb_res)
+```
+
+### MR - model 5
+
+Model 5 investigated the retention of efficacy over time for different control methods.
+
+```{r}
+MR5 <- readRDS(here("Results", "Models", "Plant", "Plant_MR5.rds"))
+MR5_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_rob.rds"))
+imp_MR5 <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR5.rds"))
+MR5_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_pb.rds"))
+MR5_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_pb_rob.rds"))
+imp_MR5_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR_pb5.rds"))
+```
+
+```{r}
+MR5_res <- mod_extract(MR5)
+MR5_pb_res <- mod_extract(MR5_pb)
+
+MR5_rob_res <- rob_mod_extract(MR5_rob) 
+MR5_pb_rob_res <- rob_mod_extract(MR5_pb_rob) 
+
+imp_MR5_res <- imp_mod_extract(imp_MR5)
+imp_MR5_pb_res <- imp_mod_extract(imp_MR5_pb)
+```
+
+Build tables
+
+```{r}
+MR5_flex <- build_tab(MR5_res, MR5_rob_res, imp_MR5_res)
+MR5_pb_flex <- build_tab(MR5_pb_res, MR5_pb_rob_res, imp_MR5_pb_res)
+```
+
+### Save the document
+
+```{r}
+save_as_docx("Plant Scale Multilevel Meta-analytic model (MMA)" = MMA_flex, "Plant Scale MMA publication bias" = MMA_pb_flex, "Plant Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Plant Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Plant Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Plant Scale MR - suppresed intercept, browsing taxa publication bias" = MR4_pb_flex, "Plant Scale MR - control method efficacy through time" = MR5_flex, "Plant Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Plant_scale_summary.docx"))
+```
+
+## Coupe scale
+
+### Multilevel meta-analytic model (MMA)
+
+Read in
+
+```{r}
+MMA <- readRDS(here("Results", "Models", "Coupe", "coupe_MMA.rds"))
+MMA_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MMA_rob.rds"))
+imp_MMA <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MMA.rds"))
+MMA_pb <- readRDS(here("Results", "Models", "Coupe", "coupe_MMA_pb.rds"))
+MMA_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MMA_pb_rob.rds"))
+imp_MMA_pb <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MMA_pb.rds"))
+```
+
+Extract the relevant information using above functions.
+
+```{r}
+MMA_res <- mod_extract(MMA)
+MMA_pb_res <- mod_extract(MMA_pb)
+
+MMA_rob_res <- rob_mod_extract(MMA_rob) 
+MMA_pb_rob_res <- rob_mod_extract(MMA_pb_rob) 
+
+imp_MMA_res <- imp_mod_extract(imp_MMA)
+imp_MMA_pb_res <- imp_mod_extract(imp_MMA_pb)
+```
+
+Build tables
+
+```{r}
+MMA_flex <- build_tab(MMA_res, MMA_rob_res, imp_MMA_res)
+MMA_pb_flex <- build_tab(MMA_pb_res, MMA_pb_rob_res, imp_MMA_pb_res)
+```
+
+### Meta-regression (MR) - model 2
+
+Model 2 is the suppressed intercept model investigating control method efficacy.
+
+```{r}
+MR2 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR2.rds"))
+MR2_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR2_rob.rds"))
+imp_MR2 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR2.rds"))
+MR2_pb <- readRDS(here("Results", "Models", "Coupe", "coupe_MR2_pb.rds"))
+MR2_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR2_pb_rob.rds"))
+imp_MR2_pb <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR2_pb.rds"))
+```
+
+```{r}
+MR2_res <- mod_extract(MR2)
+MR2_pb_res <- mod_extract(MR2_pb)
+
+MR2_rob_res <- rob_mod_extract(MR2_rob) 
+MR2_pb_rob_res <- rob_mod_extract(MR2_pb_rob) 
+
+imp_MR2_res <- imp_mod_extract(imp_MR2)
+imp_MR2_pb_res <- imp_mod_extract(imp_MR2_pb)
+```
+
+Build tables
+
+```{r}
+MR2_flex <- build_tab(MR2_res, MR2_rob_res, imp_MR2_res)
+MR2_pb_flex <- build_tab(MR2_pb_res, MR2_pb_rob_res, imp_MR2_pb_res)
+```
+
+### MR - model 4
+
+Model 4 is the suppressed intercept model investigating control of different browsing taxa
+
+```{r}
+MR4 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR4.rds"))
+MR4_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR4_rob.rds"))
+imp_MR4 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR4.rds"))
+MR4_pb <- readRDS(here("Results", "Models", "Coupe", "coupe_MR4_pb.rds"))
+MR4_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR4_pb_rob.rds"))
+imp_MR4_pb <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR4_pb.rds"))
+```
+
+```{r}
+MR4_res <- mod_extract(MR4)
+MR4_pb_res <- mod_extract(MR4_pb)
+
+MR4_rob_res <- rob_mod_extract(MR4_rob) 
+MR4_pb_rob_res <- rob_mod_extract(MR4_pb_rob) 
+
+imp_MR4_res <- imp_mod_extract(imp_MR4)
+imp_MR4_pb_res <- imp_mod_extract(imp_MR4_pb)
+```
+
+Build tables
+
+```{r}
+MR4_flex <- build_tab(MR4_res, MR4_rob_res, imp_MR4_res)
+MR4_pb_flex <- build_tab(MR4_pb_res, MR4_pb_rob_res, imp_MR4_pb_res)
+```
+
+### MR - model 5
+
+Model 5 investigated the retention of efficacy over time for different control methods.
+
+```{r}
+MR5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5.rds"))
+MR5_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_rob.rds"))
+imp_MR5 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR5.rds"))
+MR5_pb <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_pb.rds"))
+MR5_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_pb_rob.rds"))
+imp_MR5_pb <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR5_pb.rds"))
+```
+
+```{r}
+MR5_res <- mod_extract(MR5)
+MR5_pb_res <- mod_extract(MR5_pb)
+
+MR5_rob_res <- rob_mod_extract(MR5_rob) 
+MR5_pb_rob_res <- rob_mod_extract(MR5_pb_rob) 
+
+imp_MR5_res <- imp_mod_extract(imp_MR5)
+imp_MR5_pb_res <- imp_mod_extract(imp_MR5_pb)
+```
+
+Build tables
+
+```{r}
+MR5_flex <- build_tab(MR5_res, MR5_rob_res, imp_MR5_res)
+MR5_pb_flex <- build_tab(MR5_pb_res, MR5_pb_rob_res, imp_MR5_pb_res)
+```
+
+### Save the document
+
+```{r}
+save_as_docx("Coupe Scale Multilevel Meta-analytic model (MMA)" = MMA_flex, "Coupe Scale MMA publication bias" = MMA_pb_flex, "Coupe Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Coupe Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Coupe Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Coupe Scale MR - suppresed intercept, browsing taxa publication bias" = MR4_pb_flex, "Coupe Scale MR - control method efficacy through time" = MR5_flex, "Coupe Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Coupe_scale_summary.docx"))
+```
+
+## Landscape scale
+
+### Multilevel meta-analytic model (MMA)
+
+Read in
+
+```{r}
+MMA <- readRDS(here("Results", "Models", "Landscape", "lscape_MMA.rds"))
+MMA_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MMA_rob.rds"))
+imp_MMA <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MMA.rds"))
+MMA_pb <- readRDS(here("Results", "Models", "Landscape", "lscape_MMA_pb.rds"))
+MMA_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MMA_pb_rob.rds"))
+imp_MMA_pb <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MMA_pb.rds"))
+```
+
+Extract the relevant information using above functions.
+
+```{r}
+MMA_res <- mod_extract(MMA)
+MMA_pb_res <- mod_extract(MMA_pb)
+
+MMA_rob_res <- rob_mod_extract(MMA_rob) 
+MMA_pb_rob_res <- rob_mod_extract(MMA_pb_rob) 
+
+imp_MMA_res <- imp_mod_extract(imp_MMA)
+imp_MMA_pb_res <- imp_mod_extract(imp_MMA_pb)
+```
+
+Build tables
+
+```{r}
+MMA_flex <- build_tab(MMA_res, MMA_rob_res, imp_MMA_res)
+MMA_pb_flex <- build_tab(MMA_pb_res, MMA_pb_rob_res, imp_MMA_pb_res)
+```
+
+### Meta-regression (MR) - model 2
+
+Model 2 is the suppressed intercept model investigating control method efficacy.
+
+```{r}
+MR2 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR2.rds"))
+MR2_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR2_rob.rds"))
+imp_MR2 <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR2.rds"))
+MR2_pb <- readRDS(here("Results", "Models", "Landscape", "lscape_MR2_pb.rds"))
+MR2_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR2_pb_rob.rds"))
+imp_MR2_pb <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR2_pb.rds"))
+```
+
+```{r}
+MR2_res <- mod_extract(MR2)
+MR2_pb_res <- mod_extract(MR2_pb)
+
+MR2_rob_res <- rob_mod_extract(MR2_rob) 
+MR2_pb_rob_res <- rob_mod_extract(MR2_pb_rob) 
+
+imp_MR2_res <- imp_mod_extract(imp_MR2)
+imp_MR2_pb_res <- imp_mod_extract(imp_MR2_pb)
+```
+
+Build tables
+
+```{r}
+MR2_flex <- build_tab(MR2_res, MR2_rob_res, imp_MR2_res)
+MR2_pb_flex <- build_tab(MR2_pb_res, MR2_pb_rob_res, imp_MR2_pb_res)
+```
+
+### MR - model 4
+
+Model 4 is the suppressed intercept model investigating control of different browsing taxa
+
+```{r}
+MR4 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR4.rds"))
+MR4_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR4_rob.rds"))
+imp_MR4 <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR4.rds"))
+MR4_pb <- readRDS(here("Results", "Models", "Landscape", "lscape_MR4_pb.rds"))
+MR4_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR4_pb_rob.rds"))
+imp_MR4_pb <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR4_pb.rds"))
+```
+
+```{r}
+MR4_res <- mod_extract(MR4)
+MR4_pb_res <- mod_extract(MR4_pb)
+
+MR4_rob_res <- rob_mod_extract(MR4_rob) 
+MR4_pb_rob_res <- rob_mod_extract(MR4_pb_rob) 
+
+imp_MR4_res <- imp_mod_extract(imp_MR4)
+imp_MR4_pb_res <- imp_mod_extract(imp_MR4_pb)
+```
+
+Build tables
+
+```{r}
+MR4_flex <- build_tab(MR4_res, MR4_rob_res, imp_MR4_res)
+MR4_pb_flex <- build_tab(MR4_pb_res, MR4_pb_rob_res, imp_MR4_pb_res)
+```
+
+### MR - model 5
+
+Model 5 investigated the retention of efficacy over time for different control methods.
+
+```{r}
+MR5 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5.rds"))
+MR5_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5_rob.rds"))
+imp_MR5 <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR5.rds"))
+MR5_pb <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5_pb.rds"))
+MR5_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5_pb_rob.rds"))
+imp_MR5_pb <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR5_pb.rds"))
+```
+
+```{r}
+MR5_res <- mod_extract(MR5)
+MR5_pb_res <- mod_extract(MR5_pb)
+
+MR5_rob_res <- rob_mod_extract(MR5_rob) 
+MR5_pb_rob_res <- rob_mod_extract(MR5_pb_rob) 
+
+imp_MR5_res <- imp_mod_extract(imp_MR5)
+imp_MR5_pb_res <- imp_mod_extract(imp_MR5_pb)
+```
+
+Build tables - need to pad MR5_res and MR5_rob_res due to the imputed case having an extra control method included creating an imbalance in the number of rows of the different objects.
+
+```{r}
+pad <- function(df) {
+  dftop <- df[1:2,]
+  dfmid <- df[3:7,]
+  dfbot <- df[8:9,]
+  
+  df_fill1 <- tibble(term = "MethodNeighbour effects", est = NA, ci.lb = NA, ci.ub = NA, se = NA, stat = NA, p.val = NA)
+  df_fill2 <- tibble(term = "MethodNeighbour effects:Months", est = NA, ci.lb = NA, ci.ub = NA, se = NA, stat = NA, p.val = NA)
+  
+  df_done <- rbind(dftop, df_fill1, dfmid, df_fill2, dfbot)
+  
+  return(df_done) }
+
+pad_rob <- function(df) {
+  dftop <- df[1:2,]
+  dfmid <- df[3:7,]
+  dfbot <- df[8:9,]
+  
+  df_fill1 <- tibble(rob_term = "MethodNeighbour effects", rob_est = NA, rob_ci.lb = NA, rob_ci.ub = NA, rob_se = NA, rob_stat = NA, rob_p.val = NA)
+  df_fill2 <- tibble(rob_term = "MethodNeighbour effects:Months", rob_est = NA, rob_ci.lb = NA, rob_ci.ub = NA, rob_se = NA, rob_stat = NA, rob_p.val = NA)
+  
+  df_done <- rbind(dftop, df_fill1, dfmid, df_fill2, dfbot)
+  
+  return(df_done) }
+
+pad_pb <- function(df) {
+  dftop <- df[1:2,]
+  dfmid <- df[3:9,]
+  dfbot <- df[10:11,]
+  
+  df_fill1 <- tibble(term = "MethodNeighbour effects", est = NA, ci.lb = NA, ci.ub = NA, se = NA, stat = NA, p.val = NA)
+  df_fill2 <- tibble(term = "MethodNeighbour effects:Months", est = NA, ci.lb = NA, ci.ub = NA, se = NA, stat = NA, p.val = NA)
+  
+  df_done <- rbind(dftop, df_fill1, dfmid, df_fill2, dfbot)
+  
+  return(df_done) }
+
+pad_pb_rob <- function(df) {
+  dftop <- df[1:2,]
+  dfmid <- df[3:9,]
+  dfbot <- df[10:11,]
+  
+  df_fill1 <- tibble(rob_term = "MethodNeighbour effects", rob_est = NA, rob_ci.lb = NA, rob_ci.ub = NA, rob_se = NA, rob_stat = NA, rob_p.val = NA)
+  df_fill2 <- tibble(rob_term = "MethodNeighbour effects:Months", rob_est = NA, rob_ci.lb = NA, rob_ci.ub = NA, rob_se = NA, rob_stat = NA, rob_p.val = NA)
+  
+  df_done <- rbind(dftop, df_fill1, dfmid, df_fill2, dfbot)
+  
+  return(df_done) }
+```
+
+```{r}
+MR5_res1 <- pad(MR5_res)
+MR5_rob_res1 <- pad_rob(MR5_rob_res)
+
+MR5_pb_res1 <- pad_pb(MR5_pb_res)
+MR5_pb_rob_res1 <- pad_pb_rob(MR5_pb_rob_res)
+```
+
+```{r}
+MR5_flex <- build_tab(MR5_res1, MR5_rob_res1, imp_MR5_res)
+MR5_pb_flex <- build_tab(MR5_pb_res1, MR5_pb_rob_res1, imp_MR5_pb_res)
+```
+
+### Save the document
+
+```{r}
+save_as_docx("Landscape Scale Multilevel Meta-analytic model (MMA)" = MMA_flex, "Landscape Scale MMA publication bias" = MMA_pb_flex, "Landscape Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Landscape Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Landscape Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Landscape Scale MR - suppresed intercept, browsing taxa publication bias" = MR4_pb_flex, "Landscape Scale MR - control method efficacy through time" = MR5_flex, "Landscape Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Landscape_scale_summary.docx"))
 ```
