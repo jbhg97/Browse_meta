@@ -100,7 +100,7 @@ Write a function to group the levels into broader categories. Deer is a large en
 ```{r}
 group_fauna <- function(Animal){
   case_when(Animal %in% c("Beaver", "Coypu", "Kangaroo", "Pademelon (captive)", "Wallaby", "Wallaby, pademelon, possum", "Hares", "Possum (captive)", "Hyrax", "Kangaroo, wallaby", "Rabbits", "Voles") ~ "Other",
-            Animal %in% c("Deer, ELk", "Deer, sheep", "Goats", "Moose", "Reindeer", "Sheep", "Wild boar, sheep, goat", "Cattle", "Deer, elk", "Deer, pigs", "Elk", "Ungulates", "Llama") ~ "Other ungulates", 
+            Animal %in% c("Deer, Elk", "Deer, sheep", "Goats", "Moose", "Reindeer", "Sheep", "Wild boar, sheep, goat", "Cattle", "Deer, elk", "Deer, pigs", "Elk", "Ungulates", "Llama") ~ "Other ungulates", 
             Animal == "Deer" ~ "Deer",
             Animal %in% c("Ungulates, hares", "Beaver, rabbit, deer", "Deer, hare", "Deer, voles, rabbits", "Kangaroo, goat, rabbits", "Moose, hares", "Ungulates, hares, rabbits", "Wallaby, deer", "Wallaby, kangaroo, deer, rabbit") ~ "Mixed",
             Animal == "Not specified" ~ "Not specified")
