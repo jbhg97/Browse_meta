@@ -973,8 +973,8 @@ VCV_mat_coupe_imp <- lapply(df_imp_coupe1, function(df){
 
 ```{r}
 imp_coupe_MMA_mod1 <- list()
-imp_coupe_MMA_mod1 <- mclapply(seq_along(df_imp_coupe1), 
-                               function(i) MMA(df_imp_coupe1[[i]], VCV_mat_coupe_imp[[i]], i), mc.cores = num_cores)
+imp_coupe_MMA_mod1 <- lapply(seq_along(df_imp_coupe1), 
+                               function(i) MMA(df_imp_coupe1[[i]], VCV_mat_coupe_imp[[i]], i))
 
 summary(pool(imp_coupe_MMA_mod1))
 saveRDS(imp_coupe_MMA_mod1, here("Results", "Models", "Coupe", "imp_coupe_MMA.rds"))
