@@ -15,7 +15,7 @@ p_load(tidyverse, readxl, writexl, sf, rnaturalearth, rnaturalearthdata, patchwo
 
 # plant scale bubble plot - requires different function as there's only one control method so the table structure is slightly different
 
-plant_month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax){
+plant_month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax, k){
   
   df1 <- df %>% filter(Method == method)
   
@@ -26,7 +26,7 @@ plant_month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax
   
   plot <- ggplot(data = df1, aes(x = Months, y = Effect_size)) + 
     geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = colour, fill = colour) +
-    labs(x = "Time / months", y = "Effect size / SMD", size = "Precision (1/SE)", title = method) + 
+    labs(x = "Time / months", y = "Effect size / SMD", size = "Precision (1/SE)", title = paste0(method," (k = ", k,")")) + 
     ggplot2::geom_smooth(data = mod_table_method, 
                          ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
                          formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
@@ -51,7 +51,7 @@ plant_month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax
 
 # other scale bubble plot
 
-month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax){
+month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax, k){
   
   df1 <- df %>% filter(Method == method)
   
@@ -62,7 +62,7 @@ month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax){
   
   plot <- ggplot(data = df1, aes(x = Months, y = Effect_size)) + 
     geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = colour, fill = colour) +
-    labs(x = "Time / months", y = "Effect size / SMD", size = "Precision (1/SE)", title = method) + 
+    labs(x = "Time / months", y = "Effect size / SMD", size = "Precision (1/SE)", title = paste0(method," (k = ", k,")")) + 
     ggplot2::geom_smooth(data = mod_table_method, 
                          ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
                          formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
@@ -162,6 +162,8 @@ map_plot <- map # + plot_annotation(caption = str_wrap("Fig XX. A map showing th
 
 ## Orchard plot Figures
 
+### Plant scale
+
 ```{r}
 # plant scale orchard plots - tweak caption position and wrap as needed
 
@@ -185,13 +187,15 @@ colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4
 
 plant_MR_mod5 <- readRDS(here("Results", "Models", "Plant", "Plant_MR5.rds"))
 
-p3 <- plant_month_bubble(df_comp_plant, plant_MR_mod5, method = "Repellents", colour = "#CC6677", xmin = 0, xmax = 1.25, ymin = -4, ymax = 6)
+p3 <- plant_month_bubble(df_comp_plant, plant_MR_mod5, method = "Repellents", colour = "#CC6677", xmin = 0, xmax = 1.25, ymin = -4, ymax = 6, k = 121)
 
 plot2 <- p3 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'plant' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
 print(plot2) # need to fix the caption position - look rubbish when viewed in qmd but much better when viewed in plots window and zoomed out
 
 save_plot(plot2, "plant_bubble.png", 6)
 ```
+
+### Coupe scale
 
 ```{r}
 # coupe scale orchard plots - tweak caption position and wrap as needed
@@ -216,13 +220,13 @@ colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4
 
 coupe_MR_mod5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5.rds"))
 
-c3 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Exclusion fence", "#88CCEE", 0, 140, -5, 10)
-c4 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Repellents", "#332288", 0, 50, -4, 6)
-c5 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Tree guards", "#009E73", 0, 65, -5, 10)
-c6 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Other fencing", "#117733", 0, 30, -5, 5)
-c7 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Natural debris", "#CC6677", 0, 65, -3, 5)
-c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 65, -3, 3)
-c9 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Neighbour effects", "#DDCC77", 0, 50, -4, 3)
+c3 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Exclusion fence", "#88CCEE", 0, 140, -5, 10, 219)
+c4 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Repellents", "#332288", 0, 50, -4, 6, 415)
+c5 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Tree guards", "#009E73", 0, 65, -5, 10, 339)
+c6 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Other fencing", "#117733", 0, 30, -5, 5, 15)
+c7 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Natural debris", "#CC6677", 0, 65, -3, 5, 23)
+c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 65, -3, 3, 111)
+c9 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Neighbour effects", "#DDCC77", 0, 50, -4, 3, 24)
 
 plot4 <- c3/c6/c9/c4 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods. The Y axis of the exclusion fence sub-plot has been limited to enhance viewing of confidence and prediction limits", width = 100), theme = theme(plot.caption = element_text(size = 18)))
 plot4.1 <- c5/c7/c8 # 7 plots don't fit into one pane well and the exclusion fence time range is way bigger
@@ -231,6 +235,8 @@ print(plot4)
 save_plot(plot4, "coupe_bubble.png", 20)
 save_plot(plot4.1, "coupe_bubblea.png", 15)
 ```
+
+### Landscape scale
 
 ```{r}
 # Landscape scale orchard plots - tweak caption position and wrap as needed
@@ -255,10 +261,10 @@ colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4
 
 lscape_MR_mod5 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5.rds"))
 
-l3 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Exclusion fence", "#88CCEE", 0, 250, -2, 9)
-l4 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Repellents", "#332288", 0, 65, -2, 4)
-l5 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Tree guards", "#44AA99", 0, 65, -2, 4)
-l6 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Natural debris", "#CC6677", 0, 20, -3, 3.5)
+l3 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Exclusion fence", "#88CCEE", 0, 250, -2, 9, 413)
+l4 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Repellents", "#332288", 0, 65, -2, 4, 73)
+l5 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Tree guards", "#44AA99", 0, 65, -2, 4, 56)
+l6 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Natural debris", "#CC6677", 0, 20, -3, 3.5, 15)
 
 plot6 <- l3/l4/l5/l6 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'landscape' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
 print(plot6)
@@ -614,7 +620,7 @@ MR5_pb_flex <- build_tab(MR5_pb_res, MR5_pb_rob_res, imp_MR5_pb_res)
 ### Save the document
 
 ```{r}
-save_as_docx("Coupe Scale Multilevel Meta-analytic model (MMA)" = MMA_flex, "Coupe Scale MMA publication bias" = MMA_pb_flex, "Coupe Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Coupe Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Coupe Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Coupe Scale MR - suppresed intercept, browsing taxa publication bias" = MR4_pb_flex, "Coupe Scale MR - control method efficacy through time" = MR5_flex, "Coupe Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Coupe_scale_summary.docx"))
+save_as_docx("Coupe Scale Multilevel Meta-analytic model (MMA)" = MMA_flex, "Coupe Scale MMA publication bias" = MMA_pb_flex, "Coupe Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Coupe Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Coupe Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Coupe Scale MR - suppressed intercept, browsing taxa publication bias" = MR4_pb_flex, "Coupe Scale MR - control method efficacy through time" = MR5_flex, "Coupe Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Coupe_scale_summary.docx"))
 ```
 
 ## Landscape scale
