@@ -268,7 +268,7 @@ save_plot(plot6, "lscape_bubble.png", 20)
 
 ## Tables
 
-Tables to be used in the supplementary information - will summarise all three tests at each scale and each model including publication bias. 
+Tables to be used in the supplementary information - will summarise all three tests at each scale and each model including publication bias.
 
 ### Functions
 
