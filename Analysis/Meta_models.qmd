@@ -15,11 +15,33 @@ p_load(tidyverse, readxl, writexl, kableExtra, orchaRd, clubSandwich, metafor, m
 
 ## Complete case analysis
 
+### All effects
+
+Going to model all the effects together and make an orchard plot for presentation slides. Essentially trying to show what the general trend is but there's lots of variation so we need to tease that apart to see what actually works well - hence the rationale of splitting the scales and then into control methods/taxa.
+
+```{r}
+df_comp_all <- read_excel(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") # reading in from here rather than file in Analysis folder as for an unnknown reason read in from All_compcase_es.xlsx converts Count columns to Boolean.
+```
+
+```{r}
+df_comp_all <- df_comp_all %>% mutate(OLRE = as.factor(row_number()))
+```
+
+```{r}
+VCV_mat_all <- vcalc(vi = Sampling_variance, cluster = Shared_data, data = df_comp_all, rho = 0.5, nearpd = TRUE)
+```
+
+```{r}
+all_MMA <- rma.mv(Effect_size ~ 1, V = VCV_mat_all, test = "t", dfs = "contain", random = list(~1|Paper_ID, ~1|Repeat_measures, ~1|Plant_genus, ~1|OLRE), data = df_comp_all)
+```
+
+```{r}
+all_orchard <- orchard_plot(all_MMA, group = "Paper_ID", xlab = "Effect size / SMD")
+```
+
 ### Divide data
 
 ```{r}
-df_comp_all <- read_xlsx(here("Data processing", "Meta_full_data.xlsx"), sheet = "Complete case effects") # reading in from here rather than file in Analysis folder as for an unnknown reason read in from All_compcase_es.xlsx converts Count columns to Boolean.
-
 df_comp_plant <- df_comp_all %>% filter(Scale == "Plant")
   
 df_comp_coupe <- df_comp_all %>% filter(Scale == "Coupe")
@@ -60,7 +82,7 @@ plant_MMA_rob <- robust(plant_MMA_mod1, cluster = df_comp_plant$Paper_ID)
 Visualise the overall effect
 
 ```{r}
-orchard_plot(plant_MMA_mod1, group = "Paper_ID", xlab = "SMD")
+orchard_plot(plant_MMA_mod1, group = "Paper_ID", xlab = "Effect size / SMD")
 ```
 
 #### Multilevel Meta-regression models
@@ -251,7 +273,7 @@ coupe_MMA_rob <- robust(coupe_MMA_mod1, cluster = df_comp_coupe$Paper_ID)
 Visualise the overall effect
 
 ```{r}
-orchard_plot(coupe_MMA_mod1, group = "Paper_ID", xlab = "SMD")
+orchard_plot(coupe_MMA_mod1, group = "Paper_ID", xlab = "Effect size / SMD")
 ```
 
 #### Multilevel Meta-regression models
@@ -444,7 +466,7 @@ lscape_MMA_rob <- robust(lscape_MMA_mod1, cluster = df_comp_lscape$Paper_ID)
 Visualise the overall effect
 
 ```{r}
-orchard_plot(lscape_MMA_mod1, group = "Paper_ID", xlab = "SMD")
+orchard_plot(lscape_MMA_mod1, group = "Paper_ID", xlab = "Effect size / SMD")
 ```
 
 #### Multilevel Meta-regression models
