@@ -36,7 +36,7 @@ all_MMA <- rma.mv(Effect_size ~ 1, V = VCV_mat_all, test = "t", dfs = "contain",
 ```
 
 ```{r}
-all_orchard <- orchard_plot(all_MMA, group = "Paper_ID", xlab = "Effect size / SMD")
+all_orchard <- orchard_plot(all_MMA, group = "Paper_ID", xlab = "Effect size / SMD") + ylim(c(-5, 10))
 ```
 
 ### Divide data

@@ -228,8 +228,8 @@ c7 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Natural debris", "#CC6677", 0,
 c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 65, -3, 3.2, 111)
 c9 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Neighbour effects", "#DDCC77", 0, 50, -4, 3, 24)
 
-plot4 <- c3/c6/c9/c4 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods. The Y axis of the exclusion fence sub-plot has been limited to enhance viewing of confidence and prediction limits", width = 100), theme = theme(plot.caption = element_text(size = 18)))
-plot4.1 <- c5/c7/c8 # 7 plots don't fit into one pane well and the exclusion fence time range is way bigger
+plot4 <- c3/c4/c5/c6 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods. The Y axis of the exclusion fence sub-plot has been limited to enhance viewing of confidence and prediction limits", width = 100), theme = theme(plot.caption = element_text(size = 18)))
+plot4.1 <- c7/c8/c9 # 7 plots don't fit into one pane well and the exclusion fence time range is way bigger
 print(plot4)
 
 save_plot(plot4, "coupe_bubble.png", 20)
