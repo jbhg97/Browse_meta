@@ -160,9 +160,12 @@ df_comp_plant_pb <- df_comp_plant %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N
 ```
 
 ```{r}
-funnel(df_comp_plant_pb$Effect_size, df_comp_plant_pb$Sampling_variance, ni = df_comp_plant_pb$Eff_SS, yaxis="ni",
+plant_funnel <- funnel(df_comp_plant_pb$Effect_size, df_comp_plant_pb$Sampling_variance, ni = df_comp_plant_pb$Eff_SS, yaxis="ni",
        ylab = "Effective sample size",
-       xlab = "Effect size (SMD)") 
+       xlab = "Effect size / SMD",
+       back = "white",
+       hlines = "black")
+plant_funnel
 ```
 
 ##### Meta-regression
@@ -352,9 +355,12 @@ df_comp_coupe_pb <- df_comp_coupe %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con_N
 ```
 
 ```{r}
-funnel(df_comp_coupe_pb$Effect_size, df_comp_coupe_pb$Sampling_variance, ni = df_comp_coupe_pb$Eff_SS, yaxis="ni",
+coupe_funnel <- funnel(df_comp_coupe_pb$Effect_size, df_comp_coupe_pb$Sampling_variance, ni = df_comp_coupe_pb$Eff_SS, yaxis="ni",
        ylab = "Effective sample size",
-       xlab = "Effect size (SMD)") 
+       xlab = "Effect size / SMD",
+       back = "white",
+       hlines = "black") 
+coupe_funnel
 ```
 
 ##### Meta-regression
@@ -547,9 +553,12 @@ df_comp_lscape_pb <- df_comp_lscape %>% mutate(Eff_SS = (4*(Con_N*Trt_N)) / (Con
 ```
 
 ```{r}
-funnel(df_comp_lscape_pb$Effect_size, df_comp_lscape_pb$Sampling_variance, ni = df_comp_lscape_pb$Eff_SS, yaxis="ni",
+lscape_funnel <- funnel(df_comp_lscape_pb$Effect_size, df_comp_lscape_pb$Sampling_variance, ni = df_comp_lscape_pb$Eff_SS, yaxis="ni",
        ylab = "Effective sample size",
-       xlab = "Effect size (SMD)") 
+       xlab = "Effect size / SMD",
+       back = "white",
+       hlines = "black")
+lscape_funnel
 ```
 
 ##### Meta-regression
