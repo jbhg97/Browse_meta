@@ -276,7 +276,7 @@ coupe_MMA_rob <- robust(coupe_MMA_mod1, cluster = df_comp_coupe$Paper_ID)
 Visualise the overall effect
 
 ```{r}
-orchard_plot(coupe_MMA_mod1, group = "Paper_ID", xlab = "Effect size / SMD")
+orchard_plot(coupe_MMA_mod1, group = "Paper_ID", xlab = "Effect size / SMD") + ylim(-5,18)
 ```
 
 #### Multilevel Meta-regression models
@@ -472,7 +472,7 @@ lscape_MMA_rob <- robust(lscape_MMA_mod1, cluster = df_comp_lscape$Paper_ID)
 Visualise the overall effect
 
 ```{r}
-orchard_plot(lscape_MMA_mod1, group = "Paper_ID", xlab = "Effect size / SMD")
+orchard_plot(lscape_MMA_mod1, group = "Paper_ID", xlab = "Effect size / SMD") + ylim(-5,10)
 ```
 
 #### Multilevel Meta-regression models
