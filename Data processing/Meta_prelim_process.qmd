@@ -154,7 +154,7 @@ df_lo <- df5 %>% filter (`Effect type` == "Log odds")
 
 ### SMD Mean Proportion data
 
-Proportion style data measured across multiple plots and therefore producing a mean can be problematic. Need to process this so that first, the units are the same ie all proportions. Second, transform it to put the data on to an unbounded scale - see Harrison et al 2021 biorev paper.
+Proportion style data measured across multiple plots and therefore producing a mean can be problematic. Need to process this so that first, the units are the same ie all proportions. Second, transform it to put the data on to an unbounded scale - see Harrison et al 2022 biorev paper.
 
 ```{r}
 #Identify problem rows

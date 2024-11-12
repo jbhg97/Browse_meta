@@ -92,7 +92,13 @@ save_plot <- function(plot, filename, height ){
 
 ```{r}
 df <- readRDS(here("Analysis", "All_impcase_es.rds"))
-df1 <- df[[1]] #select one of the imputed case frames to do the summary statistics of literature synthesis.
+df1 <- df[[1]] #select one of the imputed case frames to do the summary statistics for literature synthesis.
+
+df2 <- df1 %>% mutate(Method = as.factor(Method),
+                      Animal = as.factor(Animal))
+
+df3 <- read_excel(here("Analysis", "All_compcase_es.xlsx")) %>% mutate(Method = as.factor(Method),
+                                                                       Animal = as.factor(Animal))
 ```
 
 # Results
