@@ -125,7 +125,7 @@ Data were extracted from 156 papers, resulting in 2795 pairwise effect sizes (19
 
 ```{r}
 #edit strings for map making packages
-df_map <- df1 %>% 
+df_map <- df3 %>% 
   mutate(Country = case_when(Country == "USA" ~ "United States of America",
                    Country == "UK" ~"United Kingdom",
                    TRUE ~ Country))
