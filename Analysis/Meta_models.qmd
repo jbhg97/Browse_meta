@@ -83,6 +83,7 @@ Visualise the overall effect
 
 ```{r}
 orchard_plot(plant_MMA_mod1, group = "Paper_ID", xlab = "Effect size / SMD")
+mod_results(plant_MMA_mod1, group = "Paper_ID")
 ```
 
 #### Multilevel Meta-regression models
@@ -277,6 +278,7 @@ Visualise the overall effect
 
 ```{r}
 orchard_plot(coupe_MMA_mod1, group = "Paper_ID", xlab = "Effect size / SMD") + ylim(-5,18)
+mod_results(coupe_MMA_mod1, group = "Paper_ID")
 ```
 
 #### Multilevel Meta-regression models
@@ -473,6 +475,7 @@ Visualise the overall effect
 
 ```{r}
 orchard_plot(lscape_MMA_mod1, group = "Paper_ID", xlab = "Effect size / SMD") + ylim(-5,10)
+mod_results(lscape_MMA_mod1, group = "Paper_ID")
 ```
 
 #### Multilevel Meta-regression models
