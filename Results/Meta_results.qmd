@@ -134,7 +134,7 @@ df_map <- df3 %>%
 df_map1 <- df_map %>% 
   group_by(Paper_ID, Country) %>% 
   distinct(Paper_ID, Country) %>% 
-  ungroup() %>% select(Country)
+  ungroup() %>% dplyr::select(Country)
 
 df_map_inset <- df_map1 %>% 
   count(Country, name = "N") %>% 
@@ -213,10 +213,17 @@ coupe_MR_mod3 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR3.rds"))
 c1 <- orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.out", angle = 0) + ylim(c(-5,10))
 c2 <- orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "none", angle = 0) + ylim(c(-5,10))
 
+c1_sup <- orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.out", angle = 0)
+c2_sup <- orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "none", angle = 0) 
+
 plot3 <- c1/c2 + plot_annotation(tag_levels = "A") # + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'coupe' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
+plot3_sup <- c1_sup/c2_sup + plot_annotation(tag_levels = "A")
+
 print(plot3)
+print(plot3_sup)
 
 save_plot(plot3, "coupe_orchard.png", 20)
+save_plot(plot3_sup, "coupe_orchard_sup.png", 20)
 ```
 
 ```{r}
@@ -227,19 +234,24 @@ colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4
 coupe_MR_mod5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5.rds"))
 
 c3 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Exclusion fence", "#88CCEE", 0, 140, -5, 10, 219)
+c3_sup <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Exclusion fence", "#88CCEE", 0, 140, -20, 17, 219)
 c4 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Repellents", "#332288", 0, 50, -4, 6, 415)
 c5 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Tree guards", "#009E73", 0, 65, -5, 10, 339)
 c6 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Other fencing", "#117733", 0, 30, -5, 5, 15)
 c7 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Natural debris", "#CC6677", 0, 65, -3, 5, 23)
-c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 65, -3, 3.2, 111)
+c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 65, -3, 4, 111)
 c9 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Neighbour effects", "#DDCC77", 0, 50, -4, 3, 24)
 
 plot4 <- c3/c4/c5/c6 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods. The Y axis of the exclusion fence sub-plot has been limited to enhance viewing of confidence and prediction limits", width = 100), theme = theme(plot.caption = element_text(size = 18)))
 plot4.1 <- c7/c8/c9 # 7 plots don't fit into one pane well and the exclusion fence time range is way bigger
+plot4_sup <- c3_sup/c4/c5/c6
+
 print(plot4)
+
 
 save_plot(plot4, "coupe_bubble.png", 20)
 save_plot(plot4.1, "coupe_bubblea.png", 15)
+save_plot(plot4_sup, "coupe_bubble_sup.png", 20)
 ```
 
 ### Landscape scale
@@ -254,10 +266,17 @@ lscape_MR_mod3 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR3.rds
 l1 <- orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.out", angle = 0) + ylim(c(-5,5))
 l2 <- orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "none", angle = 0) + ylim(c(-5,5))
 
+l1_sup <- orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.out", angle = 0)
+l2_sup <- orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "none", angle = 0)
+
 plot5 <- l1/l2 + plot_annotation(tag_levels = "A") # + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'landscape' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
+plot5_sup <- l1_sup/l2_sup + plot_annotation(tag_levels = "A")
+
 print(plot5)
+print(plot5_sup)
 
 save_plot(plot5, "lscape_orchard.png", 20)
+save_plot(plot5_sup, "lscape_orchard_sup.png", 20)
 ```
 
 ```{r}
@@ -346,7 +365,7 @@ build_tab <- function(df1, df2, df3){
   set_flextable_defaults(font.family = "Calibri", font.size = 10)
   border_style <- fp_border(color = "black", width = 1)
   
-  table <- cbind(df1, df2, df3) %>% select(-c(rob_term, imp_term, rob_ci.lb, rob_ci.ub, imp_df))
+  table <- cbind(df1, df2, df3) %>% dplyr::select(-c(rob_term, imp_term, rob_ci.lb, rob_ci.ub, imp_df))
   
   flex <- flextable(table) %>%
     align(align = "center", part = "all") %>% 
@@ -354,6 +373,23 @@ build_tab <- function(df1, df2, df3){
     add_header_row(values = c("", "Complete case", "Robust", "Imputed case"), colwidths = c(1,6,4,4)) %>% 
     vline(i = NULL, j = 1 + 6, border = border_style, part = "all") %>% 
     vline(i = NULL, j = 1 + 10, border = border_style, part = "all") %>% 
+    colformat_double(., digits = 5) %>% 
+    autofit(.) # edit this one to add in extra header rows and generally neaten up
+    
+  
+  return(flex) }
+
+build_tab_pb <- function(df1, df2){
+  set_flextable_defaults(font.family = "Calibri", font.size = 10)
+  border_style <- fp_border(color = "black", width = 1)
+  
+  table <- cbind(df1, df2) %>% dplyr::select(-c(rob_term))
+  
+  flex <- flextable(table) %>%
+    align(align = "center", part = "all") %>% 
+    padding(., padding.left = 0, padding.right = 0) %>% 
+    add_header_row(values = c("", "Complete case", "Robust"), colwidths = c(1,6,6)) %>% 
+    vline(i = NULL, j = 1 + 6, border = border_style, part = "all") %>% 
     colformat_double(., digits = 5) %>% 
     autofit(.) # edit this one to add in extra header rows and generally neaten up
     
@@ -373,7 +409,6 @@ MMA_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MMA_rob.rds"))
 imp_MMA <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MMA.rds"))
 MMA_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MMA_pb.rds"))
 MMA_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MMA_pb_rob.rds"))
-imp_MMA_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MMA_pb.rds"))
 ```
 
 Extract the relevant information using above functions.
@@ -386,14 +421,13 @@ MMA_rob_res <- rob_mod_extract(MMA_rob)
 MMA_pb_rob_res <- rob_mod_extract(MMA_pb_rob) 
 
 imp_MMA_res <- imp_mod_extract(imp_MMA)
-imp_MMA_pb_res <- imp_mod_extract(imp_MMA_pb)
 ```
 
 Build tables
 
 ```{r}
 MMA_flex <- build_tab(MMA_res, MMA_rob_res, imp_MMA_res)
-MMA_pb_flex <- build_tab(MMA_pb_res, MMA_pb_rob_res, imp_MMA_pb_res)
+MMA_pb_flex <- build_tab_pb(MMA_pb_res, MMA_pb_rob_res)
 ```
 
 ### Meta-regression (MR) - model 2
@@ -406,7 +440,6 @@ MR2_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR2_rob.rds"))
 imp_MR2 <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR2.rds"))
 MR2_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MR2_pb.rds"))
 MR2_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR2_pb_rob.rds"))
-imp_MR2_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR_pb2.rds"))
 ```
 
 ```{r}
@@ -417,14 +450,13 @@ MR2_rob_res <- rob_mod_extract(MR2_rob)
 MR2_pb_rob_res <- rob_mod_extract(MR2_pb_rob) 
 
 imp_MR2_res <- imp_mod_extract(imp_MR2)
-imp_MR2_pb_res <- imp_mod_extract(imp_MR2_pb)
 ```
 
 Build tables
 
 ```{r}
 MR2_flex <- build_tab(MR2_res, MR2_rob_res, imp_MR2_res)
-MR2_pb_flex <- build_tab(MR2_pb_res, MR2_pb_rob_res, imp_MR2_pb_res)
+MR2_pb_flex <- build_tab_pb(MR2_pb_res, MR2_pb_rob_res)
 ```
 
 ### MR - model 4
@@ -437,7 +469,6 @@ MR4_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_rob.rds"))
 imp_MR4 <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR4.rds"))
 MR4_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_pb.rds"))
 MR4_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_pb_rob.rds"))
-imp_MR4_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR_pb4.rds"))
 ```
 
 ```{r}
@@ -448,14 +479,13 @@ MR4_rob_res <- rob_mod_extract(MR4_rob)
 MR4_pb_rob_res <- rob_mod_extract(MR4_pb_rob) 
 
 imp_MR4_res <- imp_mod_extract(imp_MR4)
-imp_MR4_pb_res <- imp_mod_extract(imp_MR4_pb)
 ```
 
 Build tables
 
 ```{r}
 MR4_flex <- build_tab(MR4_res, MR4_rob_res, imp_MR4_res)
-MR4_pb_flex <- build_tab(MR4_pb_res, MR4_pb_rob_res, imp_MR4_pb_res)
+MR4_pb_flex <- build_tab_pb(MR4_pb_res, MR4_pb_rob_res)
 ```
 
 ### MR - model 5
@@ -468,7 +498,6 @@ MR5_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_rob.rds"))
 imp_MR5 <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR5.rds"))
 MR5_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_pb.rds"))
 MR5_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_pb_rob.rds"))
-imp_MR5_pb <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR_pb5.rds"))
 ```
 
 ```{r}
@@ -479,14 +508,13 @@ MR5_rob_res <- rob_mod_extract(MR5_rob)
 MR5_pb_rob_res <- rob_mod_extract(MR5_pb_rob) 
 
 imp_MR5_res <- imp_mod_extract(imp_MR5)
-imp_MR5_pb_res <- imp_mod_extract(imp_MR5_pb)
 ```
 
 Build tables
 
 ```{r}
 MR5_flex <- build_tab(MR5_res, MR5_rob_res, imp_MR5_res)
-MR5_pb_flex <- build_tab(MR5_pb_res, MR5_pb_rob_res, imp_MR5_pb_res)
+MR5_pb_flex <- build_tab_pb(MR5_pb_res, MR5_pb_rob_res)
 ```
 
 ### Save the document
@@ -507,7 +535,6 @@ MMA_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MMA_rob.rds"))
 imp_MMA <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MMA.rds"))
 MMA_pb <- readRDS(here("Results", "Models", "Coupe", "coupe_MMA_pb.rds"))
 MMA_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MMA_pb_rob.rds"))
-imp_MMA_pb <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MMA_pb.rds"))
 ```
 
 Extract the relevant information using above functions.
@@ -520,14 +547,13 @@ MMA_rob_res <- rob_mod_extract(MMA_rob)
 MMA_pb_rob_res <- rob_mod_extract(MMA_pb_rob) 
 
 imp_MMA_res <- imp_mod_extract(imp_MMA)
-imp_MMA_pb_res <- imp_mod_extract(imp_MMA_pb)
 ```
 
 Build tables
 
 ```{r}
 MMA_flex <- build_tab(MMA_res, MMA_rob_res, imp_MMA_res)
-MMA_pb_flex <- build_tab(MMA_pb_res, MMA_pb_rob_res, imp_MMA_pb_res)
+MMA_pb_flex <- build_tab_pb(MMA_pb_res, MMA_pb_rob_res)
 ```
 
 ### Meta-regression (MR) - model 2
@@ -540,7 +566,6 @@ MR2_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR2_rob.rds"))
 imp_MR2 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR2.rds"))
 MR2_pb <- readRDS(here("Results", "Models", "Coupe", "coupe_MR2_pb.rds"))
 MR2_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR2_pb_rob.rds"))
-imp_MR2_pb <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR2_pb.rds"))
 ```
 
 ```{r}
@@ -551,14 +576,13 @@ MR2_rob_res <- rob_mod_extract(MR2_rob)
 MR2_pb_rob_res <- rob_mod_extract(MR2_pb_rob) 
 
 imp_MR2_res <- imp_mod_extract(imp_MR2)
-imp_MR2_pb_res <- imp_mod_extract(imp_MR2_pb)
 ```
 
 Build tables
 
 ```{r}
 MR2_flex <- build_tab(MR2_res, MR2_rob_res, imp_MR2_res)
-MR2_pb_flex <- build_tab(MR2_pb_res, MR2_pb_rob_res, imp_MR2_pb_res)
+MR2_pb_flex <- build_tab_pb(MR2_pb_res, MR2_pb_rob_res)
 ```
 
 ### MR - model 4
@@ -571,7 +595,6 @@ MR4_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR4_rob.rds"))
 imp_MR4 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR4.rds"))
 MR4_pb <- readRDS(here("Results", "Models", "Coupe", "coupe_MR4_pb.rds"))
 MR4_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR4_pb_rob.rds"))
-imp_MR4_pb <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR4_pb.rds"))
 ```
 
 ```{r}
@@ -582,14 +605,13 @@ MR4_rob_res <- rob_mod_extract(MR4_rob)
 MR4_pb_rob_res <- rob_mod_extract(MR4_pb_rob) 
 
 imp_MR4_res <- imp_mod_extract(imp_MR4)
-imp_MR4_pb_res <- imp_mod_extract(imp_MR4_pb)
 ```
 
 Build tables
 
 ```{r}
 MR4_flex <- build_tab(MR4_res, MR4_rob_res, imp_MR4_res)
-MR4_pb_flex <- build_tab(MR4_pb_res, MR4_pb_rob_res, imp_MR4_pb_res)
+MR4_pb_flex <- build_tab_pb(MR4_pb_res, MR4_pb_rob_res)
 ```
 
 ### MR - model 5
@@ -602,7 +624,6 @@ MR5_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_rob.rds"))
 imp_MR5 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR5.rds"))
 MR5_pb <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_pb.rds"))
 MR5_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_pb_rob.rds"))
-imp_MR5_pb <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR5_pb.rds"))
 ```
 
 ```{r}
@@ -613,14 +634,13 @@ MR5_rob_res <- rob_mod_extract(MR5_rob)
 MR5_pb_rob_res <- rob_mod_extract(MR5_pb_rob) 
 
 imp_MR5_res <- imp_mod_extract(imp_MR5)
-imp_MR5_pb_res <- imp_mod_extract(imp_MR5_pb)
 ```
 
 Build tables
 
 ```{r}
 MR5_flex <- build_tab(MR5_res, MR5_rob_res, imp_MR5_res)
-MR5_pb_flex <- build_tab(MR5_pb_res, MR5_pb_rob_res, imp_MR5_pb_res)
+MR5_pb_flex <- build_tab_pb(MR5_pb_res, MR5_pb_rob_res)
 ```
 
 ### Save the document
@@ -641,7 +661,6 @@ MMA_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MMA_rob.rds"))
 imp_MMA <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MMA.rds"))
 MMA_pb <- readRDS(here("Results", "Models", "Landscape", "lscape_MMA_pb.rds"))
 MMA_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MMA_pb_rob.rds"))
-imp_MMA_pb <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MMA_pb.rds"))
 ```
 
 Extract the relevant information using above functions.
@@ -654,14 +673,13 @@ MMA_rob_res <- rob_mod_extract(MMA_rob)
 MMA_pb_rob_res <- rob_mod_extract(MMA_pb_rob) 
 
 imp_MMA_res <- imp_mod_extract(imp_MMA)
-imp_MMA_pb_res <- imp_mod_extract(imp_MMA_pb)
 ```
 
 Build tables
 
 ```{r}
 MMA_flex <- build_tab(MMA_res, MMA_rob_res, imp_MMA_res)
-MMA_pb_flex <- build_tab(MMA_pb_res, MMA_pb_rob_res, imp_MMA_pb_res)
+MMA_pb_flex <- build_tab_pb(MMA_pb_res, MMA_pb_rob_res)
 ```
 
 ### Meta-regression (MR) - model 2
@@ -674,7 +692,6 @@ MR2_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR2_rob.rds"))
 imp_MR2 <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR2.rds"))
 MR2_pb <- readRDS(here("Results", "Models", "Landscape", "lscape_MR2_pb.rds"))
 MR2_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR2_pb_rob.rds"))
-imp_MR2_pb <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR2_pb.rds"))
 ```
 
 ```{r}
@@ -685,14 +702,13 @@ MR2_rob_res <- rob_mod_extract(MR2_rob)
 MR2_pb_rob_res <- rob_mod_extract(MR2_pb_rob) 
 
 imp_MR2_res <- imp_mod_extract(imp_MR2)
-imp_MR2_pb_res <- imp_mod_extract(imp_MR2_pb)
 ```
 
 Build tables
 
 ```{r}
 MR2_flex <- build_tab(MR2_res, MR2_rob_res, imp_MR2_res)
-MR2_pb_flex <- build_tab(MR2_pb_res, MR2_pb_rob_res, imp_MR2_pb_res)
+MR2_pb_flex <- build_tab_pb(MR2_pb_res, MR2_pb_rob_res)
 ```
 
 ### MR - model 4
@@ -705,7 +721,6 @@ MR4_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR4_rob.rds"))
 imp_MR4 <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR4.rds"))
 MR4_pb <- readRDS(here("Results", "Models", "Landscape", "lscape_MR4_pb.rds"))
 MR4_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR4_pb_rob.rds"))
-imp_MR4_pb <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR4_pb.rds"))
 ```
 
 ```{r}
@@ -716,14 +731,13 @@ MR4_rob_res <- rob_mod_extract(MR4_rob)
 MR4_pb_rob_res <- rob_mod_extract(MR4_pb_rob) 
 
 imp_MR4_res <- imp_mod_extract(imp_MR4)
-imp_MR4_pb_res <- imp_mod_extract(imp_MR4_pb)
 ```
 
 Build tables
 
 ```{r}
 MR4_flex <- build_tab(MR4_res, MR4_rob_res, imp_MR4_res)
-MR4_pb_flex <- build_tab(MR4_pb_res, MR4_pb_rob_res, imp_MR4_pb_res)
+MR4_pb_flex <- build_tab_pb(MR4_pb_res, MR4_pb_rob_res)
 ```
 
 ### MR - model 5
@@ -736,7 +750,6 @@ MR5_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5_rob.rds"))
 imp_MR5 <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR5.rds"))
 MR5_pb <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5_pb.rds"))
 MR5_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5_pb_rob.rds"))
-imp_MR5_pb <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR5_pb.rds"))
 ```
 
 ```{r}
@@ -747,7 +760,6 @@ MR5_rob_res <- rob_mod_extract(MR5_rob)
 MR5_pb_rob_res <- rob_mod_extract(MR5_pb_rob) 
 
 imp_MR5_res <- imp_mod_extract(imp_MR5)
-imp_MR5_pb_res <- imp_mod_extract(imp_MR5_pb)
 ```
 
 Build tables - need to pad MR5_res and MR5_rob_res due to the imputed case having an extra control method included creating an imbalance in the number of rows of the different objects.
@@ -776,43 +788,16 @@ pad_rob <- function(df) {
   df_done <- rbind(dftop, df_fill1, dfmid, df_fill2, dfbot)
   
   return(df_done) }
-
-pad_pb <- function(df) {
-  dftop <- df[1:2,]
-  dfmid <- df[3:9,]
-  dfbot <- df[10:11,]
-  
-  df_fill1 <- tibble(term = "MethodNeighbour effects", est = NA, ci.lb = NA, ci.ub = NA, se = NA, stat = NA, p.val = NA)
-  df_fill2 <- tibble(term = "MethodNeighbour effects:Months", est = NA, ci.lb = NA, ci.ub = NA, se = NA, stat = NA, p.val = NA)
-  
-  df_done <- rbind(dftop, df_fill1, dfmid, df_fill2, dfbot)
-  
-  return(df_done) }
-
-pad_pb_rob <- function(df) {
-  dftop <- df[1:2,]
-  dfmid <- df[3:9,]
-  dfbot <- df[10:11,]
-  
-  df_fill1 <- tibble(rob_term = "MethodNeighbour effects", rob_est = NA, rob_ci.lb = NA, rob_ci.ub = NA, rob_se = NA, rob_stat = NA, rob_p.val = NA)
-  df_fill2 <- tibble(rob_term = "MethodNeighbour effects:Months", rob_est = NA, rob_ci.lb = NA, rob_ci.ub = NA, rob_se = NA, rob_stat = NA, rob_p.val = NA)
-  
-  df_done <- rbind(dftop, df_fill1, dfmid, df_fill2, dfbot)
-  
-  return(df_done) }
 ```
 
 ```{r}
 MR5_res1 <- pad(MR5_res)
 MR5_rob_res1 <- pad_rob(MR5_rob_res)
-
-MR5_pb_res1 <- pad_pb(MR5_pb_res)
-MR5_pb_rob_res1 <- pad_pb_rob(MR5_pb_rob_res)
 ```
 
 ```{r}
 MR5_flex <- build_tab(MR5_res1, MR5_rob_res1, imp_MR5_res)
-MR5_pb_flex <- build_tab(MR5_pb_res1, MR5_pb_rob_res1, imp_MR5_pb_res)
+MR5_pb_flex <- build_tab_pb(MR5_pb_res, MR5_pb_rob_res)
 ```
 
 ### Save the document
