@@ -76,7 +76,7 @@ df2 <- df1 %>% rowwise() %>%
 summary(df2)
 ```
 
-Split out LS means here into their own dataframe - may reinclude but will need to do sensitivity analyses.
+Split out Least squares means here into their own dataframe - excluding these from further analyses.
 
 ```{r}
 df_LS <- df2 %>% filter(!is.na(`Control LS mean`))

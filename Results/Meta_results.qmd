@@ -161,9 +161,7 @@ map <- ggplot() +
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank())
 
-map_plot <- map # + plot_annotation(caption = str_wrap("Fig XX. A map showing the distribution of experimental locations globally. Grey denotes N = 0. Table shows the number of papers that conducted experiments in given countries; note that N = No. of papers + 1 as Barrere et al. (2021) conducted experiments in both France and Sweden.", width = 180), theme = theme(plot.caption = element_text(hjust = 0.5, size = 14), plot.caption.position = "plot"))
-
-#still want to add an inset table - it will increase the clarity of the figure as some of the small numbers are not easy to discern based solely on colour or make USA single colour then the others will be spread better?
+map_plot <- map
 ```
 
 ## Orchard plot Figures
@@ -180,7 +178,7 @@ plant_MR_mod3 <- readRDS(here("Results", "Models", "Plant", "Plant_MR3.rds"))
 p1 <- orchard_plot(plant_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.out", angle = 0, k = F, g = F) + ylim(c(-4, 6))
 p2 <- orchard_plot(plant_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "none", angle = 0, k = F, g = F) + ylim(c(-4, 6))
 
-plot1 <- p1/p2 + plot_annotation(tag_levels = "A") # plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'plant' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
+plot1 <- p1/p2 + plot_annotation(tag_levels = "A") 
 print(plot1)
 
 save_plot(plot1, "plant_orchard.png", 16)
@@ -195,8 +193,8 @@ plant_MR_mod5 <- readRDS(here("Results", "Models", "Plant", "Plant_MR5.rds"))
 
 p3 <- plant_month_bubble(df_comp_plant, plant_MR_mod5, method = "Repellents", colour = "#CC6677", xmin = 0, xmax = 1.25, ymin = -4, ymax = 6, k = 121)
 
-plot2 <- p3 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'plant' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
-print(plot2) # need to fix the caption position - look rubbish when viewed in qmd but much better when viewed in plots window and zoomed out
+plot2 <- p3 
+print(plot2)
 
 save_plot(plot2, "plant_bubble.png", 6)
 ```
@@ -216,7 +214,7 @@ c2 <- orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Ef
 c1_sup <- orchard_plot(coupe_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.out", angle = 0)
 c2_sup <- orchard_plot(coupe_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "none", angle = 0) 
 
-plot3 <- c1/c2 + plot_annotation(tag_levels = "A") # + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'coupe' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
+plot3 <- c1/c2 + plot_annotation(tag_levels = "A") 
 plot3_sup <- c1_sup/c2_sup + plot_annotation(tag_levels = "A")
 
 print(plot3)
@@ -242,8 +240,8 @@ c7 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Natural debris", "#CC6677", 0,
 c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 65, -3, 4, 111)
 c9 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Neighbour effects", "#DDCC77", 0, 50, -4, 3, 24)
 
-plot4 <- c3/c4/c5/c6 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'coupe' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods. The Y axis of the exclusion fence sub-plot has been limited to enhance viewing of confidence and prediction limits", width = 100), theme = theme(plot.caption = element_text(size = 18)))
-plot4.1 <- c7/c8/c9 # 7 plots don't fit into one pane well and the exclusion fence time range is way bigger
+plot4 <- c3/c4/c5/c6 
+plot4.1 <- c7/c8/c9 
 plot4_sup <- c3_sup/c4/c5/c6
 
 print(plot4)
@@ -269,7 +267,7 @@ l2 <- orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "E
 l1_sup <- orchard_plot(lscape_MR_mod1, mod = "Method", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "bottom.out", angle = 0)
 l2_sup <- orchard_plot(lscape_MR_mod3, mod = "Animal", group = "Paper_ID", xlab = "Effect size / SMD", legend.pos = "none", angle = 0)
 
-plot5 <- l1/l2 + plot_annotation(tag_levels = "A") # + plot_annotation(caption = str_wrap("Figure X. Orchard plots show total effect sizes (k) across n studies, in brackets for non-lethal browsing control at a 'landscape' scale. Bubbles represent individual effect sizes, increasing size denotes increasing precision. Points show marginalised mean effect size for control methods (A) and browsing taxa (B). Thick lines show 95% confidence intervals and thin lines show prediction intervals. Note the different X axis scales between figures A and B.", width = 100), tag_levels = "A", theme = theme(plot.caption = element_text(size = 18)))
+plot5 <- l1/l2 + plot_annotation(tag_levels = "A")
 plot5_sup <- l1_sup/l2_sup + plot_annotation(tag_levels = "A")
 
 print(plot5)
@@ -291,7 +289,7 @@ l4 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Repellents", "#332288", 0, 6
 l5 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Tree guards", "#44AA99", 0, 65, -2, 4, 56)
 l6 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Natural debris", "#CC6677", 0, 20, -3, 3.5, 15)
 
-plot6 <- l3/l4/l5/l6 # + plot_annotation(caption = str_wrap("Figure X. Orchard plot showing difference in efficacy through time of non-lethal control methods employed at a 'landscape' scale. Bubble size represents effect size precision, where larger bubbles represent greater precision. Solid lines show estimates for the influence of time on efficacy. Dashed lines show 95% confidence intervals and dotted lines show prediction intervals. Note the different scales of the X and Y axes and the different sizes of the bubbles between control methods.", width = 150), theme = theme(plot.caption = element_text(size = 18)))
+plot6 <- l3/l4/l5/l6
 print(plot6)
 
 save_plot(plot6, "lscape_bubble.png", 20)
@@ -443,6 +441,10 @@ MR2_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR2_pb_rob.rds")
 ```
 
 ```{r}
+r2_ml(MR2)
+```
+
+```{r}
 MR2_res <- mod_extract(MR2)
 MR2_pb_res <- mod_extract(MR2_pb)
 
@@ -470,6 +472,11 @@ imp_MR4 <- readRDS(here("Results", "Models", "Plant", "imp_Plant_MR4.rds"))
 MR4_pb <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_pb.rds"))
 MR4_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_pb_rob.rds"))
 ```
+
+```{r}
+r2_ml(MR4)
+```
+
 
 ```{r}
 MR4_res <- mod_extract(MR4)
@@ -501,6 +508,10 @@ MR5_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR5_pb_rob.rds")
 ```
 
 ```{r}
+r2_ml(MR5)
+```
+
+```{r}
 MR5_res <- mod_extract(MR5)
 MR5_pb_res <- mod_extract(MR5_pb)
 
@@ -520,7 +531,7 @@ MR5_pb_flex <- build_tab_pb(MR5_pb_res, MR5_pb_rob_res)
 ### Save the document
 
 ```{r}
-save_as_docx("Plant Scale Multilevel Meta-analytic model (MMA)" = MMA_flex, "Plant Scale MMA publication bias" = MMA_pb_flex, "Plant Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Plant Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Plant Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Plant Scale MR - suppresed intercept, browsing taxa publication bias" = MR4_pb_flex, "Plant Scale MR - control method efficacy through time" = MR5_flex, "Plant Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Plant_scale_summary.docx"))
+save_as_docx("Plant Scale Multilevel Meta-analytic model (MLMA)" = MMA_flex, "Plant Scale MMA publication bias" = MMA_pb_flex, "Plant Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Plant Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Plant Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Plant Scale MR - suppresed intercept, browsing taxa publication bias" = MR4_pb_flex, "Plant Scale MR - control method efficacy through time" = MR5_flex, "Plant Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Plant_scale_summary.docx"))
 ```
 
 ## Coupe scale
@@ -569,6 +580,10 @@ MR2_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR2_pb_rob.rds")
 ```
 
 ```{r}
+r2_ml(MR2)
+```
+
+```{r}
 MR2_res <- mod_extract(MR2)
 MR2_pb_res <- mod_extract(MR2_pb)
 
@@ -595,6 +610,10 @@ MR4_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR4_rob.rds"))
 imp_MR4 <- readRDS(here("Results", "Models", "Coupe", "imp_coupe_MR4.rds"))
 MR4_pb <- readRDS(here("Results", "Models", "Coupe", "coupe_MR4_pb.rds"))
 MR4_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR4_pb_rob.rds"))
+```
+
+```{r}
+r2_ml(MR4)
 ```
 
 ```{r}
@@ -627,6 +646,10 @@ MR5_pb_rob <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5_pb_rob.rds")
 ```
 
 ```{r}
+r2_ml(MR5)
+```
+
+```{r}
 MR5_res <- mod_extract(MR5)
 MR5_pb_res <- mod_extract(MR5_pb)
 
@@ -646,7 +669,7 @@ MR5_pb_flex <- build_tab_pb(MR5_pb_res, MR5_pb_rob_res)
 ### Save the document
 
 ```{r}
-save_as_docx("Coupe Scale Multilevel Meta-analytic model (MMA)" = MMA_flex, "Coupe Scale MMA publication bias" = MMA_pb_flex, "Coupe Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Coupe Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Coupe Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Coupe Scale MR - suppressed intercept, browsing taxa publication bias" = MR4_pb_flex, "Coupe Scale MR - control method efficacy through time" = MR5_flex, "Coupe Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Coupe_scale_summary.docx"))
+save_as_docx("Coupe Scale Multilevel Meta-analytic model (MLMA)" = MMA_flex, "Coupe Scale MMA publication bias" = MMA_pb_flex, "Coupe Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Coupe Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Coupe Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Coupe Scale MR - suppressed intercept, browsing taxa publication bias" = MR4_pb_flex, "Coupe Scale MR - control method efficacy through time" = MR5_flex, "Coupe Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Coupe_scale_summary.docx"))
 ```
 
 ## Landscape scale
@@ -695,6 +718,10 @@ MR2_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR2_pb_rob.
 ```
 
 ```{r}
+r2_ml(MR2)
+```
+
+```{r}
 MR2_res <- mod_extract(MR2)
 MR2_pb_res <- mod_extract(MR2_pb)
 
@@ -724,6 +751,10 @@ MR4_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR4_pb_rob.
 ```
 
 ```{r}
+r2_ml(MR4)
+```
+
+```{r}
 MR4_res <- mod_extract(MR4)
 MR4_pb_res <- mod_extract(MR4_pb)
 
@@ -750,6 +781,10 @@ MR5_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5_rob.rds"))
 imp_MR5 <- readRDS(here("Results", "Models", "Landscape", "imp_lscape_MR5.rds"))
 MR5_pb <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5_pb.rds"))
 MR5_pb_rob <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5_pb_rob.rds"))
+```
+
+```{r}
+r2_ml(MR5)
 ```
 
 ```{r}
@@ -803,5 +838,98 @@ MR5_pb_flex <- build_tab_pb(MR5_pb_res, MR5_pb_rob_res)
 ### Save the document
 
 ```{r}
-save_as_docx("Landscape Scale Multilevel Meta-analytic model (MMA)" = MMA_flex, "Landscape Scale MMA publication bias" = MMA_pb_flex, "Landscape Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Landscape Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Landscape Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Landscape Scale MR - suppresed intercept, browsing taxa publication bias" = MR4_pb_flex, "Landscape Scale MR - control method efficacy through time" = MR5_flex, "Landscape Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Landscape_scale_summary.docx"))
+save_as_docx("Landscape Scale Multilevel Meta-analytic model (MLMA)" = MMA_flex, "Landscape Scale MMA publication bias" = MMA_pb_flex, "Landscape Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Landscape Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Landscape Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Landscape Scale MR - suppresed intercept, browsing taxa publication bias" = MR4_pb_flex, "Landscape Scale MR - control method efficacy through time" = MR5_flex, "Landscape Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Landscape_scale_summary.docx"))
 ```
+
+## Heterogeneity tables
+
+```{r}
+build_het_table <- function(df1, df2 ,df3){
+  # shorten row names to remove the name of the test
+  rownames(df1) <- substring(rownames(df1), 4)
+  rownames(df2) <- substring(rownames(df2), 4)
+  rownames(df3) <- substring(rownames(df3), 4)
+  
+  # change column names so that it is only the name of the test
+  colnames(df1) <- "I2"
+  colnames(df2) <- "CV"
+  colnames(df3) <- "M"
+  
+  # combine the 3 tests into a single dataframe
+  df4 <- cbind(df1, df2, df3)
+  
+  df5 <- as.data.frame(t(df4))
+  
+  df6 <- df5 %>%  mutate(Test = rownames(df5), Cohort_ID = Repeat_measures) %>% dplyr::select(Test, Total, Paper_ID, Cohort_ID, Plant_genus, OLRE)
+  
+  # make a table for manuscript
+  flex <- flextable(df6) %>%
+    align(align = "center", part = "all") %>% 
+    padding(., padding.left = 0, padding.right = 0) %>% 
+    colformat_double(., digits = 5) %>% 
+    autofit(.) # edit this one to add in extra header rows and generally neaten up
+  
+  return(flex)
+}
+```
+
+### Plant scale
+
+```{r}
+MMA <- readRDS(here("Results", "Models", "Plant", "Plant_MMA.rds"))
+```
+
+```{r}
+i2 <- as.data.frame(orchaRd::i2_ml(MMA))
+
+cv <- as.data.frame(orchaRd::cv_ml(MMA))
+
+m1 <- as.data.frame(orchaRd::m1_ml(MMA))
+```
+
+```{r}
+plant_het_table <- build_het_table(i2, cv, m1)
+```
+
+### Coupe scale
+
+```{r}
+MMA <- readRDS(here("Results", "Models", "Coupe", "coupe_MMA.rds"))
+```
+
+```{r}
+i2 <- as.data.frame(orchaRd::i2_ml(MMA))
+
+cv <- as.data.frame(orchaRd::cv_ml(MMA))
+
+m1 <- as.data.frame(orchaRd::m1_ml(MMA))
+```
+
+```{r}
+Coupe_het_table <- build_het_table(i2, cv, m1)
+```
+
+### Landscape scale
+
+```{r}
+MMA <- readRDS(here("Results", "Models", "Landscape", "lscape_MMA.rds"))
+```
+
+```{r}
+i2 <- as.data.frame(orchaRd::i2_ml(MMA))
+
+cv <- as.data.frame(orchaRd::cv_ml(MMA))
+
+m1 <- as.data.frame(orchaRd::m1_ml(MMA))
+```
+
+```{r}
+Landscape_het_table <- build_het_table(i2, cv, m1)
+```
+
+### Save document
+
+```{r}
+save_as_docx("Supplementary Table 25 - Plant Scale MLMA Heterogeneity" = plant_het_table, "Supplementary Table 26 - Coupe Scale MLMA Heterogeneity" = Coupe_het_table, "Supplementary Table 27 - Landscape Scale MLMA Heterogeneity" = Landscape_het_table, path = here("Results", "Tables", "Heterogeneity_tables.docx"))
+```
+

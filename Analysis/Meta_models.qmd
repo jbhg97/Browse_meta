@@ -76,6 +76,10 @@ summary(plant_MMA_mod1)
 
 orchaRd::i2_ml(plant_MMA_mod1)
 
+orchaRd::cv_ml(plant_MMA_mod1)
+
+orchaRd::m1_ml(plant_MMA_mod1)
+
 plant_MMA_rob <- robust(plant_MMA_mod1, cluster = df_comp_plant$Paper_ID)
 ```
 
@@ -270,6 +274,10 @@ coupe_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_coupe, test = "t", dfs = "
 summary(coupe_MMA_mod1)
 
 orchaRd::i2_ml(coupe_MMA_mod1)
+
+orchaRd::cv_ml(coupe_MMA_mod1)
+
+orchaRd::m1_ml(coupe_MMA_mod1)
 
 coupe_MMA_rob <- robust(coupe_MMA_mod1, cluster = df_comp_coupe$Paper_ID)
 ```
@@ -467,6 +475,10 @@ lscape_MMA_mod1 <- rma.mv(Effect_size ~ 1, V = VCV_mat_lscape, test = "t", dfs =
 summary(lscape_MMA_mod1)
 
 orchaRd::i2_ml(lscape_MMA_mod1)
+
+orchaRd::cv_ml(lscape_MMA_mod1)
+
+orchaRd::m1_ml(lscape_MMA_mod1)
 
 lscape_MMA_rob <- robust(lscape_MMA_mod1, cluster = df_comp_lscape$Paper_ID)
 ```
