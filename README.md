@@ -1,11 +1,17 @@
 # Browse_meta
-Meta-analysis of non-lethal mammal browsing control methods in forest settings
 
-Research questions:
-•	Is efficacy of control dictated by type of control method implemented?
-•	Is a control method’s efficacy dictated by the species of browser it is being used against or the tree genera it is protecting?
-•	Do non-lethal browsing control methods retain their efficacy across spatial and temporal scales?
+## A Global Meta-analysis of non-lethal mammal browsing control methods in forests
 
-Since the ban of 1080 in Tasmanian state forests in 2005 (Coleman et al., 2006) browsing animal control is predominantly conducted via trapping and shooting. Control operations are carried out universally across newly sown coupes to reduce herbivore populations before and during germinant emergence. Control operations continue reactively based on damage assessments up to approximately 18 months after sowing/planting or when the majority of trees have reached a height where they are no longer as vulnerable to browsing damage (Wilkinson and Neilsen, 1995). This practice is again costly and elevates injury risk to personnel. Equally, much like 1080, shooting and other lethal animal control measures can be met with opposition by stakeholders even when managing “pest” species (Dandy et al., 2012).
+Contained in this repository are the input files, code, model outputs, figure outputs and table outputs for a meta-analysis of non-lethal mammal browsing control in forest landscapes. Code is supplied in the form of annotated .qmd files to be run in Rstudio. Input files are in the form of .xlsx or .rds files. Outputs are either .doc, .png or .rds depending on whehter it is a table, figure or modelling object.
 
-The question of “is lethal mammal control acceptable?” is highly polarising. (Farnworth et al., 2014; Fix et al., 2010). Often the acceptability of lethal control depends on the species being targeted (Drijfhout et al., 2020), even when all species needing to be controlled are invasive (Boulet et al., 2021). The goals (for example, financial, conservation or animal welfare) of control actions are important to stakeholders when justifying the use of lethal controls (Dandy et al., 2012). Collectively, these factors dictate the acceptability of a control method and therefore need to be monitored by land managers to ensure their actions are not going to meet opposition. A common factor across two studies, one on native and one on invasive species, was that age of survey respondent was positively correlated with the acceptability of lethal control (Boulet et al., 2021; Dunn et al., 2018). Assuming that, as they age, younger generations maintain their aversion to lethal mammal control it will perpetuate a consistent decrease in the acceptability of lethal mammal control into the future, forcing land managers to shift from predominantly lethal to predominantly non-lethal mammal control. This is in line with Eason et al. (2017), who identified a need to advance non-lethal mammal control technologies by 2030 in a review of all mammal control in New Zealand. Identifying patterns in the relative efficacies of existing non-lethal mammal control methods based on moderators such as the browsers being protected against or the tree genera that are being protected will lay a strong foundation for the eventual switch from lethal to non-lethal browsing mammal control.
+### Analysis
+
+Contains input files for both complete and imputed case meta-analyses and the .qmd file that conducts all meta-analytical modelling.
+
+### Data processing
+
+Contains an input file - Meta_full_data.xlsx - that holds all the raw data, description of literature screening process, records of author correspondence. See the meta worksheet for a description of the individual worksheets within this excel workbook. Meta_prelim_process.qmd takes the raw data and conducts any transformations necessary to generate the effect sizes that are fed into the meta-analytical modelling framework. LO and SMD .xlsx and .rds files are checkpoint files saved throughout Meta_prelim_process.qmd describing log odds ratio and standardised mean difference effects for both complete and imputed case meta-analyses.
+
+### Results
+
+Meta_results.qmd takes modelling results stored in the Models folder and extracts relevant information to produce figures for publication stored in the Figures folder. Results_summary_tables.qmd uses modelling results to generate summary tables presented in a supplement - these tables are stored in the Tables folder.
