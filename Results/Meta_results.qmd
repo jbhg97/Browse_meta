@@ -199,7 +199,7 @@ print(plot2)
 save_plot(plot2, "plant_bubble.png", 6)
 ```
 
-### Coupe scale
+### Site scale
 
 ```{r}
 # coupe scale orchard plots - tweak caption position and wrap as needed
@@ -534,7 +534,7 @@ MR5_pb_flex <- build_tab_pb(MR5_pb_res, MR5_pb_rob_res)
 save_as_docx("Plant Scale Multilevel Meta-analytic model (MLMA)" = MMA_flex, "Plant Scale MMA publication bias" = MMA_pb_flex, "Plant Scale Meta-regression (MR) - suppressed intercept, control method" = MR2_flex, "Plant Scale MR - suppressed intercept, control method publication bias" = MR2_pb_flex, "Plant Scale MR - suppressed intercept, browsing taxa" = MR4_flex, "Plant Scale MR - suppresed intercept, browsing taxa publication bias" = MR4_pb_flex, "Plant Scale MR - control method efficacy through time" = MR5_flex, "Plant Scale MR - control method efficacy through time publication bias" = MR5_pb_flex, path = here("Results", "Tables", "Plant_scale_summary.docx"))
 ```
 
-## Coupe scale
+## Site scale
 
 ### Multilevel meta-analytic model (MMA)
 
@@ -891,7 +891,7 @@ m1 <- as.data.frame(orchaRd::m1_ml(MMA))
 plant_het_table <- build_het_table(i2, cv, m1)
 ```
 
-### Coupe scale
+### Site scale
 
 ```{r}
 MMA <- readRDS(here("Results", "Models", "Coupe", "coupe_MMA.rds"))

@@ -252,7 +252,7 @@ saveRDS(plant_MR_pb4_rob, here("Results", "Models", "Plant", "Plant_MR4_pb_rob.r
 saveRDS(plant_MR_pb5_rob, here("Results", "Models", "Plant", "Plant_MR5_pb_rob.rds"))
 ```
 
-### Coupe scale
+### Site scale
 
 Observation level random effect
 
@@ -903,7 +903,7 @@ saveRDS(imp_plant_MR_mod5_rob, here("Results", "Models", "Plant", "imp_Plant_MR5
 rm(imp_plant_MMA_mod1, imp_plant_MMA_mod1_rob, imp_plant_MR_mod1, imp_plant_MR_mod2, imp_plant_MR_mod3, imp_plant_MR_mod4, imp_plant_MR_mod5, imp_plant_MR_mod1_rob, imp_plant_MR_mod2_rob, imp_plant_MR_mod3_rob, imp_plant_MR_mod4_rob, imp_plant_MR_mod5_rob, VCV_mat_plant_imp, df_imp_plant, df_imp_plant1, df_imp_plant2)
 ```
 
-### Coupe scale
+### Site scale
 
 #### Divide data
 
