@@ -162,6 +162,8 @@ map <- ggplot() +
         axis.ticks.x = element_blank())
 
 map_plot <- map
+
+save_plot(map_plot, "meta_map.png", 7.2)
 ```
 
 ## Orchard plot Figures
@@ -476,7 +478,6 @@ MR4_pb_rob <- readRDS(here("Results", "Models", "Plant", "Plant_MR4_pb_rob.rds")
 ```{r}
 r2_ml(MR4)
 ```
-
 
 ```{r}
 MR4_res <- mod_extract(MR4)
@@ -932,4 +933,3 @@ Landscape_het_table <- build_het_table(i2, cv, m1)
 ```{r}
 save_as_docx("Supplementary Table 25 - Plant Scale MLMA Heterogeneity" = plant_het_table, "Supplementary Table 26 - Coupe Scale MLMA Heterogeneity" = Coupe_het_table, "Supplementary Table 27 - Landscape Scale MLMA Heterogeneity" = Landscape_het_table, path = here("Results", "Tables", "Heterogeneity_tables.docx"))
 ```
-
