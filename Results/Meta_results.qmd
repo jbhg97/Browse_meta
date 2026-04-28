@@ -233,14 +233,14 @@ colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4
 
 coupe_MR_mod5 <- readRDS(here("Results", "Models", "Coupe", "coupe_MR5.rds"))
 
-c3 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Exclusion fence", "#88CCEE", 0, 140, -5, 10, 219)
-c3_sup <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Exclusion fence", "#88CCEE", 0, 140, -20, 17, 219)
-c4 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Repellents", "#332288", 0, 50, -4, 6, 415)
-c5 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Tree guards", "#009E73", 0, 65, -5, 10, 339)
-c6 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Other fencing", "#117733", 0, 30, -5, 5, 15)
-c7 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Natural debris", "#CC6677", 0, 65, -3, 5, 23)
-c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 65, -3, 4, 111)
-c9 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Neighbour effects", "#DDCC77", 0, 50, -4, 3, 24)
+c3 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Exclusion fence", "#88CCEE", 0, 140, -5, 10, 219, 20)
+c3_sup <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Exclusion fence", "#88CCEE", 0, 140, -20, 17, 219, 20)
+c4 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Repellents", "#332288", 0, 50, -4, 6, 415, 16)
+c5 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Tree guards", "#009E73", 0, 65, -5, 10, 339, 6)
+c6 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Other fencing", "#117733", 0, 30, -5, 5, 15, 3)
+c7 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Natural debris", "#CC6677", 0, 65, -3, 5, 23, 2)
+c8 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Stock manipulation", "#AA4499", 0, 65, -3, 4, 111, 3)
+c9 <- month_bubble(df_comp_coupe, coupe_MR_mod5, "Neighbour effects", "#DDCC77", 0, 50, -4, 3, 24, 1)
 
 plot4 <- c3/c4/c5/c6 
 plot4.1 <- c7/c8/c9 
@@ -286,10 +286,10 @@ colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4
 
 lscape_MR_mod5 <- readRDS(here("Results", "Models", "Landscape", "lscape_MR5.rds"))
 
-l3 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Exclusion fence", "#88CCEE", 0, 250, -2, 9, 413)
-l4 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Repellents", "#332288", 0, 65, -2, 4, 73)
-l5 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Tree guards", "#44AA99", 0, 65, -2, 4, 56)
-l6 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Natural debris", "#CC6677", 0, 20, -3, 3.5, 15)
+l3 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Exclusion fence", "#88CCEE", 0, 250, -2, 9, 413, 36)
+l4 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Repellents", "#332288", 0, 65, -2, 4, 73, 8)
+l5 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Tree guards", "#44AA99", 0, 65, -2, 4, 56, 7)
+l6 <- month_bubble(df_comp_lscape, lscape_MR_mod5, "Natural debris", "#CC6677", 0, 20, -3, 3.5, 15, 2)
 
 plot6 <- l3/l4/l5/l6
 print(plot6)
