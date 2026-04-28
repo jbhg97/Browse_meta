@@ -15,7 +15,7 @@ p_load(tidyverse, readxl, writexl, sf, rnaturalearth, rnaturalearthdata, patchwo
 
 # plant scale bubble plot - requires different function as there's only one control method so the table structure is slightly different
 
-plant_month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax, k){
+plant_month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax, k, n){
   
   df1 <- df %>% filter(Method == method)
   
@@ -26,7 +26,7 @@ plant_month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax
   
   plot <- ggplot(data = df1, aes(x = Months, y = Effect_size)) + 
     geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = colour, fill = colour) +
-    labs(x = "Time / months", y = "Effect size / SMD", size = "Precision (1/SE)", title = paste0(method," (k = ", k,")")) + 
+    labs(x = "Time / months", y = "Effect size / SMD", size = "Precision (1/SE)", title = paste0(method,", k = ", k, "(",n,")")) + 
     ggplot2::geom_smooth(data = mod_table_method, 
                          ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
                          formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
@@ -51,7 +51,7 @@ plant_month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax
 
 # other scale bubble plot
 
-month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax, k){
+month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax, k, n){
   
   df1 <- df %>% filter(Method == method)
   
@@ -62,7 +62,7 @@ month_bubble <- function(df, model, method, colour, xmin, xmax, ymin, ymax, k){
   
   plot <- ggplot(data = df1, aes(x = Months, y = Effect_size)) + 
     geom_point(aes(size = 1/sqrt(Sampling_variance)), alpha = 0.5, shape = 21, colour = colour, fill = colour) +
-    labs(x = "Time / months", y = "Effect size / SMD", size = "Precision (1/SE)", title = paste0(method," (k = ", k,")")) + 
+    labs(x = "Time / months", y = "Effect size / SMD", size = "Precision (1/SE)", title = paste0(method,", k = ", k, "(",n,")")) + 
     ggplot2::geom_smooth(data = mod_table_method, 
                          ggplot2::aes(x = moderator , y = lowerPR), method = "loess", 
                          formula = y ~ x, se = FALSE, lty = "dotted", colour = "black") + 
@@ -193,7 +193,7 @@ colour_options <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4
 
 plant_MR_mod5 <- readRDS(here("Results", "Models", "Plant", "Plant_MR5.rds"))
 
-p3 <- plant_month_bubble(df_comp_plant, plant_MR_mod5, method = "Repellents", colour = "#CC6677", xmin = 0, xmax = 1.25, ymin = -4, ymax = 6, k = 121)
+p3 <- plant_month_bubble(df_comp_plant, plant_MR_mod5, method = "Repellents", colour = "#CC6677", xmin = 0, xmax = 1.25, ymin = -4, ymax = 6, k = 121, n = 10)
 
 plot2 <- p3 
 print(plot2)
