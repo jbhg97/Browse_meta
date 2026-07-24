@@ -153,7 +153,7 @@ world$is_zero <- ifelse(world$N == 0, "Zero", "Non-zero")
 map <- ggplot() +
   geom_sf(data = world[world$is_zero == "Zero", ], fill = "lightgrey", color = "black") +
   geom_sf(data = world[world$is_zero == "Non-zero", ], aes(fill = N)) +
-  scale_fill_gradientn(colors = c("lightblue","turquoise","navy"), values = scales::rescale(c(1, 10, max(world$N, na.rm = TRUE))), name = "N") +
+  scale_fill_gradientn(colors = c("lightblue","lightgreen","gold"), values = scales::rescale(c(1, 10, max(world$N, na.rm = TRUE))), name = "N") +
   theme_bw() + 
   theme(panel.grid = element_blank(),
         panel.border = element_blank(),
